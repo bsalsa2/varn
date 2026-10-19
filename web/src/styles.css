@@ -1406,36 +1406,6 @@ svg {
   flex-direction: column;
   gap: 32px;
 }
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-  gap: 16px;
-}
-.result {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-  padding: 28px;
-  border-radius: 28px;
-  container-type: inline-size;
-}
-.result dt {
-  font-size: 11px;
-  color: var(--ink-3);
-}
-.result-value {
-  /* Numbers are set in Geist Mono (brand rule). Sized to the card so a value
-     can never be wider than its column. */
-  font-family: var(--f-mono);
-  font-weight: 400;
-  font-size: min(52px, 26cqi);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-  color: var(--varn-text);
-  font-variant-numeric: tabular-nums;
-}
 .stats-note {
   margin-top: -32px;
   max-width: 52rem;
@@ -1478,14 +1448,254 @@ svg {
   color: var(--halo);
   text-wrap: pretty;
 }
-.result-note {
-  font-size: 14px;
-}
 .results-source {
   font-size: 11px;
   color: var(--ink-3);
   text-transform: none;
   letter-spacing: 0.04em;
+}
+
+/* Results chart: each measurement is a panel of bars on one 0-100% scale,
+   so a small number looks small. Bars use the chart steps of the status
+   colours and always sit under a printed value; the panel title carries the
+   matching shape. Breakdown rows indent their label only: every track is the
+   same width, so all bars share the scale. */
+.rc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+.rc-tag {
+  padding: 4px 10px;
+  border-radius: var(--varn-r-tag);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  color: var(--accent-ink);
+}
+.rc-sample {
+  align-self: center;
+}
+.rc-sample {
+  color: var(--ink-3);
+}
+.rc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+@media (min-width: 700px) {
+  .rc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .rc-caveats {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 1100px) {
+  .rc-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .rc-caveats {
+    grid-column: auto;
+  }
+}
+.rc-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  margin: 0;
+  padding: 24px;
+  border-radius: var(--varn-r-card);
+}
+.rc-cap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rc-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.3;
+  color: var(--varn-text);
+}
+.rc-unit {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+.rc-bars {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rc-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.rc-label {
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--halo);
+}
+.rc-row--part .rc-row-head {
+  padding-left: 14px;
+  background: linear-gradient(var(--line-2), var(--line-2)) 2px 0 / 1px 70% no-repeat;
+}
+.rc-row--part .rc-label {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.rc-value {
+  flex: none;
+  font-size: 15px;
+  letter-spacing: 0;
+  color: var(--varn-text);
+  font-variant-numeric: tabular-nums;
+}
+.rc-track {
+  height: 10px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+.rc-bar {
+  display: block;
+  width: max(2px, calc(var(--v) * 1%));
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--chart-aircraft);
+}
+.rc-panel--drone .rc-bar {
+  background: var(--chart-drone);
+}
+.rc-detail {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+.rc-axis {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+/* Not measured: an outline, not glass, so it never reads as a result. */
+.rc-caveats {
+  padding: 24px;
+  border-radius: var(--varn-r-card);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+.rc-caveats-title {
+  margin: 0 0 12px;
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.rc-caveats ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.rc-table summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--accent-ink);
+  cursor: pointer;
+  list-style: none;
+}
+.rc-table summary::-webkit-details-marker {
+  display: none;
+}
+.rc-table summary::before {
+  content: '+';
+  width: 1ch;
+  font-size: 14px;
+  letter-spacing: 0;
+}
+.rc-table[open] summary::before {
+  content: '\2212';
+}
+.rc-table-wrap {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+.rc-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.rc-table th,
+.rc-table td {
+  padding: 10px 12px 10px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+.rc-table thead th {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.rc-table tbody th {
+  color: var(--halo);
+}
+.rc-table td.mono {
+  font-size: 14px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--varn-text);
+}
+.rc-table .rc-table-group {
+  padding-top: 18px;
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--varn-text);
+}
+.rc-table .rc-table-group span {
+  display: block;
+  font-family: var(--f-body);
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--ink-3);
 }
 
 /* ---- 04 · About -------------------------------------------------------- */

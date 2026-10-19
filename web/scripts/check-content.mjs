@@ -111,7 +111,7 @@ function list(path, { min = 1 } = {}) {
 }
 
 const sectionIds = new Set(['top', 'tested', 'math', 'story', 'labels', 'how', 'mount', 'status', 'build', 'roadmap']);
-if (Array.isArray(get('results.items')) && get('results.items').length) sectionIds.add('results');
+if (Array.isArray(get('results.charts')) && get('results.charts').length) sectionIds.add('results');
 if (Array.isArray(get('limits.items')) && get('limits.items').length) sectionIds.add('limits');
 
 function link(path, value = get(path)) {
@@ -269,12 +269,27 @@ list('status.items').forEach((it, i) => {
 });
 
 const results = get('results');
-if (results && Array.isArray(results.items) && results.items.length) {
+if (results && Array.isArray(results.items))
+  err('results.items has been replaced by results.charts (bars on a 0 to 100% scale). See the comment above results in content.js.', lineAfter('results:', 'items:'));
+if (results && Array.isArray(results.charts) && results.charts.length) {
   text('results.heading');
-  results.items.forEach((it, i) => {
-    text(`results.items.${i}.value`, it?.value);
-    text(`results.items.${i}.label`, it?.label);
+  results.charts.forEach((ch, i) => {
+    text(`results.charts.${i}.title`, ch?.title);
+    text(`results.charts.${i}.unit`, ch?.unit);
+    if (!['aircraft', 'drone'].includes(ch?.kind))
+      err(`results.charts.${i}.kind is "${ch?.kind}". Use 'aircraft' or 'drone'.`, lineOf(ch?.title));
+    list(`results.charts.${i}.bars`).forEach((b, j) => {
+      text(`results.charts.${i}.bars.${j}.label`, b?.label);
+      const v = b?.value;
+      if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 100)
+        err(
+          `results.charts.${i}.bars.${j}.value should be a plain number from 0 to 100, like 7.5 for 7.5% (got ${JSON.stringify(v)}).`,
+          lineOf(b?.label)
+        );
+      if (b?.detail !== undefined) text(`results.charts.${i}.bars.${j}.detail`, b.detail);
+    });
   });
+  if (results.caveats !== undefined) list('results.caveats').forEach((_, i) => text(`results.caveats.${i}`));
   if (!results.source || !results.source.trim())
     err('results has numbers but results.source is empty. Say how and when they were measured.', lineAfter('results:', 'source:'));
 }
@@ -341,6 +356,6 @@ if (existsSync(configFile) && /CONTACT_EMAIL\s*=\s*['"][^'"]*@example\.(com|org|
 finish();
 console.log(
   `content.js OK: ${counts.DONE} done, ${counts['IN PROGRESS']} in progress, ${counts.NEXT} next` +
-    (results?.items?.length ? `, ${results.items.length} result(s)` : '') +
+    (results?.charts?.length ? `, ${results.charts.reduce((n, ch) => n + (ch?.bars?.length || 0), 0)} result(s)` : '') +
     (footage?.video ? ', real footage on' : '')
 );

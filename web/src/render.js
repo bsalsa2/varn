@@ -189,8 +189,50 @@ const mountBlock = (m) => `
       </figure>`;
 
 // Accuracy results: rendered only once there are measured numbers.
-const resultsSection = (r, next) => {
-  if (!r || !Array.isArray(r.items) || r.items.length === 0) return '';
+// Each chart is one measurement as bars on a shared 0-100% scale, so a small
+// number looks small and a weak one looks weak. Every value is printed as
+// text (no hover needed), and the same numbers sit in a plain table below.
+const pct = (v) => `${Number(v)}%`;
+const resultBar = (b) => `
+          <li class="rc-row${b.part ? ' rc-row--part' : ''}">
+            <div class="rc-row-head"><span class="rc-label">${esc(b.label)}</span><span class="rc-value mono">${esc(pct(b.value))}</span></div>
+            <div class="rc-track" aria-hidden="true"><span class="rc-bar" style="--v:${Number(b.value)}"></span></div>
+            ${b.detail ? `<p class="rc-detail">${esc(b.detail)}</p>` : ''}
+          </li>`;
+const resultChart = (ch, i) => `
+      <figure class="rc-panel rc-panel--${ch.kind === 'drone' ? 'drone' : 'aircraft'} glass" data-reveal aria-labelledby="rc-title-${i}">
+        <figcaption class="rc-cap">
+          <h3 class="rc-title" id="rc-title-${i}"><span class="shape shape--${ch.kind === 'drone' ? 'drone' : 'aircraft'}" aria-hidden="true"></span>${esc(ch.title)}</h3>
+          <p class="rc-unit">${esc(ch.unit)}</p>
+        </figcaption>
+        <ul class="rc-bars">${ch.bars.map(resultBar).join('')}
+        </ul>
+        <div class="rc-axis mono" aria-hidden="true"><span>0%</span><span>50%</span><span>100%</span></div>
+      </figure>`;
+const resultTable = (charts) => `
+      <details class="rc-table">
+        <summary class="mono">Show the numbers as a table</summary>
+        <div class="rc-table-wrap" tabindex="0" role="region" aria-label="Results as a table">
+          <table>
+            <thead><tr><th scope="col">Group</th><th scope="col">Result</th><th scope="col">Notes</th></tr></thead>${charts
+              .map(
+                (ch) => `
+            <tbody>
+              <tr><th scope="rowgroup" colspan="3" class="rc-table-group">${esc(ch.title)} <span>${esc(ch.unit)}</span></th></tr>${ch.bars
+                .map(
+                  (b) => `
+              <tr><th scope="row">${esc(b.label)}</th><td class="mono">${esc(pct(b.value))}</td><td>${b.detail ? esc(b.detail) : ''}</td></tr>`
+                )
+                .join('')}
+            </tbody>`
+              )
+              .join('')}
+          </table>
+        </div>
+      </details>`;
+export const resultsSection = (r, next) => {
+  if (!r || !Array.isArray(r.charts) || r.charts.length === 0) return '';
+  const caveats = Array.isArray(r.caveats) ? r.caveats : [];
   return `
   <section class="results section" id="results" aria-labelledby="results-title">
     <div class="wrap">
@@ -199,18 +241,24 @@ const resultsSection = (r, next) => {
         <h2 class="h-section" id="results-title">${esc(r.heading)}</h2>
         ${r.intro ? `<p class="lede" data-reveal>${esc(r.intro)}</p>` : ''}
       </header>
-      <dl class="results-grid">
-        ${r.items
-          .map(
-            (it) => `
-        <div class="result glass" data-reveal>
-          <dt class="mono">${esc(it.label)}</dt>
-          <dd class="result-value">${esc(it.value)}</dd>
-          ${it.note ? `<dd class="result-note">${esc(it.note)}</dd>` : ''}
-        </div>`
-          )
-          .join('')}
-      </dl>
+      ${
+        r.tag || r.sample
+          ? `<p class="rc-meta mono">${r.tag ? `<span class="rc-tag">${esc(r.tag)}</span>` : ''}${
+              r.sample ? `<span class="rc-sample">${esc(r.sample)}</span>` : ''
+            }</p>`
+          : ''
+      }
+      <div class="rc-grid">${r.charts.map(resultChart).join('')}
+        ${
+          caveats.length
+            ? `<aside class="rc-caveats" data-reveal aria-labelledby="rc-caveats-title">
+          <h3 class="rc-caveats-title mono" id="rc-caveats-title">What this test does not show</h3>
+          <ul>${caveats.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
+        </aside>`
+            : ''
+        }
+      </div>
+      ${resultTable(r.charts)}
       <p class="results-source mono">${esc(r.source)}</p>
     </div>
   </section>`;
