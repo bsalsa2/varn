@@ -5,8 +5,22 @@ import { initNavMenu } from './nav-menu.js';
 const root = document.documentElement;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+// The pinned story needs this much room; keep in step with .story--pinned in styles.css.
+const STORY_PIN_QUERY = '(min-width: 901px) and (min-height: 650px)';
 
 if (!reduceMotion) root.classList.add('js-motion');
+
+// Looping CSS animations (radar sweeps, pulsing dots, the ticker) keep the
+// browser repainting every frame even when they are far off screen, which
+// costs phones and slow laptops battery and smoothness. Pause everything
+// inside a section while it is out of view.
+if (!reduceMotion && 'IntersectionObserver' in window) {
+  const io = new IntersectionObserver(
+    (entries) => entries.forEach((e) => e.target.classList.toggle('is-offscreen', !e.isIntersecting)),
+    { rootMargin: '100px 0px' }
+  );
+  document.querySelectorAll('main section, .ticker').forEach((el) => io.observe(el));
+}
 
 // ---------------------------------------------------------------------------
 // Scroll progress bar (cheap: one custom property per frame).
@@ -36,7 +50,6 @@ if (!reduceMotion) root.classList.add('js-motion');
 // aria-label; the pieces are hidden from them.
 function splitChars(el) {
   const text = el.textContent;
-  el.setAttribute('aria-label', text);
   el.textContent = '';
   const out = [];
   for (const ch of text) {
@@ -94,7 +107,8 @@ const header = document.getElementById('top-nav');
         const y = window.scrollY;
         const down = y > lastY + 4;
         const up = y < lastY - 4;
-        if (down && y > window.innerHeight * 0.6) header.classList.add('is-hidden');
+        // An open mobile menu keeps the header (and its close button) on screen.
+        if (down && y > window.innerHeight * 0.6 && !header.querySelector('.nav.is-open')) header.classList.add('is-hidden');
         else if (up || y < 80) header.classList.remove('is-hidden');
         if (down || up) lastY = y;
       });
@@ -128,11 +142,18 @@ if (statusLink) sectionFor.set(document.getElementById('build'), statusLink);
 
 // Move focus with in-page links so keyboard and screen reader users land
 // where the page scrolled to.
+// Smooth scrolling is done here rather than with CSS scroll-behavior: the CSS
+// version also animates the jump to a #section when arriving from another
+// page, and ScrollTrigger's refresh on load cuts that short at the top.
 document.addEventListener('click', (e) => {
   const link = e.target.closest('a[href^="#"]');
-  if (!link) return;
-  const target = document.querySelector(link.getAttribute('href'));
+  if (!link || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const hash = link.getAttribute('href');
+  const target = hash.length > 1 && document.getElementById(decodeURIComponent(hash.slice(1)));
   if (!target) return;
+  e.preventDefault();
+  target.scrollIntoView({ behavior: reduceMotion || hash === '#main' ? 'auto' : 'smooth' });
+  if (location.hash !== hash) history.pushState(null, '', hash);
   if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
   target.focus({ preventScroll: true });
 });
@@ -215,17 +236,32 @@ if (!reduceMotion) {
 
   // ---- Hero entrance. Opacity starts just above zero so the browser still
   // counts the headline as painted immediately (keeps LCP fast).
+  // The headline is split into one span per letter for the entrance. Screen
+  // readers get the whole sentence from a visually hidden copy instead (an
+  // aria-label on a plain span is not allowed and is often ignored).
+  const heroTitle = document.querySelector('.hero-title');
+  if (heroTitle) {
+    const said = document.createElement('span');
+    said.className = 'sr-only';
+    said.textContent = heroTitle.textContent.replace(/\s+/g, ' ').trim();
+    heroTitle.querySelectorAll('.line').forEach((line) => line.setAttribute('aria-hidden', 'true'));
+    heroTitle.append(said);
+  }
   const heroChars = [...document.querySelectorAll('.hero-title .line-in')].flatMap(splitChars);
   gsap.from(heroChars, { yPercent: 110, rotate: 6, opacity: 0.01, duration: 1.5, ease, stagger: 0.035, delay: 0.2 });
   gsap.from('[data-hero]', { y: 28, opacity: 0.01, duration: 1.6, ease, stagger: 0.08, delay: 0.45, clearProps: 'transform' });
 
   // ---- Hero exit: the copy and the lens recede.
+  // On phones the hero is taller than the screen, so the fade waits until its
+  // bottom edge is on screen; starting at 'top top' greyed out text people
+  // were still reading. fromTo keeps the entrance tween's half-faded opacity
+  // from being recorded as the starting point.
   const heroTl = gsap.timeline({
-    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.8 },
+    scrollTrigger: { trigger: '.hero', start: 'clamp(bottom bottom)', end: 'bottom top', scrub: 0.8 },
   });
   heroTl
     .to('.hero-inner', { y: -90, opacity: 0, ease: 'power1.in' }, 0)
-    .to('.hero-foot', { opacity: 0, ease: 'none' }, 0);
+    .fromTo('.hero-foot', { opacity: 1 }, { opacity: 0, ease: 'none', immediateRender: false }, 0);
 
   // ---- 01 The math: words light up as you read; the numbers count.
   const words = gsap.utils.toArray('.math-statement .w');
@@ -278,7 +314,11 @@ if (!reduceMotion) {
   });
 
   // ---- Story: pinned. Scrolling steps through the five stages; the scene,
-  // rail and text follow. Below 900 px the same thing runs with a shorter pin.
+  // rail and text follow. The pin only runs where the pinned panel fits on
+  // screen; on phones, short windows and with reduced motion (or no JS) the
+  // steps stay a plain readable list (styles.css: .story without
+  // .story--pinned). gsap.matchMedia re-checks on resize and rotation and
+  // undoes the pin when the window stops matching.
   const story = document.getElementById('story');
   if (story) {
     const steps = [...story.querySelectorAll('.story-step')];
@@ -306,31 +346,35 @@ if (!reduceMotion) {
       });
       if (counter) counter.textContent = `0${i + 1} / 0${n}`;
     };
-    ScrollTrigger.create({
-      trigger: '.story-pin',
-      start: 'top top',
-      end: () => `+=${Math.round(window.innerHeight * 0.75 * n)}`,
-      pin: true,
-      anticipatePin: 1,
-      onUpdate: (self) => {
-        const p = self.progress;
-        show(Math.min(n - 1, Math.floor(p * n * 0.9999)));
-        lines.forEach((line, k) => {
-          const f = Math.min(1, Math.max(0, p * n - (k + 0.5)));
-          line.firstElementChild.style.setProperty('--fill', f.toFixed(3));
-        });
-      },
-    });
-    // The device floats in as the section arrives.
-    gsap.from('.story-device', {
-      y: 80,
-      opacity: 0,
-      rotationX: 10,
-      transformPerspective: 1100,
-      duration: 1.6,
-      ease,
-      clearProps: 'transform',
-      scrollTrigger: { trigger: '.story', start: 'top 70%' },
+    gsap.matchMedia().add(STORY_PIN_QUERY, () => {
+      story.classList.add('story--pinned');
+      ScrollTrigger.create({
+        trigger: '.story-pin',
+        start: 'top top',
+        end: () => `+=${Math.round(window.innerHeight * 0.75 * n)}`,
+        pin: true,
+        anticipatePin: 1,
+        onUpdate: (self) => {
+          const p = self.progress;
+          show(Math.min(n - 1, Math.floor(p * n * 0.9999)));
+          lines.forEach((line, k) => {
+            const f = Math.min(1, Math.max(0, p * n - (k + 0.5)));
+            line.firstElementChild.style.setProperty('--fill', f.toFixed(3));
+          });
+        },
+      });
+      // The device floats in as the section arrives.
+      gsap.from('.story-device', {
+        y: 80,
+        opacity: 0,
+        rotationX: 10,
+        transformPerspective: 1100,
+        duration: 1.6,
+        ease,
+        clearProps: 'transform',
+        scrollTrigger: { trigger: '.story', start: 'top 70%' },
+      });
+      return () => story.classList.remove('story--pinned');
     });
   }
 
@@ -409,7 +453,13 @@ if (!reduceMotion) {
   });
 
   // Web fonts change line lengths; re-measure once they are in.
-  document.fonts?.ready.then(() => ScrollTrigger.refresh());
+  // Re-measure once fonts change line breaks, but only if they are still
+  // loading at page load: an extra refresh costs a long frame on slow phones.
+  addEventListener(
+    'load',
+    () => document.fonts && document.fonts.status !== 'loaded' && document.fonts.ready.then(() => ScrollTrigger.refresh()),
+    { once: true }
+  );
 } else {
   document.querySelectorAll('.phase').forEach((p) => p.classList.add('is-lit'));
 }

@@ -98,8 +98,14 @@ async function send(file) {
         waiting.push(attempt);
         requestToken();
       } else {
-        ui.note.textContent = `${error.message} Tap to retry.`;
-        ui.item.onclick = () => { ui.item.onclick = null; attempt(); };
+        ui.note.textContent = `${error.message} Try again.`;
+        // A real button, so it works from a keyboard as well as by tapping.
+        const retry = document.createElement('button');
+        retry.type = 'button';
+        retry.className = 'quiet';
+        retry.textContent = 'Retry';
+        retry.onclick = () => { retry.remove(); attempt(); };
+        ui.item.append(retry);
       }
     }
   };
@@ -139,6 +145,11 @@ async function main() {
     els.signIn.hidden = false;
     say('Signed out.');
   });
+  // The file inputs stay hidden; these buttons open them (labels can't be
+  // reached or pressed from a keyboard).
+  for (const b of document.querySelectorAll('#actions button[data-for]')) {
+    b.addEventListener('click', () => document.getElementById(b.dataset.for).click());
+  }
   els.record.addEventListener('change', () => take(els.record));
   els.choose.addEventListener('change', () => take(els.choose));
 }

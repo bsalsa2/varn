@@ -354,7 +354,7 @@ const storySection = (st, n) => `
         <header class="story-head">
           ${kicker(n, st.kicker)}
           <h2 class="h-section" id="story-title">${esc(st.heading)}</h2>
-          <p class="lede">${esc(st.intro)}</p>
+          <p class="lede">${esc(st.intro)}${st.hint ? ` <span class="story-hint">${esc(st.hint)}</span>` : ''}</p>
         </header>
         <div class="story-body">
           <ol class="story-steps">
@@ -494,7 +494,7 @@ function siteNav(c, { home = true, current = '' } = {}) {
   const links = c.nav.links
     .map((l, i) => {
       const cur = current && l.href === `./${current}` ? ' aria-current="page"' : '';
-      return `<li><a class="nav-link mono" href="${esc(href(l.href))}"${cur}><span class="nav-n">${pad2(i + 1)}</span>${esc(l.label)}</a></li>`;
+      return `<li><a class="nav-link mono" href="${esc(href(l.href))}"${cur}><span class="nav-n" aria-hidden="true">${pad2(i + 1)}</span>${esc(l.label)}</a></li>`;
     })
     .join('');
   return `
@@ -504,12 +504,12 @@ function siteNav(c, { home = true, current = '' } = {}) {
       ${mark(36)}
       ${wordmark()}
     </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu"><span></span><span></span></button>
     <ul class="nav-links" id="nav-menu">
       ${links}
       <li class="nav-cta-li"><a class="btn btn--primary btn--sm"${linkAttrs(c.hero.primary.href)}>${esc(c.hero.primary.label)}</a></li>
     </ul>
     <a class="btn btn--primary btn--sm nav-cta"${linkAttrs(c.hero.primary.href)}>${esc(c.hero.primary.label)}</a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu"><span></span><span></span></button>
   </nav>
 </header>`;
 }

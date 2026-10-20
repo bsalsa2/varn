@@ -193,6 +193,7 @@ if (get('math.stats') !== undefined) {
 text('how.heading');
 text('story.heading');
 text('story.intro');
+if (get('story.hint') !== undefined) text('story.hint');
 list('story.stages').forEach((st, i) => {
   ['number', 'title', 'fact', 'body'].forEach((k) => text(`story.stages.${i}.${k}`, st?.[k]));
 });
