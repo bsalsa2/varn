@@ -164,13 +164,13 @@ text('hero.demo.label');
 link('hero.demo.href');
 text('hero.results.label');
 link('hero.results.href');
-text('hero.image.alt');
-text('hero.image.caption');
-publicFile('hero.image.src');
-publicFile('hero.image.small');
-// The hero picture is a CAD render of planned hardware, and must say so.
-if (!/CAD/.test(get('hero.image.caption') || '') || !/NOT BUILT/i.test(get('hero.image.caption') || ''))
-  err('hero.image.caption must say the picture is a CAD render and that the hardware is NOT BUILT.', lineOf('caption:'));
+text('platform.concept.alt');
+text('platform.concept.caption');
+publicFile('platform.concept.src');
+publicFile('platform.concept.small');
+// The concept picture is a CAD render of planned hardware, and must say so.
+if (!/CONCEPT RENDER/.test(get('platform.concept.caption') || '') || !/UNBUILT/i.test(get('platform.concept.caption') || ''))
+  err('platform.concept.caption must say the picture is a concept render of unbuilt hardware.', lineOf('caption:'));
 if (!/RESEARCH PROTOTYPE/.test(get('hero.status') || '') || !/PENDING/.test(get('hero.status') || ''))
   err('hero.status must say it is a research prototype and that hardware validation is pending.', lineOf('status:'));
 

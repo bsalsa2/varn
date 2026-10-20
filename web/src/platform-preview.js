@@ -2,7 +2,7 @@
 // sample data from demo-data.js, the same generator the full demo uses, so the
 // two always agree. Nothing here was detected by a camera. The Analytics tab
 // is static HTML from the build and shows the measured results, kept apart.
-import { filterEvents, hourlyBuckets, makeEvents, sortEvents, summarize } from './demo-data.js';
+import { confidenceBins, filterEvents, hourlyBuckets, makeEvents, sortEvents, summarize } from './demo-data.js';
 import { adsbText, classPill, esc, hourlyChart, meter, plural, when, wireTip } from './demo-ui.js';
 import './demo.css';
 import './preview.css';
@@ -35,6 +35,19 @@ function fillOverview(root, events) {
       (e) => `<li class="pv-row">${classPill(e.cls)}<span class="mono pv-row-time">${when(e.time)}</span><span class="mono pv-row-conf">${e.confidence.toFixed(2)}</span></li>`
     )
     .join('');
+}
+
+function fillBins(root, events) {
+  const bins = confidenceBins(filterEvents(events, { hours: 24 }, Date.now()), 5);
+  const max = Math.max(1, ...bins.flatMap((b) => [b.aircraft, b.drone]));
+  const label = (b) => `${b.from.toFixed(1)}–${b.to.toFixed(1)}`;
+  $('[data-pv="bins"]', root).innerHTML = `<div class="db" role="img" aria-label="Simulated confidence of events, in five bands. ${esc(
+    bins.map((b) => `${label(b)}: ${b.aircraft} aircraft, ${b.drone} possible drones`).join('; ')
+  )}.">${bins
+    .map(
+      (b) => `<div class="db-group"><div class="db-bars"><i class="dc-seg dc-seg--aircraft" style="--h:${(b.aircraft / max) * 100}" data-n="${b.aircraft}"></i><i class="dc-seg dc-seg--drone" style="--h:${(b.drone / max) * 100}" data-n="${b.drone}"></i></div><span class="mono db-x">${label(b)}</span></div>`
+    )
+    .join('')}</div>`;
 }
 
 function fillEvents(root, events) {
@@ -119,6 +132,7 @@ export function createPreview(root) {
   const events = makeEvents(Date.now());
   fillOverview(root, events);
   fillEvents(root, events);
+  fillBins(root, events);
   wireTabs(root);
   $('[data-pv="loading"]', root)?.remove();
   root.classList.add('is-live');

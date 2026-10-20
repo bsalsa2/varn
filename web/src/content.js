@@ -53,16 +53,6 @@ export const content = {
     status: 'RESEARCH PROTOTYPE · HARDWARE VALIDATION PENDING',
     demo: { label: 'Explore the demo', href: './demo.html' },
     results: { label: 'View research results', href: './research.html#results' },
-    // The hero image is a CAD render of the PLANNED pan-tilt mount, drawn from
-    // the STL files in /hardware. It must always say so: nothing is built.
-    image: {
-      src: './models/hero-mount-1400.webp',
-      small: './models/hero-mount-700.webp',
-      width: 1400,
-      height: 1871,
-      alt: 'CAD render of the planned VARN pan-tilt mount in brushed titanium and graphite, lit from the side by a cool light against a dark horizon. A base holds the pan servo, a yoke on top carries the camera arm.',
-      caption: 'CAD RENDER · PLANNED HARDWARE · NOT BUILT',
-    },
     scroll: 'Scroll',
   },
 
@@ -111,6 +101,16 @@ export const content = {
       { id: 'system', label: 'System' },
     ],
     cta: { label: 'Explore the demo', href: './demo.html' },
+    // A small CAD render of the PLANNED pan-tilt mount, drawn from the STL
+    // files in /hardware. It must always say so: nothing is built.
+    concept: {
+      src: './models/hero-mount-1400.webp',
+      small: './models/hero-mount-700.webp',
+      width: 1400,
+      height: 1871,
+      alt: 'Concept render of the planned VARN pan-tilt mount: a base holding the pan servo, a yoke on top and a camera arm between its uprights. Not a photograph; the hardware is not built.',
+      caption: 'CONCEPT RENDER · UNBUILT HARDWARE',
+    },
     noscript: 'The dashboard preview needs JavaScript. The full demo does too; the measured results are on the Research page.',
   },
 
@@ -119,7 +119,7 @@ export const content = {
   snapshot: {
     label: 'The research',
     heading: 'Measured, and still limited.',
-    intro: 'Model v2 was evaluated on 43 real-world video clips of planes, military jets and drones. The result for drones is weak, and it is shown as it is.',
+    intro: 'Model v2 was evaluated on 43 real-world video clips of planes, military jets and drones. The drone result is weak, and it is shown as it is.',
     disclaimer: 'Recorded-video evaluation only. Physical hardware validation pending.',
     figures: [
       {
@@ -136,24 +136,16 @@ export const content = {
         label: 'of aircraft video frames wrongly classified as drones',
         unit: 'Per frame. Lower is better.',
       },
-      {
-        value: '43',
-        number: null,
-        kind: 'sample',
-        label: 'real-world clips in the evaluation',
-        unit: 'Planes, military jets and drones.',
-      },
     ],
-    notComparable: 'The first two figures use different units, per clip and per frame, so they are not directly comparable.',
+    notComparable: 'These two figures use different units, per clip and per frame, so they are not directly comparable.',
     link: { label: 'Read the full research', href: './research.html' },
-    inside: ['Complete metrics and tables', 'Dataset and methodology', 'Model versions and known limits', 'Hardware status and parts cost', 'Planned validation and roadmap', 'References'],
   },
 
   // SECTION 5: the close.
   close: {
     heading: 'Built in the open. Measured honestly.',
     text: 'VARN is a research prototype. Every result is published with its limits, and every simulation is labeled as one.',
-    disclosure: 'Research prototype. Software has been tested on recorded video and in simulation. The physical hardware node has not been built or validated. Images marked CAD or SIMULATED are not footage and not live detections.',
+    disclosure: 'Research prototype. Software has been tested on recorded video and in simulation. The physical hardware node has not been built or validated. Images marked CONCEPT or SIMULATED are not footage and not live detections.',
     copyright: 'Copyright 2026 Varn Labs. Source code released under the MIT License.',
   },
 

@@ -422,14 +422,6 @@ function siteFooter(c, { from = '', close = null } = {}) {
   return `
 <footer class="site-footer" id="close">
   <div class="wrap footer-wrap">
-    ${
-      close
-        ? `<div class="close-statement" data-reveal>
-      <h2 class="close-title" id="close-title">${esc(close.heading)}</h2>
-      <p class="close-text">${esc(close.text)}</p>
-    </div>`
-        : ''
-    }
     <div class="footer-grid">
       <div class="footer-brand">
         <p class="brand brand--footer">${mark(26)}${wordmark()}</p>
@@ -443,6 +435,7 @@ function siteFooter(c, { from = '', close = null } = {}) {
       </nav>
     </div>
     <div class="footer-fine">
+      ${close ? `<p class="footer-line">${esc(close.heading)} ${esc(close.text)}</p>` : ''}
       <p>${esc((close && close.disclosure) || c.close.disclosure)}</p>
       <p>${esc(c.close.copyright)}</p>
     </div>
@@ -462,14 +455,12 @@ const legacyRedirect = () =>
 export function renderHead(c) {
   const { title, description, url } = c.meta;
   const image = new URL('og-image.png', url).href;
-  const img = c.hero.image;
   return `${counter(c)}
     <title>${esc(title)}</title>
     <meta name="description" content="${esc(description)}" />
     <link rel="canonical" href="${esc(url)}" />
     <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
-    <link rel="preload" as="image" type="image/webp" href="${esc(img.small)}" imagesrcset="${esc(img.small)} 700w, ${esc(img.src)} 1400w" imagesizes="(min-width: 900px) 46vw, 80vw" fetchpriority="high" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Varn Labs" />
     <meta property="og:title" content="${esc(title)}" />
@@ -494,23 +485,19 @@ const label = (text) => `<p class="kicker mono"><span class="kicker-label">${esc
 const heroSection = (c) => {
   const { hero } = c;
   const footage = hero.footage && hero.footage.video ? hero.footage : null;
-  const img = hero.image;
-  const media = footage
-    ? `<video class="hero-video hero-model" muted loop playsinline preload="metadata"${footage.poster ? ` poster="${esc(footage.poster)}"` : ''} aria-label="${esc(footage.caption)}"><source src="${esc(footage.video)}" /></video>`
-    : `<img class="hero-model" src="${esc(img.src)}" srcset="${esc(img.small)} 700w, ${esc(img.src)} 1400w" sizes="(min-width: 900px) 46vw, 80vw" width="${img.width}" height="${img.height}" alt="${esc(img.alt)}" decoding="async" fetchpriority="high" />`;
   return `
   <section class="hero" id="top" aria-labelledby="hero-title">
     <div class="hero-bg" aria-hidden="true">
       <div class="hero-sky"></div>
-      <div class="hero-glow"></div>
-      <div class="hero-horizon"></div>
+      <div class="hero-earth"></div>
+      <div class="hero-limb"></div>
       <div class="hero-haze"></div>
     </div>
-    <figure class="hero-figure">
-      <div class="hero-light" aria-hidden="true"></div>
-      ${media}
-      <figcaption class="hero-tag glass-2 mono"><span class="hero-tag-mark" aria-hidden="true"></span>${esc(footage ? footage.caption : img.caption)}</figcaption>
-    </figure>
+    ${
+      footage
+        ? `<figure class="hero-figure glass-1"><video class="hero-video hero-model" muted loop playsinline preload="metadata"${footage.poster ? ` poster="${esc(footage.poster)}"` : ''} aria-label="${esc(footage.caption)}"><source src="${esc(footage.video)}" /></video><figcaption class="hero-tag mono">${esc(footage.caption)}</figcaption></figure>`
+        : ''
+    }
     <div class="hero-inner wrap">
       <div class="hero-copy">
         <p class="eyebrow hero-rise" style="--i:0">${esc(hero.eyebrow)}</p>
@@ -562,16 +549,6 @@ const platformSection = (c) => {
   const pl = c.platform;
   const d = c.demo;
   const r = c.results;
-  const fig = (ch) => {
-    const b = ch.bars[0];
-    return `
-          <figure class="pv-measure pv-measure--${ch.kind === 'drone' ? 'drone' : 'aircraft'}">
-            <figcaption class="pv-measure-cap"><span class="shape shape--${ch.kind === 'drone' ? 'drone' : 'aircraft'}" aria-hidden="true"></span>${esc(ch.title)}</figcaption>
-            <p class="pv-measure-v mono">${esc(pct(b.value))}</p>
-            <div class="rc-track" aria-hidden="true"><span class="rc-bar" style="--v:${Number(b.value)}"></span></div>
-            <p class="pv-measure-u">${esc(ch.unit)}</p>
-          </figure>`;
-  };
   const rows = d.system.rows
     .slice(0, 6)
     .map(
@@ -621,10 +598,9 @@ const platformSection = (c) => {
               <p class="pv-more"><a class="u-link mono" href="./demo.html#events">Search, filter and export in the full demo &rarr;</a></p>
             </section>
             <section class="pv-panel" id="pv-analytics" data-pv-panel="analytics" aria-label="Analytics" hidden>
-              <p class="pv-badge mono">${esc(r.tag)}</p>
-              <div class="pv-measures">${r.charts.map(fig).join('')}</div>
-              <p class="pv-note">${esc(r.sample)}. ${esc(r.caveats[3])}</p>
-              <p class="pv-more"><a class="u-link mono" href="./research.html#results">Full tables and limits on the Research page &rarr;</a></p>
+              <p class="pv-badge mono">Simulated · for illustration</p>
+              <div class="pv-card"><p class="pv-card-h mono">Model confidence on simulated events</p><div class="demo-chart demo-chart--bins" data-pv="bins"></div></div>
+              <p class="pv-more"><a class="u-link mono" href="./research.html#results">Measured results, with their limits, are on the Research page &rarr;</a></p>
             </section>
             <section class="pv-panel" id="pv-system" data-pv-panel="system" aria-label="System" hidden>
               <div class="pv-card pv-card--flush"><div class="pv-table" tabindex="0" role="region" aria-label="System status"><table class="demo-table pv-system"><thead><tr><th scope="col">Part</th><th scope="col">State</th></tr></thead><tbody>${rows}
@@ -634,7 +610,13 @@ const platformSection = (c) => {
           </div>
         </div>
       </div>
-      <p class="platform-cta"><a class="btn btn--glass btn--lg"${linkAttrs(pl.cta.href)}><span>${esc(pl.cta.label)}</span>${ARROW_UR}</a></p>
+      <div class="platform-foot">
+        <figure class="concept glass-2">
+          <img src="${esc(pl.concept.src)}" srcset="${esc(pl.concept.small)} 700w, ${esc(pl.concept.src)} 1400w" sizes="140px" width="${pl.concept.width}" height="${pl.concept.height}" alt="${esc(pl.concept.alt)}" loading="lazy" decoding="async" />
+          <figcaption class="mono">${esc(pl.concept.caption)}</figcaption>
+        </figure>
+        <a class="btn btn--glass btn--lg"${linkAttrs(pl.cta.href)}><span>${esc(pl.cta.label)}</span>${ARROW_UR}</a>
+      </div>
     </div>
   </section>`;
 };
@@ -676,10 +658,7 @@ const snapshotSection = (c) => {
       <p class="snap-scope"><span class="mono snap-tag">${esc(c.results.tag)}</span>${esc(s.notComparable)}</p>
       <div class="snap-foot">
         <p class="snap-disclaimer">${esc(s.disclaimer)}</p>
-        <div class="snap-more">
-          <a class="btn btn--glass btn--lg" href="${esc(s.link.href)}"><span>${esc(s.link.label)}</span>${ARROW_UR}</a>
-          <ul class="snap-inside mono" aria-label="Inside the Research page">${s.inside.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
-        </div>
+        <a class="btn btn--glass btn--lg" href="${esc(s.link.href)}"><span>${esc(s.link.label)}</span>${ARROW_UR}</a>
       </div>
     </div>
   </section>`;

@@ -106,7 +106,7 @@
   /* ---- Layout --------------------------------------------------------------- */
   --gutter: clamp(20px, 5vw, 72px);
   --section-y: clamp(80px, 9.5vw, 144px);
-  --nav-h: 64px;
+  --nav-h: 60px;
   --w-page: 1320px;
   --w-mid: 1040px;
   --w-narrow: 800px;
@@ -427,42 +427,32 @@ img {
    or on any page without a hero (.is-solid), it becomes dark glass. */
 .site-header {
   position: fixed;
-  inset: 0 0 auto;
+  inset: 12px 0 auto;
   z-index: 50;
-  border-bottom: 1px solid transparent;
-  transition: background-color 0.28s var(--ease), border-color 0.28s var(--ease), box-shadow 0.28s var(--ease);
-}
-.site-header::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(180deg, rgba(4, 7, 12, 0.72), rgba(4, 7, 12, 0.22) 70%, transparent);
-  opacity: 1;
-  transition: opacity 0.28s var(--ease);
-}
-.site-header.is-scrolled,
-.site-header.is-solid {
-  background: rgba(4, 7, 12, 0.66);
-  border-bottom-color: var(--hairline);
-  box-shadow: 0 1px 0 rgba(235, 245, 255, 0.04), 0 24px 40px -32px rgba(0, 0, 0, 0.9);
-  -webkit-backdrop-filter: var(--blur);
-  backdrop-filter: var(--blur);
-}
-.site-header.is-scrolled::before,
-.site-header.is-solid::before {
-  opacity: 0;
+  pointer-events: none;
 }
 .nav {
   position: relative;
+  pointer-events: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   height: var(--nav-h);
-  max-width: var(--w-page);
+  width: calc(100% - 24px);
+  max-width: 1180px;
   margin-inline: auto;
-  padding-inline: var(--gutter);
+  padding: 0 10px 0 24px;
+  border: 1px solid rgba(220, 237, 255, 0.24);
+  border-radius: 22px;
+  /* Smoked glass: the dark tint keeps small text readable over any light
+     behind it; the top edge catches a thin reflection. */
+  background: radial-gradient(90% 160% at 12% 0%, rgba(167, 214, 255, 0.14), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.012)), rgba(6, 12, 22, 0.58);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(240, 248, 255, 0.34), inset 0 -1px 0 rgba(167, 214, 255, 0.06),
+    0 18px 44px -20px rgba(0, 0, 0, 0.85);
 }
 .nav-links {
   display: flex;
@@ -509,6 +499,9 @@ img {
   display: none;
 }
 @media (max-width: 39.99em) {
+  .nav {
+    padding: 0 6px 0 18px;
+  }
   .nav-toggle {
     display: grid;
     place-content: center;
@@ -538,9 +531,9 @@ img {
   .nav-links {
     display: none;
     position: absolute;
-    top: calc(100% + 6px);
-    left: 12px;
-    right: 12px;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
     flex-direction: column;
     align-items: stretch;
     gap: 0;
@@ -669,132 +662,108 @@ main,
 }
 
 /* ---- Hero --------------------------------------------------------------- */
-/* A launch frame: a dark horizon, a cool light behind a CAD render of the
-   planned mount on the right, and a deep shade behind the text on the left. */
+/* A launch frame, built from light alone: a near-black sky, the curved limb of
+   a planet catching a cold blue-white sun, and a deep shade behind the words.
+   No photograph and no hardware: nothing here claims to be real footage. */
 .hero {
   position: relative;
   isolation: isolate;
-  min-height: max(640px, 100svh);
+  min-height: max(660px, 100svh);
   display: flex;
   flex-direction: column;
   overflow: clip;
   --mx: 0;
   --my: 0;
-  --hz: 76%; /* where the horizon sits */
 }
 .hero-bg {
   position: absolute;
   inset: 0;
   z-index: -1;
+  background: #02040a;
 }
 .hero-sky {
   position: absolute;
   inset: 0;
   background:
-    /* a few distant stars, high in the sky */
-    radial-gradient(1.2px 1.2px at 8% 14%, rgba(244, 247, 251, 0.75), transparent),
-    radial-gradient(1px 1px at 17% 31%, rgba(244, 247, 251, 0.5), transparent),
-    radial-gradient(1.2px 1.2px at 29% 9%, rgba(244, 247, 251, 0.6), transparent),
-    radial-gradient(1px 1px at 41% 24%, rgba(244, 247, 251, 0.45), transparent),
-    radial-gradient(1.4px 1.4px at 54% 12%, rgba(244, 247, 251, 0.7), transparent),
-    radial-gradient(1px 1px at 63% 33%, rgba(244, 247, 251, 0.4), transparent),
-    radial-gradient(1.2px 1.2px at 74% 8%, rgba(244, 247, 251, 0.6), transparent),
-    radial-gradient(1px 1px at 86% 22%, rgba(244, 247, 251, 0.5), transparent),
-    radial-gradient(1.2px 1.2px at 93% 38%, rgba(244, 247, 251, 0.55), transparent),
-    radial-gradient(1px 1px at 36% 41%, rgba(244, 247, 251, 0.35), transparent),
-    radial-gradient(1px 1px at 5% 46%, rgba(244, 247, 251, 0.35), transparent),
-    /* the sky itself: obsidian to a deep blue at the horizon, then ground */
-    linear-gradient(180deg, #04070c 0%, #060d18 calc(var(--hz) - 42%), #0b1b2f calc(var(--hz) - 18%), #12304d calc(var(--hz) - 5%), #1c4468 calc(var(--hz) - 0.4%), #07111e calc(var(--hz) + 0.4%), #04080f calc(var(--hz) + 10%), #04070c 100%);
+    radial-gradient(1.3px 1.3px at 7% 12%, rgba(244, 247, 251, 0.8), transparent),
+    radial-gradient(1px 1px at 15% 29%, rgba(244, 247, 251, 0.5), transparent),
+    radial-gradient(1.3px 1.3px at 26% 8%, rgba(244, 247, 251, 0.65), transparent),
+    radial-gradient(1px 1px at 38% 22%, rgba(244, 247, 251, 0.45), transparent),
+    radial-gradient(1.5px 1.5px at 49% 11%, rgba(244, 247, 251, 0.75), transparent),
+    radial-gradient(1px 1px at 58% 31%, rgba(244, 247, 251, 0.4), transparent),
+    radial-gradient(1.3px 1.3px at 69% 7%, rgba(244, 247, 251, 0.65), transparent),
+    radial-gradient(1px 1px at 79% 19%, rgba(244, 247, 251, 0.5), transparent),
+    radial-gradient(1.3px 1.3px at 90% 14%, rgba(244, 247, 251, 0.6), transparent),
+    radial-gradient(1px 1px at 95% 33%, rgba(244, 247, 251, 0.4), transparent),
+    radial-gradient(1px 1px at 33% 38%, rgba(244, 247, 251, 0.3), transparent),
+    radial-gradient(1px 1px at 84% 40%, rgba(244, 247, 251, 0.35), transparent),
+    /* the scattered glow of the atmosphere above the limb */
+    radial-gradient(70% 38% at 68% 64%, rgba(120, 180, 240, 0.34), rgba(40, 90, 160, 0.14) 48%, transparent 76%),
+    radial-gradient(120% 60% at 60% 100%, rgba(26, 62, 110, 0.7), transparent 70%),
+    linear-gradient(180deg, #02040a 0%, #050c18 45%, #0a1a31 70%, #0d2340 100%);
 }
-.hero-horizon {
+/* The planet: a very large dark disc whose rim is the horizon. */
+.hero-earth {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: var(--hz);
-  height: 1px;
-  background: linear-gradient(90deg, transparent 4%, rgba(167, 214, 255, 0.28) 32%, rgba(225, 240, 255, 0.95) 70%, rgba(167, 214, 255, 0.35) 90%, transparent);
-  box-shadow: 0 0 34px 6px rgba(167, 214, 255, 0.26), 0 -26px 90px 14px rgba(86, 122, 157, 0.24);
-  transform: translate3d(calc(var(--mx) * -6px), 0, 0);
-  transition: transform 0.6s var(--ease);
-}
-/* The cool light behind the model. It drifts a little (see Motion). */
-.hero-glow {
-  position: absolute;
-  right: -6%;
-  top: 4%;
-  width: min(96vw, 1180px);
+  left: 50%;
+  top: 61%;
+  width: 240vmax;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(214, 235, 255, 0.34), rgba(110, 160, 210, 0.17) 38%, rgba(86, 122, 157, 0.06) 62%, transparent 74%);
-  transform: translate3d(calc(var(--mx) * 22px), calc(var(--my) * 14px), 0);
+  translate: -42% 0;
+  rotate: -7deg;
+  background:
+    radial-gradient(60% 14% at 66% 0%, rgba(150, 205, 255, 0.3), transparent 70%),
+    radial-gradient(closest-side, #030710 82%, #02050b);
+  box-shadow:
+    0 -1px 0 0 rgba(236, 246, 255, 0.95),
+    0 -3px 14px 0 rgba(190, 225, 255, 0.75),
+    0 -12px 46px 2px rgba(110, 175, 240, 0.55),
+    0 -46px 140px 14px rgba(60, 120, 200, 0.4),
+    inset 0 26px 70px -18px rgba(120, 185, 250, 0.38);
+  transform: translate3d(calc(var(--mx) * -8px), calc(var(--my) * -4px), 0);
   transition: transform 0.9s var(--ease);
-  will-change: transform;
 }
+/* The sun-side glint on the limb: brightest where the light grazes it. */
+.hero-limb {
+  position: absolute;
+  left: 38%;
+  right: -6%;
+  top: calc(61% - 70px);
+  height: 140px;
+  background: radial-gradient(ellipse 46% 50% at 62% 58%, rgba(236, 247, 255, 0.78), rgba(150, 205, 255, 0.34) 36%, transparent 72%);
+  filter: blur(6px);
+  transform: translate3d(calc(var(--mx) * 18px), 0, 0);
+  transition: transform 0.9s var(--ease);
+}
+/* A deep shade behind the copy, and a fade into the next section. */
 .hero-haze {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(4, 7, 12, 0.96) 0%, rgba(4, 7, 12, 0.8) 26%, rgba(4, 7, 12, 0.3) 50%, transparent 66%),
-    linear-gradient(180deg, rgba(4, 7, 12, 0.5) 0%, transparent 22%, transparent 70%, rgba(4, 7, 12, 0.7) 90%, var(--obsidian) 100%);
+    linear-gradient(90deg, rgba(2, 4, 10, 0.97) 0%, rgba(2, 4, 10, 0.86) 28%, rgba(2, 4, 10, 0.4) 52%, transparent 72%),
+    linear-gradient(180deg, rgba(2, 4, 10, 0.55) 0%, transparent 20%, transparent 78%, var(--obsidian) 100%);
 }
 .hero-figure {
   position: absolute;
   z-index: 0;
-  right: max(3vw, calc((100vw - var(--w-page)) / 2 + var(--gutter) - 3vw));
-  bottom: 9svh;
+  right: var(--gutter);
+  bottom: 14svh;
+  width: min(34vw, 520px);
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  height: min(78svh, 840px);
-  min-height: 420px;
+  gap: 10px;
 }
-.hero-model {
-  position: relative;
-  display: block;
-  flex: 1 1 auto;
-  min-height: 0;
-  width: auto;
-  height: 100%;
-  object-fit: contain;
-  transform: translate3d(calc(var(--mx) * -10px), calc(var(--my) * -7px), 0);
-  transition: transform 0.7s var(--ease);
-  filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.55));
-}
-video.hero-model {
-  max-width: 46vw;
-  border-radius: var(--r-xl);
-}
-/* A pool of light and shadow on the ground under the model. */
-.hero-light {
-  position: absolute;
-  left: 50%;
-  bottom: 38px;
-  width: 124%;
-  height: 22%;
-  transform: translateX(-50%);
-  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.7), transparent 72%),
-    radial-gradient(closest-side at 50% 30%, rgba(167, 214, 255, 0.16), transparent 70%);
-  pointer-events: none;
+.hero-figure video {
+  width: 100%;
+  border-radius: var(--r-lg);
 }
 .hero-tag {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 14px;
-  border-radius: 999px;
   font-size: var(--fs-label);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--titanium);
-  white-space: nowrap;
-}
-.hero-tag-mark {
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--ice);
-  border-radius: 50%;
 }
 .hero-inner {
   position: relative;
@@ -802,14 +771,14 @@ video.hero-model {
   flex: 1;
   display: flex;
   align-items: center;
-  padding-block: calc(var(--nav-h) + 4svh) 18svh;
+  padding-block: calc(var(--nav-h) + 8svh) 16svh;
 }
 .hero-copy {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 24px;
-  max-width: min(48rem, 100%);
+  max-width: min(50rem, 100%);
 }
 .eyebrow {
   max-width: 34ch;
@@ -824,17 +793,17 @@ video.hero-model {
   font-family: var(--f-display);
   font-weight: 300;
   font-size: var(--fs-hero);
-  line-height: 0.96;
-  letter-spacing: -0.04em;
+  line-height: 0.94;
+  letter-spacing: -0.045em;
   color: var(--text-1);
-  text-shadow: 0 2px 60px rgba(167, 214, 255, 0.18);
-  margin-block: 4px 4px;
+  text-shadow: 0 2px 70px rgba(167, 214, 255, 0.22);
+  margin-block: 4px 6px;
 }
 .hero-title .line {
   display: block;
 }
 .hero-sub {
-  max-width: 30rem;
+  max-width: 28rem;
   font-size: 1.1875rem;
   line-height: 1.6;
   color: var(--text-2);
@@ -910,51 +879,44 @@ video.hero-model {
   margin-left: auto;
 }
 
-/* Tablet and phone: the picture moves above the words, so each gets a clean
-   frame instead of one squeezed over the other. */
-@media (max-width: 79.99em) {
+@media (max-width: 63.99em) {
   .hero {
-    min-height: auto;
-    --hz: 47%;
+    min-height: max(900px, 100svh);
+  }
+  .hero-inner {
+    padding-top: calc(var(--nav-h) + 36svh);
+  }
+  .hero-earth {
+    top: 36%;
+    translate: -50% 0;
+    rotate: -5deg;
+  }
+  .hero-limb {
+    left: 0;
+    right: 0;
+    top: calc(36% - 70px);
+  }
+  .hero-haze {
+    background: linear-gradient(180deg, rgba(2, 4, 10, 0.5) 0%, transparent 24%, transparent 40%, rgba(2, 4, 10, 0.82) 56%, var(--obsidian) 100%);
+  }
+  .hero-inner {
+    align-items: flex-end;
+    padding-block: calc(var(--nav-h) + 12svh) 96px;
   }
   .hero-figure {
     position: relative;
     right: auto;
     bottom: auto;
-    order: -1;
-    align-self: center;
-    height: clamp(300px, 52svh, 560px);
-    margin-top: calc(var(--nav-h) + 8px);
-  }
-  .hero-glow {
-    top: -4%;
-    right: 50%;
-    transform: translate3d(50%, 0, 0);
-    width: 130vw;
-  }
-  .hero-haze {
-    background: linear-gradient(180deg, rgba(4, 7, 12, 0.55) 0%, transparent 20%, transparent 36%, rgba(4, 7, 12, 0.88) 60%, var(--obsidian) 100%);
-  }
-  .hero-inner {
-    flex: none;
-    padding-block: 28px 112px;
-  }
-  .hero-foot {
-    bottom: 18px;
+    width: min(100% - 2 * var(--gutter), 520px);
+    margin: calc(var(--nav-h) + 40px) var(--gutter) 0;
   }
   .scroll-cue {
     display: none;
   }
 }
 @media (max-width: 39.99em) {
-  .hero-figure {
-    height: clamp(260px, 42svh, 420px);
-  }
-  .hero-tag {
-    white-space: normal;
-    text-align: center;
-    border-radius: var(--r-lg);
-    letter-spacing: 0.08em;
+  .hero {
+    min-height: max(960px, 100svh);
   }
   .hero-actions {
     width: 100%;
@@ -1520,10 +1482,33 @@ h2.kicker {
   font-size: var(--fs-label);
   color: var(--text-2);
 }
-.platform-cta {
+.platform-foot {
   display: flex;
-  justify-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 40px;
   margin-top: clamp(32px, 5vw, 56px);
+}
+/* The CAD render lives here, small and plainly labelled: planned hardware. */
+.concept {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px 10px 10px;
+  border-radius: var(--r-lg);
+}
+.concept img {
+  width: 76px;
+  height: auto;
+  flex: none;
+}
+.concept figcaption {
+  max-width: 17ch;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
 }
 @media (max-width: 55.99em) {
   .pv-body {
@@ -1573,7 +1558,7 @@ h2.kicker {
 }
 .snap-figs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   border-top: 1px solid var(--hairline);
 }
 .snap-fig {
@@ -1655,25 +1640,6 @@ h2.kicker {
   align-items: center;
   gap: 24px 40px;
 }
-.snap-inside {
-  display: grid;
-  grid-template-columns: repeat(3, auto);
-  gap: 6px 36px;
-  color: var(--text-2);
-}
-.snap-inside li {
-  position: relative;
-  padding-left: 18px;
-}
-.snap-inside li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.7em;
-  width: 9px;
-  height: 1px;
-  background: var(--ice);
-}
 @media (max-width: 55.99em) {
   .snap-figs {
     grid-template-columns: minmax(0, 1fr);
@@ -1685,13 +1651,6 @@ h2.kicker {
   }
   .snap-fig + .snap-fig {
     border-top: 1px solid var(--hairline);
-  }
-  .snap-more {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .snap-inside {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1792,6 +1751,9 @@ h2.kicker {
 }
 .footer-fine p {
   max-width: 62rem;
+}
+.footer-line {
+  color: var(--titanium);
 }
 .footer-fine p + p {
   color: var(--text-2);
@@ -1982,7 +1944,8 @@ h2.kicker {
   border-radius: 0 4px 4px 0;
   background: var(--chart-aircraft);
 }
-.rc-panel--drone .rc-bar {
+.rc-panel--drone .rc-bar,
+.snap-fig--drone .rc-bar {
   background: var(--chart-drone);
 }
 .rc-detail {
@@ -2254,26 +2217,17 @@ h2.kicker {
     transform: translateY(18px);
   }
 }
-.hero-figure {
-  animation: figure-in 1.5s var(--ease-expo) 0.05s both;
-}
-@keyframes figure-in {
-  from {
-    opacity: 0;
-    translate: 28px 0;
-  }
-}
-.js-motion .hero-glow {
-  animation: light-shift 20s ease-in-out infinite alternate;
+.js-motion .hero-limb {
+  animation: light-shift 18s ease-in-out infinite alternate;
 }
 @keyframes light-shift {
   from {
-    opacity: 0.78;
-    scale: 1;
+    opacity: 0.7;
+    scale: 0.96 1;
   }
   to {
     opacity: 1;
-    scale: 1.08;
+    scale: 1.06 1;
   }
 }
 .js-motion .scroll-cue-line::after {
@@ -2311,9 +2265,8 @@ h2.kicker {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
 }
-.motion-off .hero-glow,
-.motion-off .hero-model,
-.motion-off .hero-horizon {
+.motion-off .hero-earth,
+.motion-off .hero-limb {
   transform: none;
 }
 

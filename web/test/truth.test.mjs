@@ -26,9 +26,10 @@ test('the hero carries the required copy, both calls to action and the prototype
   assert.match(home, /class="hero-actions[\s\S]*demo\.html[\s\S]*research\.html#results/);
 });
 
-test('the hero picture says it is a CAD render of planned hardware', () => {
-  assert.match(text(home), /CAD RENDER · PLANNED HARDWARE · NOT BUILT/);
-  assert.match(content.hero.image.alt, /CAD render of the planned/);
+test('the CAD picture is a labelled concept render, not in the hero', () => {
+  assert.match(text(home), /CONCEPT RENDER · UNBUILT HARDWARE/);
+  assert.match(content.platform.concept.alt, /Not a photograph/);
+  assert.doesNotMatch(home.slice(home.indexOf('id="top"'), home.indexOf('id="process"')), /<img/);
 });
 
 test('navigation is Platform, Research, About and the demo button', () => {
