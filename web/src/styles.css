@@ -29,18 +29,18 @@
   color-scheme: dark;
 
   /* ---- Palette (the brief's starting tokens) -------------------------------- */
-  --obsidian: #04070c;
-  --midnight: #0b1422;
-  --deep: #101a29;
-  --glass-1-tint: rgba(17, 30, 45, 0.55);
-  --glass-2-tint: rgba(255, 255, 255, 0.035);
-  --text-1: #f4f7fb;
-  --text-2: #aab8c8;
-  --titanium: #d9e0e8;
-  --ice: #a7d6ff;
-  --steel: #567a9d;
-  --hairline: rgba(220, 237, 255, 0.15);
-  --hairline-strong: rgba(220, 237, 255, 0.3);
+  --obsidian: #050505;
+  --midnight: #0c0d0f;
+  --deep: #121416;
+  --glass-1-tint: rgba(18, 20, 22, 0.62);
+  --glass-2-tint: rgba(255, 255, 255, 0.03);
+  --text-1: #f5f5f5;
+  --text-2: #a6a9ad;
+  --titanium: #d3d5d8;
+  --ice: #8fa9c2; /* muted steel blue, the one accent */
+  --steel: #5f7a93;
+  --hairline: #30343a;
+  --hairline-strong: #4a5057;
 
   /* The shared brand tokens (graphite.css) read these, so every page, and the
      dashboard demo, follow the same palette. */
@@ -51,7 +51,7 @@
   --varn-fog: var(--text-2);
   --varn-bone: var(--text-1);
   --varn-white: var(--text-1);
-  --varn-muted: #7f93a9;
+  --varn-muted: #8a8e93;
   --varn-text-2: var(--text-2);
   --varn-accent-ink: var(--ice);
   --varn-sage: #8a9b8e;
@@ -68,14 +68,14 @@
   --blur-soft: blur(12px) saturate(130%); /* glass-2 */
   --blur-deep: blur(24px) saturate(150%);
   /* Ambient light: a cool glow from the top-left corner, then a faint sheen. */
-  --glass-fill: radial-gradient(120% 80% at 8% 0%, rgba(167, 214, 255, 0.11), transparent 56%),
+  --glass-fill: radial-gradient(120% 80% at 8% 0%, rgba(143, 169, 194, 0.11), transparent 56%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.008) 40%), var(--glass-1-tint);
   --glass-quiet: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.006)), var(--glass-2-tint);
-  --glass-deep-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 50%), rgba(8, 15, 26, 0.74);
+  --glass-deep-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 50%), rgba(12, 13, 15, 0.74);
   --glass-border: var(--hairline);
   /* A low-opacity highlight along the top edge, a faint inner glow beneath it. */
-  --glass-edge: inset 0 1px 0 rgba(235, 245, 255, 0.16), inset 0 0 0 1px rgba(167, 214, 255, 0.03),
-    inset 0 28px 40px -34px rgba(167, 214, 255, 0.2);
+  --glass-edge: inset 0 1px 0 rgba(240, 242, 245, 0.16), inset 0 0 0 1px rgba(143, 169, 194, 0.03),
+    inset 0 28px 40px -34px rgba(143, 169, 194, 0.2);
   --glass-drop: 0 40px 80px -44px rgba(0, 0, 0, 0.95), 0 2px 10px rgba(0, 0, 0, 0.3);
 
   /* ---- Lines ---------------------------------------------------------------- */
@@ -294,7 +294,7 @@ img {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 30%), var(--surface-1);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-lg);
-  box-shadow: inset 0 1px 0 rgba(235, 245, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(240, 242, 245, 0.07);
   transition: border-color var(--dur);
 }
 .panel:hover {
@@ -366,17 +366,17 @@ img {
 /* Outlined liquid glass: the main call to action. */
 .btn--glass {
   color: var(--text-1);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.025)), rgba(167, 214, 255, 0.04);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.025)), rgba(143, 169, 194, 0.04);
   border-color: var(--hairline-strong);
-  box-shadow: inset 0 1px 0 rgba(235, 245, 255, 0.22), 0 14px 30px -18px rgba(0, 0, 0, 0.9);
+  box-shadow: inset 0 1px 0 rgba(240, 242, 245, 0.22), 0 14px 30px -18px rgba(0, 0, 0, 0.9);
   -webkit-backdrop-filter: var(--blur-soft);
   backdrop-filter: var(--blur-soft);
 }
 .btn--glass:hover {
   color: var(--text-1);
-  border-color: rgba(167, 214, 255, 0.62);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.045)), rgba(167, 214, 255, 0.09);
-  box-shadow: inset 0 1px 0 rgba(235, 245, 255, 0.3), 0 0 0 1px rgba(167, 214, 255, 0.14), 0 16px 36px -14px rgba(167, 214, 255, 0.4);
+  border-color: rgba(143, 169, 194, 0.62);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.045)), rgba(143, 169, 194, 0.09);
+  box-shadow: inset 0 1px 0 rgba(240, 242, 245, 0.3), 0 16px 36px -18px rgba(0, 0, 0, 0.9);
 }
 /* Quiet: text with an arrow, for the secondary action. */
 .btn--quiet {
@@ -398,11 +398,11 @@ img {
 .btn--primary {
   background: var(--ice);
   color: var(--obsidian);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 12px 28px -14px rgba(167, 214, 255, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 12px 28px -14px rgba(143, 169, 194, 0.6);
 }
 .btn--primary:hover {
   color: var(--obsidian);
-  background: #c4e4ff;
+  background: #b0c4d6;
 }
 .btn--ghost {
   border-color: var(--line-ui);
@@ -410,7 +410,7 @@ img {
 }
 .btn--ghost:hover {
   border-color: var(--ice);
-  background: rgba(167, 214, 255, 0.08);
+  background: rgba(143, 169, 194, 0.08);
 }
 .u-link {
   text-decoration: underline;
@@ -443,15 +443,15 @@ img {
   max-width: 1180px;
   margin-inline: auto;
   padding: 0 10px 0 24px;
-  border: 1px solid rgba(220, 237, 255, 0.24);
+  border: 1px solid rgba(214, 218, 224, 0.24);
   border-radius: 22px;
   /* Smoked glass: the dark tint keeps small text readable over any light
      behind it; the top edge catches a thin reflection. */
-  background: radial-gradient(90% 160% at 12% 0%, rgba(167, 214, 255, 0.14), transparent 60%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.012)), rgba(6, 12, 22, 0.58);
+  background: radial-gradient(90% 160% at 12% 0%, rgba(143, 169, 194, 0.14), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.012)), rgba(12, 13, 15, 0.58);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
   backdrop-filter: blur(22px) saturate(160%);
-  box-shadow: inset 0 1px 0 rgba(240, 248, 255, 0.34), inset 0 -1px 0 rgba(167, 214, 255, 0.06),
+  box-shadow: inset 0 1px 0 rgba(240, 242, 245, 0.34), inset 0 -1px 0 rgba(143, 169, 194, 0.06),
     0 18px 44px -20px rgba(0, 0, 0, 0.85);
 }
 .nav-links {
@@ -546,7 +546,7 @@ img {
     border: 1px solid var(--hairline-strong);
     border-radius: var(--r-xl);
     /* Mostly solid: the header's own blur stops a second one reaching the page. */
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 40%), rgba(8, 14, 24, 0.97);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 40%), rgba(12, 13, 15, 0.97);
     box-shadow: var(--glass-edge), var(--shadow-pop);
   }
   .nav.is-open .nav-links {
@@ -619,12 +619,12 @@ img {
   font: inherit;
   font-size: var(--fs-label);
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(235, 245, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(240, 242, 245, 0.14);
   transition: background-color var(--dur), border-color var(--dur), color var(--dur);
 }
 .motion-btn:hover,
 .ctl-btn:hover {
-  border-color: rgba(167, 214, 255, 0.6);
+  border-color: rgba(143, 169, 194, 0.6);
   color: var(--text-1);
 }
 .motion-btn[hidden],
@@ -646,9 +646,7 @@ img {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: radial-gradient(90% 55% at 82% -12%, rgba(86, 122, 157, 0.3), transparent 62%),
-    radial-gradient(60% 45% at -6% 38%, rgba(167, 214, 255, 0.07), transparent 60%),
-    linear-gradient(180deg, var(--midnight), var(--obsidian) 70%);
+  background: radial-gradient(90% 50% at 80% -14%, rgba(143, 169, 194, 0.1), transparent 62%), linear-gradient(180deg, var(--midnight), var(--obsidian) 70%);
 }
 .stage-steel,
 .stage-smoke,
@@ -679,12 +677,12 @@ main,
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: #02040a;
+  background: #050505;
 }
 .hero-sky {
   position: absolute;
   inset: 0;
-  background: #03060b;
+  background: #050505;
 }
 /* One sharp landscape, shown at its native resolution (never scaled up past
    it, never filtered, masked or transformed): near-black on the left for the
@@ -693,7 +691,7 @@ main,
 .hero-photo {
   position: absolute;
   inset: 0;
-  background: #03060b url('./assets/hero-bg-2560.webp') right center / cover no-repeat;
+  background: #050505 url('./assets/hero-bg-2560.webp') right center / cover no-repeat;
 }
 @media (max-width: 1700px) and (max-resolution: 1.5dppx) {
   .hero-photo {
@@ -709,8 +707,8 @@ main,
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(3, 6, 11, 0.8) 0%, rgba(3, 6, 11, 0.5) 34%, transparent 62%),
-    linear-gradient(180deg, transparent 80%, var(--obsidian) 100%);
+    linear-gradient(90deg, rgba(5, 5, 5, 0.86) 0%, rgba(5, 5, 5, 0.55) 34%, transparent 60%),
+    linear-gradient(180deg, rgba(5, 5, 5, 0.35) 0%, transparent 18%, transparent 82%, var(--obsidian) 100%);
 }
 .hero-figure {
   position: absolute;
@@ -856,17 +854,17 @@ main,
     min-height: max(900px, 100svh);
   }
   .hero-inner {
-    padding-top: calc(var(--nav-h) + 44svh);
+    padding-top: calc(var(--nav-h) + 38svh);
   }
   .hero-photo {
     inset: 0 0 auto;
-    height: 36%;
-    background-position: 76% 100%;
+    height: 52%;
+    background-position: 78% 40%;
     -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 100%);
     mask-image: linear-gradient(180deg, #000 70%, transparent 100%);
   }
   .hero-haze {
-    background: linear-gradient(180deg, rgba(2, 4, 10, 0.5) 0%, transparent 24%, transparent 40%, rgba(2, 4, 10, 0.82) 56%, var(--obsidian) 100%);
+    background: linear-gradient(180deg, rgba(5, 5, 5, 0.5) 0%, transparent 24%, transparent 40%, rgba(5, 5, 5, 0.82) 56%, var(--obsidian) 100%);
   }
   .hero-inner {
     align-items: flex-end;
@@ -975,7 +973,7 @@ h2.kicker {
 
 /* ---- The process --------------------------------------------------------- */
 .process {
-  background: linear-gradient(180deg, var(--obsidian), #060b14 60%, var(--obsidian));
+  background: linear-gradient(180deg, var(--obsidian), #0a0a0b 60%, var(--obsidian));
 }
 .process::before,
 .platform::before,
@@ -1022,8 +1020,7 @@ h2.kicker {
   inset: 0;
   right: auto;
   width: 66.667%;
-  background: linear-gradient(90deg, rgba(167, 214, 255, 0.35), var(--ice));
-  box-shadow: 0 0 14px 1px rgba(167, 214, 255, 0.55);
+  background: linear-gradient(90deg, rgba(143, 169, 194, 0.35), var(--ice));
   transform-origin: left center;
   transform: scaleX(1);
   transition: transform 0.7s var(--ease);
@@ -1054,7 +1051,6 @@ h2.kicker {
 }
 .proc-stage--tested .proc-node {
   background: var(--ice);
-  box-shadow: 0 0 0 5px rgba(167, 214, 255, 0.12), 0 0 18px rgba(167, 214, 255, 0.7);
 }
 .proc.is-animated .proc-stage--tested:not(.is-lit) .proc-node {
   background: var(--obsidian);
@@ -1143,7 +1139,7 @@ h2.kicker {
     width: 1px;
     height: 66.667%;
     inset: 0 auto auto 0;
-    background: linear-gradient(180deg, rgba(167, 214, 255, 0.35), var(--ice));
+    background: linear-gradient(180deg, rgba(143, 169, 194, 0.35), var(--ice));
     transform-origin: center top;
     transform: scaleY(1);
   }
@@ -1158,19 +1154,7 @@ h2.kicker {
 
 /* ---- The platform -------------------------------------------------------- */
 .platform {
-  background: radial-gradient(70% 55% at 78% 8%, rgba(86, 122, 157, 0.26), transparent 62%),
-    radial-gradient(60% 50% at 6% 80%, rgba(167, 214, 255, 0.09), transparent 60%), linear-gradient(180deg, var(--obsidian), #08111d 50%, var(--obsidian));
-}
-.platform::after {
-  /* Fine rules behind the window, so the glass has something to bend. */
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: repeating-linear-gradient(90deg, rgba(167, 214, 255, 0.045) 0 1px, transparent 1px 120px),
-    repeating-linear-gradient(0deg, rgba(167, 214, 255, 0.03) 0 1px, transparent 1px 120px);
-  -webkit-mask-image: radial-gradient(60% 55% at 50% 55%, #000, transparent 75%);
-  mask-image: radial-gradient(60% 55% at 50% 55%, #000, transparent 75%);
+  background: linear-gradient(180deg, var(--obsidian), #0a0a0b 50%, var(--obsidian));
 }
 .platform .wrap {
   position: relative;
@@ -1247,7 +1231,7 @@ h2.kicker {
 .pv-nav {
   padding: 18px 12px;
   border-right: 1px solid var(--hairline);
-  background: linear-gradient(90deg, rgba(4, 7, 12, 0.28), transparent);
+  background: linear-gradient(90deg, rgba(5, 5, 5, 0.28), transparent);
 }
 .pv-tabs {
   display: flex;
@@ -1268,13 +1252,13 @@ h2.kicker {
 }
 .pv-tab:hover {
   color: var(--text-1);
-  background: rgba(167, 214, 255, 0.07);
+  background: rgba(143, 169, 194, 0.07);
 }
 .pv-tab[aria-selected='true'],
 .pv-tab[aria-current] {
   color: var(--text-1);
-  background: linear-gradient(90deg, rgba(167, 214, 255, 0.16), rgba(167, 214, 255, 0.03));
-  box-shadow: inset 0 1px 0 rgba(235, 245, 255, 0.1);
+  background: linear-gradient(90deg, rgba(143, 169, 194, 0.16), rgba(143, 169, 194, 0.03));
+  box-shadow: inset 0 1px 0 rgba(240, 242, 245, 0.1);
 }
 .pv-tab[aria-selected='true']::before,
 .pv-tab[aria-current]::before {
@@ -1286,7 +1270,6 @@ h2.kicker {
   width: 2px;
   border-radius: 2px;
   background: var(--ice);
-  box-shadow: 0 0 10px var(--ice);
 }
 .pv-panels {
   min-width: 0;
@@ -1326,7 +1309,7 @@ h2.kicker {
   border: 1px solid var(--hairline);
   border-radius: var(--r-lg);
   background: var(--glass-quiet);
-  box-shadow: inset 0 1px 0 rgba(235, 245, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(240, 242, 245, 0.07);
 }
 .pv-kpi-k {
   color: var(--text-2);
@@ -1343,10 +1326,10 @@ h2.kicker {
   color: var(--text-2);
 }
 .pv-kpi--aircraft {
-  box-shadow: inset 3px 0 0 var(--varn-aircraft), inset 0 1px 0 rgba(235, 245, 255, 0.07);
+  box-shadow: inset 3px 0 0 var(--varn-aircraft), inset 0 1px 0 rgba(240, 242, 245, 0.07);
 }
 .pv-kpi--drone {
-  box-shadow: inset 3px 0 0 var(--varn-drone), inset 0 1px 0 rgba(235, 245, 255, 0.07);
+  box-shadow: inset 3px 0 0 var(--varn-drone), inset 0 1px 0 rgba(240, 242, 245, 0.07);
 }
 .pv-grid {
   display: grid;
@@ -1361,7 +1344,7 @@ h2.kicker {
   padding: 18px;
   border: 1px solid var(--hairline);
   border-radius: var(--r-lg);
-  background: rgba(4, 9, 17, 0.5);
+  background: rgba(12, 13, 15, 0.5);
 }
 .pv-card--flush {
   padding: 0;
@@ -1432,7 +1415,7 @@ h2.kicker {
   padding: 22px;
   border: 1px solid var(--hairline);
   border-radius: var(--r-lg);
-  background: rgba(4, 9, 17, 0.5);
+  background: rgba(12, 13, 15, 0.5);
 }
 .pv-measure-cap {
   display: flex;
@@ -1523,7 +1506,7 @@ h2.kicker {
 
 /* ---- The research snapshot ------------------------------------------------ */
 .snapshot {
-  background: linear-gradient(180deg, var(--obsidian), #060b14 70%, var(--obsidian));
+  background: linear-gradient(180deg, var(--obsidian), #0a0a0b 70%, var(--obsidian));
 }
 .snap-figs {
   display: grid;
@@ -1627,7 +1610,7 @@ h2.kicker {
 .site-footer {
   position: relative;
   padding-top: clamp(72px, 10vw, 144px);
-  background: radial-gradient(80% 60% at 50% 0%, rgba(86, 122, 157, 0.2), transparent 70%), var(--obsidian);
+  background: var(--obsidian);
   border-top: 1px solid var(--hairline);
 }
 .close-statement {
@@ -2222,7 +2205,7 @@ h2.kicker {
   }
   .site-header.is-scrolled,
   .site-header.is-solid {
-    background: rgba(4, 7, 12, 0.96);
+    background: rgba(5, 5, 5, 0.96);
   }
   .btn--glass {
     background: var(--surface-2);
@@ -2239,7 +2222,7 @@ h2.kicker {
   }
   .site-header.is-scrolled,
   .site-header.is-solid {
-    background: rgba(4, 7, 12, 0.96);
+    background: rgba(5, 5, 5, 0.96);
   }
   .btn--glass {
     background: var(--surface-2);
@@ -2256,15 +2239,15 @@ h2.kicker {
 }
 .low-gfx .site-header.is-scrolled,
 .low-gfx .site-header.is-solid {
-  background: rgba(4, 7, 12, 0.96);
+  background: rgba(5, 5, 5, 0.96);
 }
 .low-gfx .btn--glass {
   background: var(--surface-2);
 }
 @media (prefers-contrast: more) {
   :root {
-    --hairline: rgba(220, 237, 255, 0.42);
-    --hairline-strong: rgba(220, 237, 255, 0.7);
+    --hairline: rgba(214, 218, 224, 0.42);
+    --hairline-strong: rgba(214, 218, 224, 0.7);
     --text-2: #c9d4e0;
   }
 }

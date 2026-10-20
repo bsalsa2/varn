@@ -157,7 +157,7 @@ list('nav.links').forEach((l, i) => {
   link(`nav.links.${i}.href`, l?.href);
 });
 
-['eyebrow', 'headline', 'sub', 'status'].forEach((k) => text(`hero.${k}`));
+['headline', 'sub', 'status'].forEach((k) => text(`hero.${k}`));
 text('nav.cta.label');
 link('nav.cta.href');
 text('hero.demo.label');

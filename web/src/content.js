@@ -47,10 +47,8 @@ export const content = {
 
   // SECTION 1: the hero. One image, one headline, one sentence, one status.
   hero: {
-    eyebrow: 'PASSIVE VISUAL AWARENESS / RESEARCH PROTOTYPE',
     headline: 'Watch the sky.',
     sub: 'Exploring a camera-based approach to observing and logging objects in the sky.',
-    explain: 'Passive visual awareness: a camera that only watches. It never transmits, jams or interferes.',
     status: 'RESEARCH PROTOTYPE · HARDWARE VALIDATION PENDING',
     demo: { label: 'Explore the demo', href: './demo.html' },
     results: { label: 'View research results', href: './research.html#results' },
@@ -60,7 +58,7 @@ export const content = {
   // SECTION 2: the process, in three stages along one line. Each stage says
   // exactly how far it has been tested. Keep the status words honest.
   process: {
-    label: 'The process',
+    label: 'The approach',
     heading: 'Observe. Log. Validate.',
     stages: [
       {
@@ -147,7 +145,7 @@ export const content = {
     heading: 'Built in the open. Measured honestly.',
     text: 'VARN is a research prototype. Every result is published with its limits, and every simulation is labeled as one.',
     disclosure: 'Research prototype. Software has been tested on recorded video and in simulation. The physical hardware node has not been built or validated. Images marked CONCEPT or SIMULATED are not footage and not live detections.',
-    copyright: 'Copyright 2026 Varn Labs. Source code released under the MIT License.',
+    copyright: 'Copyright 2026 Varn Labs. Source code released under the MIT License. The hero image is generated artwork, not a photograph of VARN or its equipment.',
   },
 
   // WHAT WE'VE TESTED: the short version, near the top. Three columns:
