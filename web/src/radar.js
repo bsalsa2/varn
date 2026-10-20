@@ -131,6 +131,12 @@ export function createRadar({ root, reduceMotion }) {
   resize();
   move(0);
   draw(0);
+  // Keep the bitmap sharp after a resize or phone rotation (also for the
+  // still frame shown with reduced motion).
+  new ResizeObserver(() => {
+    resize();
+    draw(0);
+  }).observe(canvas);
   if (reduceMotion) return;
 
   let raf = 0;
@@ -149,8 +155,4 @@ export function createRadar({ root, reduceMotion }) {
     last = 0;
     if (e.isIntersecting) raf = requestAnimationFrame(frame);
   }).observe(canvas);
-  window.addEventListener('resize', () => {
-    resize();
-    draw(0);
-  });
 }

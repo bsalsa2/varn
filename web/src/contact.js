@@ -11,10 +11,16 @@ export function initContactForm() {
     status.hidden = false;
     status.textContent = text;
     status.classList.toggle('is-error', bad);
+    // On a phone the message can land below the fold, under the keyboard.
+    status.scrollIntoView({ block: 'nearest' });
   };
+  // aria-disabled, not disabled: a disabled button drops keyboard focus to
+  // the page. The flag stops a second send while one is in flight.
+  let sending = false;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (sending) return;
     const data = new FormData(form);
     if (data.get('company')) return; // honeypot: bots fill hidden fields
     const name = String(data.get('name')).trim();
@@ -30,7 +36,8 @@ export function initContactForm() {
       return;
     }
 
-    button.disabled = true;
+    sending = true;
+    button.setAttribute('aria-disabled', 'true');
     label.textContent = form.dataset.sending;
     try {
       const res = await fetch(endpoint, {
@@ -44,7 +51,8 @@ export function initContactForm() {
     } catch {
       say(form.dataset.error, true);
     } finally {
-      button.disabled = false;
+      sending = false;
+      button.removeAttribute('aria-disabled');
       label.textContent = idle;
     }
   });

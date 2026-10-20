@@ -132,7 +132,9 @@ export const content = {
   story: {
     kicker: 'How it works',
     heading: 'From sky to sighting',
-    intro: 'Five steps turn a patch of sky into a logged record. Keep scrolling and watch one happen.',
+    intro: 'Five steps turn a patch of sky into a logged record.',
+    // Shown only where the story is pinned and steps through as you scroll.
+    hint: 'Keep scrolling and watch one happen.',
     device: 'SAMPLE · NODE-01 · SIMULATED',
     note: 'SAMPLE: everything in this panel is a simulation, not footage.',
     stages: [

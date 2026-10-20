@@ -259,7 +259,9 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
   let yawDrag = 0;
   let hoverX = 0;
   let dragging = null;
-  container.style.touchAction = 'pan-y';
+  // pan-y: a vertical swipe still scrolls the page. pinch-zoom: without it,
+  // fingers on the viewer could not zoom the page.
+  container.style.touchAction = 'pan-y pinch-zoom';
   container.addEventListener('pointerdown', (e) => {
     dragging = { x: e.clientX, start: yawDrag };
     container.setPointerCapture(e.pointerId);
@@ -276,6 +278,14 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
   container.addEventListener('pointerup', endDrag);
   container.addEventListener('pointercancel', endDrag);
   container.addEventListener('pointerleave', () => (hoverX = 0));
+  // Keyboard: once the viewer is ready main.js makes it focusable; the left
+  // and right arrow keys turn it like a drag does.
+  container.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    yawDrag += e.key === 'ArrowLeft' ? -0.2 : 0.2;
+    wake();
+  });
 
   // ---- Highlight a part (hovering its name in the list) --------------------
   let active = -1;
