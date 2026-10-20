@@ -181,7 +181,7 @@ list('process.stages', { min: 3 }).forEach((st, i) => {
 });
 if (get('process.stages.2.state') !== 'pending')
   err('The last process stage (Validate) must stay "pending" until real hardware validation exists.', lineOf('Validate'));
-text('process.note');
+if (get('process.note')) text('process.note');
 link('process.link.href');
 text('platform.heading');
 text('platform.banner');

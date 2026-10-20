@@ -50,6 +50,7 @@ export const content = {
     eyebrow: 'PASSIVE VISUAL AWARENESS / RESEARCH PROTOTYPE',
     headline: 'Watch the sky.',
     sub: 'Exploring a camera-based approach to observing and logging objects in the sky.',
+    explain: 'Passive visual awareness: a camera that only watches. It never transmits, jams or interferes.',
     status: 'RESEARCH PROTOTYPE · HARDWARE VALIDATION PENDING',
     demo: { label: 'Explore the demo', href: './demo.html' },
     results: { label: 'View research results', href: './research.html#results' },
@@ -60,7 +61,7 @@ export const content = {
   // exactly how far it has been tested. Keep the status words honest.
   process: {
     label: 'The process',
-    heading: 'Three stages. One of them still needs hardware.',
+    heading: 'Observe. Log. Validate.',
     stages: [
       {
         name: 'Observe',
@@ -81,7 +82,7 @@ export const content = {
         state: 'pending',
       },
     ],
-    note: 'Physical hardware validation is pending. Nothing here has run on a built sensor node.',
+    note: '',
     link: { label: 'See all five steps', href: './research.html#story' },
   },
 
@@ -89,7 +90,7 @@ export const content = {
   platform: {
     label: 'The platform',
     heading: 'The dashboard, in simulation.',
-    sub: 'An interactive demonstration of the VARN dashboard. Every event, count and chart on this page is generated sample data. No camera detected any of it.',
+    sub: 'An interactive demonstration of the VARN dashboard, running on generated sample data.',
     badge: 'SIMULATED',
     banner: 'SIMULATED · Sample data generated in your browser. No physical node is connected.',
     window: 'VARN dashboard',
@@ -118,7 +119,7 @@ export const content = {
   // come from `results` below, so there is only one place to edit them.
   snapshot: {
     label: 'The research',
-    heading: 'Measured, and still limited.',
+    heading: 'What the recorded video shows.',
     intro: 'Model v2 was evaluated on 43 real-world video clips of planes, military jets and drones. The drone result is weak, and it is shown as it is.',
     disclaimer: 'Recorded-video evaluation only. Physical hardware validation pending.',
     figures: [

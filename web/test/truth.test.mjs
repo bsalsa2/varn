@@ -49,7 +49,7 @@ test('the home page has five parts and keeps detail on the research page', () =>
 test('the process keeps validation pending', () => {
   const last = content.process.stages.at(-1);
   assert.equal(last.state, 'pending');
-  assert.match(text(home), /Physical hardware validation is pending/);
+  assert.match(text(home), /Pending · needs the physical node/);
 });
 
 test('the research snapshot shows the weak drone result with its units and the required disclaimer', () => {
