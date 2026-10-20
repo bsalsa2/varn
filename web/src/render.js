@@ -845,3 +845,200 @@ ${siteNav(c, { home: false, current: 'contact.html' })}
 </main>
 ${siteFooter(c, { from: 'contact' })}`;
 }
+
+// ---- Dashboard demo (demo.html) ------------------------------------------
+// The page is a static shell: tabs, the measured results and the system
+// status are plain HTML, and demo.js fills in the simulated views.
+const STATE_KINDS = {
+  verified: 'verified',
+  measured: 'measured',
+  testing: 'testing',
+  simulated: 'simulated',
+  'not connected': 'off',
+  pending: 'pending',
+};
+const statePill = (state) =>
+  `<span class="state-tag state-tag--${STATE_KINDS[String(state).toLowerCase()] || 'pending'} mono"><span class="state-shape" aria-hidden="true"></span>${esc(state)}</span>`;
+
+export function renderDemoHead(c) {
+  const d = c.demo;
+  const url = new URL('demo.html', c.meta.url).href;
+  return `${counter(c)}
+    <title>${esc(d.title)} | Varn</title>
+    <meta name="description" content="${esc(d.description)}" />
+    <link rel="canonical" href="${esc(url)}" />
+    <meta property="og:title" content="${esc(d.title)} | Varn" />
+    <meta property="og:description" content="${esc(d.description)}" />`;
+}
+
+export function renderDemoBody(c) {
+  const d = c.demo;
+  const r = c.results || {};
+  const charts = Array.isArray(r.charts) ? r.charts : [];
+  const caveats = Array.isArray(r.caveats) ? r.caveats : [];
+  const tabs = d.tabs
+    .map(
+      (t) =>
+        `<li><a class="demo-tab mono" href="#${esc(t.id)}" data-view="${esc(t.id)}"><span class="demo-tab-mark" aria-hidden="true"></span>${esc(t.label)}</a></li>`
+    )
+    .join('');
+  const rows = d.system.rows
+    .map(
+      (row) => `
+          <tr>
+            <th scope="row"><span class="mono demo-area">${esc(row.area)}</span>${esc(row.name)}</th>
+            <td>${statePill(row.state)}</td>
+            <td>${esc(row.text)}</td>
+          </tr>`
+    )
+    .join('');
+  const defs = d.definitions.map((x) => `<div><dt>${esc(x.term)}</dt><dd>${esc(x.text)}</dd></div>`).join('');
+  const stateLegend = ['Verified', 'Measured', 'Testing', 'Simulated', 'Not connected', 'Pending'].map(statePill).join('');
+  return `
+<a class="skip-link" href="#main">Skip to content</a>
+${LIQUID_FILTER}
+${stage('stage-fixed')}
+${siteNav(c, { home: false, current: 'demo.html' })}
+
+<main id="main" class="demo-page" tabindex="-1">
+  <div class="wrap demo-wrap">
+    <header class="demo-intro">
+      ${kicker(1, d.kicker, '', 'p')}
+      <h1 class="h-section" id="demo-title">${esc(d.heading)}</h1>
+      <p class="lede">${esc(d.intro)}</p>
+    </header>
+    <p class="demo-banner mono" role="note"><span class="state-shape state-shape--sim" aria-hidden="true"></span>${esc(d.banner)}</p>
+    <noscript><p class="demo-noscript">${esc(d.noscript)}</p></noscript>
+
+    <div class="demo-shell">
+      <nav class="demo-side" aria-label="Dashboard views">
+        <ul class="demo-tabs">${tabs}</ul>
+        <p class="demo-node mono"><span class="shape shape--no-adsb" aria-hidden="true"></span>NODE-01<span class="demo-node-state">Not connected</span></p>
+      </nav>
+
+      <div class="demo-main">
+        <section class="demo-view" id="view-overview" data-view="overview" aria-labelledby="h-overview" hidden>
+          <header class="demo-view-head">
+            <h2 id="h-overview" tabindex="-1">Overview</h2>
+            <p class="mono demo-badge">SIMULATED · LAST 24 HOURS</p>
+          </header>
+          <div class="demo-kpis" data-slot="kpis"></div>
+          <div class="demo-cols">
+            <section class="demo-plate" aria-labelledby="h-hourly">
+              <header class="demo-plate-head">
+                <h3 id="h-hourly">Events per hour</h3>
+                <div class="demo-legend mono" aria-hidden="true">
+                  <span><i class="shape shape--aircraft"></i>Aircraft</span><span><i class="shape shape--drone"></i>Possible drone</span>
+                </div>
+              </header>
+              <div class="demo-chart" data-slot="hourly"></div>
+              <details class="demo-table-toggle">
+                <summary class="mono">Show as a table</summary>
+                <div class="demo-table-wrap" tabindex="0" role="region" aria-label="Events per hour as a table" data-slot="hourly-table"></div>
+              </details>
+            </section>
+            <section class="demo-plate" aria-labelledby="h-latest">
+              <header class="demo-plate-head">
+                <h3 id="h-latest">Latest events</h3>
+                <button class="demo-btn" type="button" id="replay" aria-pressed="false">Replay simulated feed</button>
+              </header>
+              <ol class="demo-latest" data-slot="latest"></ol>
+              <p class="demo-more"><a class="u-link mono" href="#events">All events &rarr;</a></p>
+            </section>
+          </div>
+        </section>
+
+        <section class="demo-view" id="view-events" data-view="events" aria-labelledby="h-events" hidden>
+          <header class="demo-view-head">
+            <h2 id="h-events" tabindex="-1">Events</h2>
+            <p class="mono demo-badge">SIMULATED · NOT RECORDED</p>
+          </header>
+          <form class="demo-filters" role="search" aria-label="Filter events" onsubmit="return false">
+            <label class="demo-field"><span class="mono">Search</span><input type="search" id="f-q" placeholder="ID, class or time" autocomplete="off" /></label>
+            <label class="demo-field"><span class="mono">Class</span>
+              <select id="f-cls"><option value="all">All</option><option value="aircraft">Aircraft</option><option value="drone">Possible drone</option></select></label>
+            <label class="demo-field"><span class="mono">ADS-B</span>
+              <select id="f-adsb"><option value="all">All</option><option value="match">ADS-B match</option><option value="none">No ADS-B match</option></select></label>
+            <label class="demo-field"><span class="mono">Time</span>
+              <select id="f-hours"><option value="24">Last 24 hours</option><option value="6">Last 6 hours</option><option value="1">Last hour</option></select></label>
+            <button class="demo-btn" type="button" id="f-reset">Clear</button>
+          </form>
+          <div class="demo-plate demo-plate--flush">
+            <div class="demo-table-wrap demo-events-wrap" tabindex="0" role="region" aria-label="Events table" data-slot="events"></div>
+            <footer class="demo-events-foot">
+              <p class="mono" id="events-count" role="status" aria-live="polite"></p>
+              <div class="demo-foot-actions">
+                <button class="demo-btn" type="button" id="more">Show more</button>
+                <button class="demo-btn demo-btn--solid" type="button" id="export">Export CSV</button>
+              </div>
+            </footer>
+          </div>
+        </section>
+
+        <section class="demo-view" id="view-analytics" data-view="analytics" aria-labelledby="h-analytics">
+          <header class="demo-view-head">
+            <h2 id="h-analytics" tabindex="-1">Analytics</h2>
+          </header>
+          <div class="demo-section">
+            <p class="mono demo-badge demo-badge--measured">${esc(r.tag || 'MEASURED · RECORDED VIDEO')}</p>
+            <h3>Measured results</h3>
+            <p class="demo-lede">${esc(r.intro || '')} ${r.sample ? `<span class="mono demo-sample">${esc(r.sample)}</span>` : ''}</p>
+            <div class="rc-grid">${charts.map(resultChart).join('')}
+              ${
+                caveats.length
+                  ? `<aside class="rc-caveats" aria-labelledby="demo-caveats-title"><h3 class="rc-caveats-title mono" id="demo-caveats-title">What this test does not show</h3><ul>${caveats.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></aside>`
+                  : ''
+              }
+            </div>
+            ${charts.length ? resultTable(charts) : ''}
+            <p class="results-source mono">${esc(r.source || '')}</p>
+          </div>
+          <div class="demo-section">
+            <p class="mono demo-badge">SIMULATED · FOR ILLUSTRATION</p>
+            <h3>Model confidence on simulated events</h3>
+            <p class="demo-lede">How sure the model reports being, for the sample events. Real confidence values will come from the physical node.</p>
+            <div class="demo-chart demo-chart--bins" data-slot="bins"></div>
+            <div class="demo-legend mono" aria-hidden="true"><span><i class="shape shape--aircraft"></i>Aircraft</span><span><i class="shape shape--drone"></i>Possible drone</span></div>
+          </div>
+          <div class="demo-section">
+            <h3>Model versions</h3>
+            <div class="demo-table-wrap" tabindex="0" role="region" aria-label="Model versions">
+              <table class="demo-table">
+                <thead><tr><th scope="col">Model</th><th scope="col">Status</th><th scope="col">Evidence</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">v2</th><td>${statePill('Measured')}</td><td>Scored on 43 recorded videos. See the measured results above.</td></tr>
+                  <tr><th scope="row">v3</th><td>${statePill('Testing')}</td><td>In training, with drone and aircraft classes at 960 px input. No results yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="demo-section">
+            <h3>Definitions</h3>
+            <dl class="demo-defs">${defs}</dl>
+          </div>
+        </section>
+
+        <section class="demo-view" id="view-system" data-view="system" aria-labelledby="h-system">
+          <header class="demo-view-head">
+            <h2 id="h-system" tabindex="-1">${esc(d.system.heading)}</h2>
+          </header>
+          <p class="demo-lede">${esc(d.system.intro)}</p>
+          <div class="demo-legend demo-legend--states" aria-label="States">${stateLegend}</div>
+          <div class="demo-table-wrap" tabindex="0" role="region" aria-label="System status">
+            <table class="demo-table demo-table--system">
+              <thead><tr><th scope="col">Part</th><th scope="col">State</th><th scope="col">Detail</th></tr></thead>
+              <tbody>${rows}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <dialog class="demo-drawer glass glass--deep" id="drawer" aria-labelledby="drawer-title">
+    <div class="demo-drawer-body" data-slot="drawer"></div>
+  </dialog>
+</main>
+${siteFooter(c, { from: 'demo' })}`;
+}

@@ -459,7 +459,7 @@ svg {
 .nav-cta-li {
   display: none;
 }
-@media (max-width: 860px) {
+@media (max-width: 1040px) {
   .nav {
     position: relative;
     padding: 0 8px 0 18px;
@@ -539,14 +539,14 @@ svg {
 .nav-link[aria-current='page'] {
   color: var(--accent-ink);
 }
-@media (max-width: 860px) {
+@media (max-width: 1040px) {
   .no-js .nav-toggle {
     display: none;
   }
 }
 /* Touch tablets get the desktop nav: grow its hit areas to 44px without
    moving the active-section underline. */
-@media (pointer: coarse) and (min-width: 861px) {
+@media (pointer: coarse) and (min-width: 1041px) {
   .nav-link::before {
     content: '';
     position: absolute;

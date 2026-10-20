@@ -41,6 +41,7 @@ export const content = {
       { label: 'How it works', href: '#story' },
       { label: 'Results', href: '#results' },
       { label: 'Status', href: '#status' },
+      { label: 'Demo', href: './demo.html' },
       { label: 'Contact', href: './contact.html' },
     ],
   },
@@ -361,6 +362,51 @@ export const content = {
       'Phase 1 is passive by design. It carries no payloads, never jams, and never transmits on aircraft or drone frequencies. It only watches.',
   },
 
+  // DASHBOARD DEMO (demo.html): an interactive version of the dashboard.
+  // The events, counts and charts are SIMULATED, generated in the visitor's
+  // browser (src/demo-data.js). The measured results on the Analytics tab come
+  // from `results` above and are labelled as measured. Keep that line clear.
+  demo: {
+    title: 'Dashboard demo',
+    description: 'An interactive demo of the Varn dashboard with simulated sample data: overview, event explorer, analytics and system status.',
+    kicker: 'Dashboard demo',
+    heading: 'Explore the dashboard',
+    intro: 'Click through the same views the real dashboard has. Every event, count and chart here is simulated sample data. Measured results are kept apart, on the Analytics tab.',
+    banner: 'SIMULATED · Sample data generated in your browser. No physical node is connected, and nothing here was detected by a camera.',
+    noscript: 'The dashboard demo needs JavaScript. The measured results are on the main page, under Results.',
+    tabs: [
+      { id: 'overview', label: 'Overview' },
+      { id: 'events', label: 'Events' },
+      { id: 'analytics', label: 'Analytics' },
+      { id: 'system', label: 'System' },
+    ],
+    // System tab. State is one of: Verified, Measured, Testing, Simulated, Not connected, Pending.
+    system: {
+      heading: 'System status',
+      intro: 'What exists, what has been tested, and what is not built yet.',
+      rows: [
+        { area: 'Software', name: 'Detection and tracking loop', state: 'Verified', text: 'Tested in simulation, with 243 automated tests.' },
+        { area: 'Software', name: 'Sighting logger', state: 'Verified', text: 'Built and tested in simulation.' },
+        { area: 'Software', name: 'Live dashboard', state: 'Verified', text: 'Built and tested in simulation. This page is a web demo of it.' },
+        { area: 'Model', name: 'Detection model v2', state: 'Measured', text: 'Scored on 43 recorded videos. See the Analytics tab for the numbers and their limits.' },
+        { area: 'Model', name: 'Detection model v3', state: 'Testing', text: 'In training. There are no v3 results yet.' },
+        { area: 'Data', name: 'Events shown in this demo', state: 'Simulated', text: 'Generated in your browser from a fixed pattern. Not recorded by any sensor.' },
+        { area: 'Data', name: 'Comparison with real flight data (ADS-B)', state: 'Not connected', text: 'The comparison is written but has never been run against a real feed.' },
+        { area: 'Hardware', name: 'Camera', state: 'Not connected', text: 'The physical node is not built yet.' },
+        { area: 'Hardware', name: 'Pan-tilt mount and Pico controller', state: 'Pending', text: 'Designed in CAD, and the firmware is tested in software. The physical build is next.' },
+        { area: 'Hardware', name: 'Outdoor test', state: 'Pending', text: 'Not started.' },
+      ],
+    },
+    // Short definitions, shown on the Analytics tab.
+    definitions: [
+      { term: 'Aircraft', text: 'The model called it an aircraft (a sage circle). The label is the model\'s guess, not a confirmed fact.' },
+      { term: 'Possible drone', text: 'The model called it a drone (an amber square). Not confirmed by anything else.' },
+      { term: 'ADS-B match', text: 'A real flight-data record matches the sighting. In this demo the matches are simulated; the real comparison has never been run.' },
+      { term: 'No ADS-B match', text: 'No flight-data record matches (a hollow ring). Drones never broadcast ADS-B, and neither do some small aircraft.' },
+      { term: 'Confidence', text: 'How sure the model is, from 0 to 1. It is not the chance that the label is right.' },
+    ],
+  },
+
   // Contact form, shown above the sister-project card.
   contact: {
     kicker: 'Contact',
@@ -395,6 +441,7 @@ export const content = {
     links: [
       { label: 'Varn on GitHub', href: 'https://github.com/bsalsa2/varn' },
       { label: 'Sister project: Sunnode', href: 'https://github.com/bsalsa2/sunnode' },
+      { label: 'Dashboard demo', href: './demo.html' },
       { label: 'Contact', href: './contact.html' },
       { label: 'Privacy', href: './privacy.html' },
     ],

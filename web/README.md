@@ -130,6 +130,19 @@ charts, and the same numbers appear in a table under them. Fill in
 hidden while `charts` is empty, and the build refuses numbers without a
 source or values outside 0 to 100.
 
+## The dashboard demo
+
+`demo.html` is an interactive version of the dashboard (Overview, Events,
+Analytics, System). The Overview and Events data is **simulated**: it is
+generated in the visitor's browser by `src/demo-data.js` from a fixed seed
+and labelled SIMULATED everywhere it appears. The Analytics tab shows the
+real measured results from `results` in `content.js`, kept apart from the
+simulation. The words on the page (banner, system status rows, definitions)
+live in the `demo` block of `content.js`; the system states are `Verified`,
+`Measured`, `Testing`, `Simulated`, `Not connected` and `Pending`. Update the
+rows as hardware is built, and never mark something Verified that has only
+run in simulation without saying so in its detail text.
+
 ## The 3D pan-tilt mount
 
 The mount in "How it works" is your real CAD design. Before each build,
