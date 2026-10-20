@@ -37,7 +37,7 @@ const STATUS_KINDS = { DONE: 'done', 'IN PROGRESS': 'progress', NEXT: 'next' };
 
 // Section marker row, e.g. "02-00   [ SYSTEM ]   +", over a hairline.
 const kicker = (n, text, id = '', tag = 'p') =>
-  `<${tag} class="kicker mono"${id ? ` id="${id}"` : ''}><span class="kicker-n">${pad2(n)}-00</span><span class="kicker-label">[ ${esc(text)} ]</span><span class="kicker-plus" aria-hidden="true">+</span></${tag}>`;
+  `<${tag} class="kicker mono"${id ? ` id="${id}"` : ''}><span class="kicker-n">${pad2(n)}-00</span><span class="kicker-label">[&nbsp;${esc(text)}&nbsp;]</span><span class="kicker-plus" aria-hidden="true">+</span></${tag}>`;
 
 // Status: colour always travels with a shape and a word.
 // circle = confirmed aircraft, square = possible drone, ring = no ADS-B match.
@@ -155,14 +155,15 @@ const sensorBlock = (s) => `
         <figcaption class="sensor-caption">${esc(s.caption)}</figcaption>
       </figure>`;
 
-// Simulated radar-style plot (radar.js draws it; the canvas is blank without JS).
+// Simulated radar-style plot. radar.js draws it; without JavaScript the
+// browser shows the static picture inside the canvas instead.
 const radarBlock = (r) => `
       <figure class="radar glass" id="radar" data-reveal>
         <div class="sensor-head">
           <span class="mono sensor-label">${esc(r.label)}</span>
           <span class="mono sensor-id">N ↑</span>
         </div>
-        <canvas class="radar-canvas" role="img" aria-label="Simulated plot: a slow sweep over range rings, with a sample aircraft (circle) crossing and a sample possible drone (square) loitering."></canvas>
+        <canvas class="radar-canvas" role="img" aria-label="Simulated plot: a slow sweep over range rings, with a sample aircraft (circle) crossing and a sample possible drone (square) loitering."><svg class="radar-still" viewBox="-100 -100 200 200" aria-hidden="true"><g fill="none" stroke="#4b5b6b" stroke-opacity=".7"><circle r="94"/><circle r="62"/><circle r="31"/><path d="M-94 0H94M0-94V94" stroke-opacity=".5"/></g><circle cx="-60" cy="-30" r="3" fill="#7a8b7e"/><text x="-52" y="-36" fill="#a7b3bd" font-size="8" font-family="monospace">AIRCRAFT</text><rect x="28" y="14" width="6" height="6" fill="#e0a84a"/><text x="38" y="12" fill="#a7b3bd" font-size="8" font-family="monospace">DRONE?</text></svg></canvas>
         <figcaption class="sensor-caption">${esc(r.caption)}</figcaption>
       </figure>`;
 
@@ -589,12 +590,12 @@ ${siteNav(c)}
   <section class="hero" id="top" aria-labelledby="hero-title">
     ${stage('hero-stage')}
     <div class="hero-photo" aria-hidden="true"></div>
-    <svg class="hero-track" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <svg class="hero-track" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
       <path class="hero-track-line" pathLength="1" d="M700 800 C 720 560, 800 250, 1120 118" />
       <g class="hero-track-frame" transform="translate(1120 118)">
         <path d="M-34 -22v-10h10M24 -32h10v10M34 22v10h-10M-24 32h-10v-10" />
         <circle r="3" />
-        <text x="44" y="-20">SAMPLE TRACK</text>
+        <text x="-44" y="-20" text-anchor="end">SAMPLE TRACK</text>
       </g>
     </svg>
 

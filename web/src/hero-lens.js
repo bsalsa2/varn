@@ -310,7 +310,13 @@ export function createLens({ lens, canvas, card, reduceMotion }) {
   resize();
   new ResizeObserver(() => {
     resize();
-    if (!running) draw(0.016);
+    // Reduced motion: redraw the still with the bracket snapped onto the
+    // target (a partial step left it detached after a rotation, and every
+    // redraw added a trail dot that never faded).
+    if (reduceMotion) {
+      trail.length = 0;
+      draw(1);
+    } else if (!running) draw(0.016);
   }).observe(canvas);
 
   if (reduceMotion) {

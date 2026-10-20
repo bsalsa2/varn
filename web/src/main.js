@@ -1,6 +1,6 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { initNavMenu } from './nav-menu.js';
+import { initHeaderAutoHide, initNavMenu } from './nav-menu.js';
 
 const root = document.documentElement;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -9,6 +9,19 @@ const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matc
 const STORY_PIN_QUERY = '(min-width: 901px) and (min-height: 650px)';
 
 if (!reduceMotion) root.classList.add('js-motion');
+// Everything below decides once, at load, whether to animate. If the visitor
+// turns on "reduce motion" while the page is open, start over without it.
+window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change', (e) => e.matches && location.reload());
+
+// Software rendering (no GPU, e.g. some low-power laptops and VMs): frosted
+// glass over moving canvases costs most of each frame there, so it is turned
+// off (styles.css: .low-gfx). The check needs a WebGL context, which is too
+// slow for startup, so it runs after load (see the mount viewer below) and is
+// remembered for the next page view.
+const GFX_KEY = 'varn-gfx';
+try {
+  if (localStorage.getItem(GFX_KEY) === 'soft') root.classList.add('low-gfx');
+} catch {}
 
 // Looping CSS animations (radar sweeps, pulsing dots, the ticker) keep the
 // browser repainting every frame even when they are far off screen, which
@@ -62,6 +75,18 @@ function splitChars(el) {
   }
   return out;
 }
+// A CSS colour (custom properties and color-mix included) as rgb(), which
+// GSAP can tween. Browsers report color-mix results as color(srgb 0-1 ...).
+function cssColor(value) {
+  const probe = document.createElement('i');
+  probe.style.color = value;
+  document.body.append(probe);
+  const c = getComputedStyle(probe).color;
+  probe.remove();
+  const n = (c.match(/[\d.]+/g) || ['0', '0', '0']).slice(0, 3).map(Number);
+  const rgb = c.startsWith('color(') ? n.map((v) => Math.round(v * 255)) : n.map(Math.round);
+  return `rgb(${rgb.join(', ')})`;
+}
 function splitWords(el) {
   const text = el.textContent.trim();
   el.setAttribute('aria-label', text);
@@ -87,7 +112,11 @@ function splitWords(el) {
 // backdrop-filter. Safari and Firefox parse the rule but drop the whole
 // backdrop, so gate it on a Chromium-only API and keep plain blur elsewhere.
 // ---------------------------------------------------------------------------
-if ('userAgentData' in navigator && window.CSS?.supports?.('backdrop-filter', 'url(#sn-liquid) blur(1px)')) {
+if (
+  !root.classList.contains('low-gfx') &&
+  'userAgentData' in navigator &&
+  window.CSS?.supports?.('backdrop-filter', 'url(#sn-liquid) blur(1px)')
+) {
   root.classList.add('has-refraction');
 }
 
@@ -95,29 +124,7 @@ if ('userAgentData' in navigator && window.CSS?.supports?.('backdrop-filter', 'u
 // Nav: tucks away while you read down the page, comes back when you scroll
 // up. Highlights the section you're in.
 // ---------------------------------------------------------------------------
-const header = document.getElementById('top-nav');
-{
-  let lastY = window.scrollY;
-  let raf = 0;
-  window.addEventListener(
-    'scroll',
-    () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const down = y > lastY + 4;
-        const up = y < lastY - 4;
-        // An open mobile menu keeps the header (and its close button) on screen.
-        if (down && y > window.innerHeight * 0.6 && !header.querySelector('.nav.is-open')) header.classList.add('is-hidden');
-        else if (up || y < 80) header.classList.remove('is-hidden');
-        if (down || up) lastY = y;
-      });
-    },
-    { passive: true }
-  );
-  // Keyboard users always get the nav back.
-  header.addEventListener('focusin', () => header.classList.remove('is-hidden'));
-}
+initHeaderAutoHide();
 
 const navLinks = [...document.querySelectorAll('.nav-link')].filter((l) => l.getAttribute('href').startsWith('#'));
 const sectionFor = new Map(
@@ -247,9 +254,14 @@ if (!reduceMotion) {
     heroTitle.querySelectorAll('.line').forEach((line) => line.setAttribute('aria-hidden', 'true'));
     heroTitle.append(said);
   }
-  const heroChars = [...document.querySelectorAll('.hero-title .line-in')].flatMap(splitChars);
-  gsap.from(heroChars, { yPercent: 110, rotate: 6, opacity: 0.01, duration: 1.5, ease, stagger: 0.035, delay: 0.2 });
-  gsap.from('[data-hero]', { y: 28, opacity: 0.01, duration: 1.6, ease, stagger: 0.08, delay: 0.45, clearProps: 'transform' });
+  // On a slow connection the hero has usually been on screen, readable, for a
+  // while before this script runs; hiding it to replay the entrance would
+  // read as a glitch. So the entrance only plays on a quick start.
+  if (performance.now() < 1500) {
+    const heroChars = [...document.querySelectorAll('.hero-title .line-in')].flatMap(splitChars);
+    gsap.from(heroChars, { yPercent: 110, rotate: 6, opacity: 0.01, duration: 1.5, ease, stagger: 0.035, delay: 0.2 });
+    gsap.from('[data-hero]', { y: 28, opacity: 0.01, duration: 1.6, ease, stagger: 0.08, delay: 0.45, clearProps: 'transform' });
+  }
 
   // ---- Hero exit: the copy and the lens recede.
   // On phones the hero is taller than the screen, so the fade waits until its
@@ -264,17 +276,18 @@ if (!reduceMotion) {
     .fromTo('.hero-foot', { opacity: 1 }, { opacity: 0, ease: 'none', immediateRender: false }, 0);
 
   // ---- 01 The math: words light up as you read; the numbers count.
-  const words = gsap.utils.toArray('.math-statement .w');
-  if (words.length) {
-    const css = getComputedStyle(root);
-    const lit = css.getPropertyValue('--varn-text').trim();
-    const dim = css.getPropertyValue('--dim').trim();
-    gsap.to(words, {
-      color: (_, el) => (el.classList.contains('w--hi') ? lit : dim),
-      stagger: 0.1,
-      ease: 'none',
-      scrollTrigger: { trigger: '.math-statement', start: 'top 82%', end: 'bottom 45%', scrub: 0.6 },
-    });
+  const lit = gsap.utils.toArray('.math-statement .w--hi');
+  if (lit.length) {
+    gsap.fromTo(
+      lit,
+      { color: cssColor('var(--dim)') },
+      {
+        color: cssColor('var(--varn-text)'),
+        stagger: 0.1,
+        ease: 'none',
+        scrollTrigger: { trigger: '.math-statement', start: 'top 82%', end: 'bottom 45%', scrub: 0.6 },
+      }
+    );
   }
   document.querySelectorAll('[data-count]').forEach((el, i) => {
     ScrollTrigger.create({
@@ -522,23 +535,33 @@ whenNear(document.getElementById('sensor'), () =>
 // Pan-tilt mount viewer (three.js). Only hardware-accelerated WebGL 2:
 // software renderers would grind the main thread, so they keep the still.
 // Add ?gl=any to the URL to force it anyway (handy for testing).
-function hasFastWebGL2() {
+// The WebGL 2 renderer's name, or null without WebGL 2.
+function webgl2Renderer() {
   try {
     const gl = document.createElement('canvas').getContext('webgl2');
-    if (!gl) return false;
+    if (!gl) return null;
     const info = gl.getExtension('WEBGL_debug_renderer_info');
     const renderer = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || '');
     gl.getExtension('WEBGL_lose_context')?.loseContext();
-    if (new URLSearchParams(location.search).get('gl') === 'any') return true;
-    return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(renderer);
+    return renderer;
   } catch {
-    return false;
+    return null;
   }
 }
+const SOFTWARE_GL = /swiftshader|llvmpipe|softpipe|software|basic render/i;
 
 afterLoad(() => {
+  const renderer = webgl2Renderer();
+  const soft = renderer !== null && SOFTWARE_GL.test(renderer);
+  root.classList.toggle('low-gfx', soft);
+  if (soft) root.classList.remove('has-refraction');
+  try {
+    if (soft) localStorage.setItem(GFX_KEY, 'soft');
+    else localStorage.removeItem(GFX_KEY);
+  } catch {}
   const stage = document.getElementById('mount-stage');
-  if (!stage || !hasFastWebGL2()) return;
+  const forced = new URLSearchParams(location.search).get('gl') === 'any';
+  if (!stage || renderer === null || (soft && !forced)) return;
   const parts = [...document.querySelectorAll('.mount-parts li')];
   whenNear(stage, () =>
     import('./mount.js')
@@ -553,15 +576,21 @@ afterLoad(() => {
       )
       .then((mount) => {
         stage.classList.add('is-ready');
+        // A mouse highlights a part while hovering its row. Touch can't
+        // hover (the browser sends leave right after the tap), so a tap
+        // toggles the highlight instead.
+        let current = -1;
+        let lastType = 'mouse';
+        const show = (i) => {
+          current = i;
+          parts.forEach((el, k) => el.classList.toggle('is-active', k === i));
+          mount.setActive(i);
+        };
         parts.forEach((li, i) => {
-          li.addEventListener('pointerenter', () => {
-            li.classList.add('is-active');
-            mount.setActive(i);
-          });
-          li.addEventListener('pointerleave', () => {
-            li.classList.remove('is-active');
-            mount.setActive(-1);
-          });
+          li.addEventListener('pointerdown', (e) => (lastType = e.pointerType));
+          li.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && show(i));
+          li.addEventListener('pointerleave', (e) => e.pointerType === 'mouse' && show(-1));
+          li.addEventListener('click', () => lastType !== 'mouse' && show(current === i ? -1 : i));
         });
       })
       .catch((err) => console.warn('[varn] mount viewer unavailable, keeping the still.', err))

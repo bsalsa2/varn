@@ -192,6 +192,23 @@ svg {
     background: var(--varn-surface-2) !important;
   }
 }
+/* Software rendering (main.js adds .low-gfx): every frosted panel over a
+   moving canvas is redrawn on the CPU each frame, so glass becomes a solid
+   surface. Measured: 12-24 fps with blur, 54-60 fps without. */
+.low-gfx .glass,
+.low-gfx .glass--clear,
+.low-gfx .glass--deep,
+.low-gfx .btn--glass,
+.low-gfx .nav {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: var(--varn-surface-2) !important;
+}
+.low-gfx .lens,
+.low-gfx .frame-bar {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
 /* Light that follows the cursor across a glass surface. */
 .glass-sheen {
   position: absolute;
@@ -512,6 +529,23 @@ svg {
 .nav-link[aria-current='page'] {
   color: var(--accent-ink);
 }
+@media (max-width: 860px) {
+  .no-js .nav-toggle {
+    display: none;
+  }
+}
+/* Touch tablets get the desktop nav: grow its hit areas to 44px without
+   moving the active-section underline. */
+@media (pointer: coarse) and (min-width: 861px) {
+  .nav-link::before {
+    content: '';
+    position: absolute;
+    inset: -8px -4px;
+  }
+  .nav-cta {
+    height: 44px;
+  }
+}
 
 /* ---- Hero -------------------------------------------------------------- */
 .hero {
@@ -576,6 +610,15 @@ svg {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+/* Stacked whenever the two buttons would only just fit side by side: the
+   row's width depends on whether Inter has loaded yet, and a late re-wrap
+   shifted the hero. */
+@container (max-width: 380px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 .hero-note {
   max-width: 32rem;
@@ -891,8 +934,11 @@ svg {
 .math-statement .w--hi {
   color: var(--varn-text);
 }
+/* Every word starts at the readable grey (4:1 at this size); the bracketed
+   ones light up as you scroll (main.js). Starting near-invisible failed
+   contrast until the statement was past the middle of the screen. */
 .js-motion .math-statement .w {
-  color: var(--varn-surface-2);
+  color: var(--dim);
 }
 .stats {
   display: grid;
@@ -912,7 +958,6 @@ svg {
   container-type: inline-size;
 }
 .stat dt {
-  font-size: 11px;
   color: var(--ink-3);
 }
 .stat-value {
@@ -1435,7 +1480,7 @@ svg {
 .stats-note {
   margin-top: -32px;
   max-width: 52rem;
-  font-size: 11px;
+  font-size: 0.8125rem;
   letter-spacing: 0.06em;
   line-height: 1.7;
   color: var(--ink-3);
@@ -1475,7 +1520,7 @@ svg {
   text-wrap: pretty;
 }
 .results-source {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--ink-3);
   text-transform: none;
   letter-spacing: 0.04em;
@@ -1492,7 +1537,7 @@ svg {
   align-items: center;
   gap: 10px 16px;
   margin: 0;
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.16em;
 }
 .rc-tag {
@@ -1636,7 +1681,7 @@ svg {
 .rc-caveats-title {
   margin: 0 0 12px;
   font-weight: 400;
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -2083,7 +2128,7 @@ svg {
   border-radius: 36px;
 }
 .legal-updated {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--ink-3);
 }
 .legal-title {
@@ -2106,7 +2151,7 @@ svg {
   border-top: 1px solid var(--line);
 }
 .legal-section h2 {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--halo);
 }
 .legal-section a {
@@ -2132,6 +2177,9 @@ svg {
 @media (max-width: 560px) {
   .hero-inner {
     padding-top: 212px;
+  }
+  .hero-actions {
+    align-items: stretch;
   }
   .hero-foot {
     /* In flow, but painted above the hero photo's shade. */
@@ -2973,7 +3021,7 @@ svg {
 }
 .label-note {
   max-width: 52rem;
-  font-size: 11px;
+  font-size: 0.8125rem;
   letter-spacing: 0.06em;
   line-height: 1.7;
   text-transform: none;
@@ -3173,7 +3221,7 @@ svg {
     transform: translate(1120px, 118px) scale(1);
   }
 }
-@media (max-width: 900px) {
+@media (max-width: 1023px), (max-aspect-ratio: 1/1) {
   .hero-track {
     display: none;
   }
@@ -3197,6 +3245,12 @@ svg {
   display: block;
   width: 100%;
   aspect-ratio: 1;
+}
+/* Only rendered when JavaScript is off (it is the canvas's fallback). */
+.radar-still {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 @media (max-width: 900px) {
   .how-views {

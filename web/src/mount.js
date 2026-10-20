@@ -259,7 +259,9 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
   let yawDrag = 0;
   let hoverX = 0;
   let dragging = null;
-  container.style.touchAction = 'pan-y';
+  // pan-y: a vertical swipe still scrolls the page. pinch-zoom: without it,
+  // fingers on the viewer could not zoom the page.
+  container.style.touchAction = 'pan-y pinch-zoom';
   container.addEventListener('pointerdown', (e) => {
     dragging = { x: e.clientX, start: yawDrag };
     container.setPointerCapture(e.pointerId);
