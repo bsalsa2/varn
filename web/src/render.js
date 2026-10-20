@@ -499,10 +499,8 @@ const heroSection = (c) => {
     }
     <div class="hero-inner wrap">
       <div class="hero-copy">
-        <p class="eyebrow hero-rise" style="--i:0">${esc(hero.eyebrow)}</p>
         <h1 class="hero-title hero-rise" style="--i:1" id="hero-title">${headline(hero.headline)}</h1>
         <p class="hero-sub hero-rise" style="--i:2">${esc(hero.sub)}</p>
-        <p class="hero-explain hero-rise" style="--i:3">${esc(hero.explain)}</p>
         <p class="hero-status mono hero-rise" style="--i:3"><span class="hero-status-mark" aria-hidden="true"></span>${esc(hero.status)}</p>
         <div class="hero-actions hero-rise" style="--i:4">
           <a class="btn btn--glass btn--lg"${linkAttrs(hero.demo.href)}><span>${esc(hero.demo.label)}</span>${ARROW_UR}</a>

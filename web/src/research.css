@@ -1588,8 +1588,8 @@
 }
 .toc a:hover {
   color: var(--text-1);
-  border-color: rgba(167, 214, 255, 0.55);
-  background: rgba(167, 214, 255, 0.07);
+  border-color: rgba(143, 169, 194, 0.55);
+  background: rgba(143, 169, 194, 0.07);
 }
 .toc-n {
   color: var(--ice);
@@ -1679,7 +1679,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-2);
-  background: rgba(167, 214, 255, 0.05);
+  background: rgba(143, 169, 194, 0.05);
 }
 .spec-table tbody th,
 .spec-table tfoot th {
@@ -1712,8 +1712,8 @@
   transition: border-color var(--dur), background-color var(--dur);
 }
 .ref:hover {
-  border-color: rgba(167, 214, 255, 0.5);
-  background: linear-gradient(180deg, rgba(167, 214, 255, 0.07), transparent), var(--surface-1);
+  border-color: rgba(143, 169, 194, 0.5);
+  background: linear-gradient(180deg, rgba(143, 169, 194, 0.07), transparent), var(--surface-1);
 }
 .ref-name {
   display: inline-flex;
@@ -1832,7 +1832,7 @@
   transition: border-color var(--dur), background-color var(--dur);
 }
 .sister:hover {
-  border-color: rgba(167, 214, 255, 0.5);
+  border-color: rgba(143, 169, 194, 0.5);
 }
 .sister-mark {
   display: grid;
@@ -1842,7 +1842,7 @@
   height: 52px;
   border: 1px solid var(--hairline);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(167, 214, 255, 0.14), transparent 72%);
+  background: radial-gradient(circle, rgba(143, 169, 194, 0.14), transparent 72%);
 }
 .sister-mark svg {
   width: 26px;
