@@ -156,6 +156,8 @@ text('hero.demo.label');
 link('hero.demo.href');
 text('hero.results.label');
 link('hero.results.href');
+text('hero.source.label');
+link('hero.source.href');
 list('hero.facts').forEach((f, i) => text(`hero.facts.${i}`, f));
 if (get('hero.cost') !== undefined) {
   text('hero.cost');

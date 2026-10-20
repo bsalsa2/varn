@@ -30,6 +30,7 @@ import {
   WebGLRenderer,
 } from 'three';
 import { makeEnvironment } from './three-env.js';
+import { motion } from './motion.js';
 
 // ---- Geometry constants, from hardware/pantilt.py (mm) --------------------
 const WALL = 3;
@@ -130,6 +131,8 @@ function ghostServo() {
 }
 
 export async function createMount({ container, url, reduceMotion, finePointer, onTooSlow }) {
+  // Still when the device asks for reduced motion or the visitor pauses animation.
+  const still = () => reduceMotion || motion.paused;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Model download failed (${response.status})`);
   const [baseGeo, yokeGeo, armGeo] = parseModels(await response.arrayBuffer());
@@ -279,7 +282,8 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
   container.addEventListener('pointercancel', endDrag);
   container.addEventListener('pointerleave', () => (hoverX = 0));
   // Keyboard: once the viewer is ready main.js makes it focusable; the left
-  // and right arrow keys turn it like a drag does.
+  // and right arrow keys turn it like a drag does. main.js also wires on-screen
+  // buttons to turn() and reset(), for visitors who cannot drag.
   container.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
@@ -291,7 +295,7 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
   let active = -1;
   const setActive = (i) => {
     active = i;
-    if (reduceMotion) {
+    if (still()) {
       materials.forEach((m, j) => (m.emissiveIntensity = j === active ? 0.22 : 0));
       renderer.render(scene, camera);
     } else wake();
@@ -315,7 +319,7 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
   let yaw = 0;
   function update(dt) {
     time += dt;
-    if (!reduceMotion) {
+    if (!still()) {
       retarget -= dt;
       if (retarget <= 0) {
         servo.pan.target = rand(PAN_RANGE);
@@ -328,14 +332,14 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
     pan.rotation.z = servo.pan.x;
     tilt.rotation.x = servo.tilt.x;
 
-    const goalYaw = (reduceMotion ? 0 : Math.sin(time * 0.11) * 0.35) + hoverX * 0.35 + yawDrag;
-    yaw += (goalYaw - yaw) * (reduceMotion ? 1 : 1 - Math.exp(-dt * 3));
+    const goalYaw = (still() ? 0 : Math.sin(time * 0.11) * 0.35) + hoverX * 0.35 + yawDrag;
+    yaw += (goalYaw - yaw) * (still() ? 1 : 1 - Math.exp(-dt * 3));
     turntable.rotation.y = yaw;
 
     const glow = 1 - Math.exp(-dt * 6);
     materials.forEach((m, j) => {
       const goal = j === active ? 0.22 : 0;
-      m.emissiveIntensity += (goal - m.emissiveIntensity) * (reduceMotion ? 1 : glow);
+      m.emissiveIntensity += (goal - m.emissiveIntensity) * (still() ? 1 : glow);
     });
   }
 
@@ -371,12 +375,12 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
       frameSum = 0;
     }
 
-    if (onScreen && !document.hidden) requestAnimationFrame(frame);
+    if (onScreen && !document.hidden && !still()) requestAnimationFrame(frame);
     else running = false;
   }
 
   function wake() {
-    if (reduceMotion) {
+    if (still()) {
       update(0);
       renderer.render(scene, camera);
       return;
@@ -397,14 +401,26 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
     wake();
   }).observe(container);
   document.addEventListener('visibilitychange', wake);
+  motion.subscribe(wake);
   new ResizeObserver(() => {
     layout();
-    if (reduceMotion || !running) {
+    if (still() || !running) {
       update(0);
       renderer.render(scene, camera);
     }
   }).observe(container);
   wake();
 
-  return { setActive };
+  return {
+    setActive,
+    // Turn the model by a step, or back to its starting angle.
+    turn(step) {
+      yawDrag += step;
+      wake();
+    },
+    reset() {
+      yawDrag = 0;
+      wake();
+    },
+  };
 }

@@ -41,19 +41,24 @@ const inlineCss = () => ({
         (_, q) => `url(${q}./${dir}`
       );
       for (const page of users) page.source = page.source.replace(tag, () => `<style>${css}</style>`);
-      delete bundle[name];
+      // Lazy chunks (hero lens, radar, sensor, 3D viewer) still list this file
+      // as a dependency to preload, and Vite rejects the import if it 404s.
+      // `vite preview` hides that by answering every unknown path with
+      // index.html, so leave an empty file behind rather than deleting it.
+      file.source = '/* inlined into each page */\n';
     }
   },
 });
 
-// Preloads the two fonts the first screen needs (display + body text).
+// Preloads the fonts the first screen needs (display, body, buttons, labels),
+// so text does not reflow when they arrive.
 const preloadFonts = () => ({
   name: 'varn-preload-fonts',
   apply: 'build',
   transformIndexHtml: {
     order: 'post',
     handler(html, ctx) {
-      const wanted = ['space-grotesk-latin-500-normal', 'inter-latin-400-normal'];
+      const wanted = ['space-grotesk-latin-500-normal', 'inter-latin-400-normal', 'inter-latin-500-normal', 'geist-mono-latin-400-normal', 'geist-mono-latin-500-normal'];
       const files = Object.keys(ctx.bundle || {}).filter(
         (f) => f.endsWith('.woff2') && wanted.some((w) => f.includes(w))
       );

@@ -44,9 +44,10 @@ test('the two published v2 numbers keep their units and are marked not comparabl
   assert.ok(content.results.caveats.some((c) => /different units/i.test(c)));
 });
 
-test('the demo states SIMULATED on the page, in the sidebar and in the data', () => {
+test('the demo states SIMULATED on the page, in the top bar and in the data', () => {
   assert.match(content.demo.banner, /^SIMULATED/);
-  assert.match(demo, /SIMULATED DEMO/);
+  assert.match(demo, /state-tag--simulated[^>]*>[\s\S]*Simulated data/);
+  assert.match(demo, /Not connected/);
   assert.doesNotMatch(demo, /Confirmed aircraft/);
 });
 

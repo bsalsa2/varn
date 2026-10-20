@@ -12,13 +12,13 @@
     "models": "node scripts/build-models.mjs",
     "prebuild": "npm run check && npm run models",
     "build": "vite build",
+    "check:dist": "node scripts/check-dist.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
     "@fontsource/geist-mono": "^5.3.0",
     "@fontsource/inter": "^5.3.0",
     "@fontsource/space-grotesk": "^5.3.0",
-    "gsap": "^3.15.0",
     "three": "^0.186.1"
   },
   "devDependencies": {

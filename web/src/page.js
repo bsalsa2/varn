@@ -1,7 +1,8 @@
 // Script for the secondary pages (contact, privacy).
-import { initHeaderAutoHide, initNavMenu } from './nav-menu.js';
+import { initNavMenu } from './nav-menu.js';
 import { initContactForm } from './contact.js';
+import { initMotion } from './motion.js';
 
+initMotion();
 initNavMenu();
-initHeaderAutoHide();
 initContactForm();

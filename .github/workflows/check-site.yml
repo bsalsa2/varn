@@ -33,7 +33,9 @@ jobs:
       - run: npm ci
       - name: Check content.js
         run: npm run check
-      - name: Test the phone upload logic
+      - name: Test
         run: npm test
       - name: Build
         run: npm run build
+      - name: Check the built site
+        run: npm run check:dist

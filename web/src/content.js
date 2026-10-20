@@ -40,6 +40,7 @@ export const content = {
       { label: 'Overview', href: '#top' },
       { label: 'How it works', href: '#story' },
       { label: 'Results', href: '#results' },
+      { label: 'Hardware', href: '#how' },
       { label: 'Status', href: '#status' },
       { label: 'Demo', href: './demo.html' },
       { label: 'Contact', href: './contact.html' },
@@ -58,16 +59,18 @@ export const content = {
     sub: 'A prototype for passive visual sensing: a camera and a detection model label what they see as drone or aircraft, and every sighting is logged. The current model is weak at drones.',
     // Nav button and footer link to the code.
     primary: { label: 'View the code', href: 'https://github.com/bsalsa2/varn' },
-    // The two hero buttons: the interactive demo, then the measured results.
+    // The hero actions: the interactive demo, the measured results, then a
+    // plain link to the source.
     demo: { label: 'Explore the dashboard demo', href: './demo.html' },
     results: { label: 'Read the measured results', href: '#results' },
+    source: { label: 'View the source code', href: 'https://github.com/bsalsa2/varn' },
     // Cost note, shown under the buttons. Keep the exclusions in the sentence.
     cost: 'Estimated sensing-hardware parts cost: about $113 (camera, servos, mount, power), before the computer that runs the model. Not a validated system.',
     // The line along the bottom of the hero. Plain facts only.
     facts: ['Detection only', '~$113 est. sensing parts', 'Tested in simulation and on recorded video', 'Not yet on real hardware'],
     caption: 'SAMPLE: a placeholder sighting, not a real detection. Real sightings replace it once the hardware is built.',
 
-    // The glass sighting card beside the lens. Placeholder values only.
+    // The sighting card beside the lens. Placeholder values only.
     // status: 'aircraft' (confirmed aircraft), 'drone' (possible drone) or
     // 'no-adsb' (no ADS-B match). The colour and shape follow automatically.
     card: {
@@ -130,15 +133,15 @@ export const content = {
     link: { label: 'Full results and limits', href: '#results' },
   },
 
-  // The pinned scroll story. Each stage has its own animated scene in the
-  // panel (see storyScene in render.js). Everything in the panel is a
-  // simulation and is labelled SAMPLE.
+  // The step-by-step explainer. Each stage has its own animated scene in the
+  // panel (see SCENES in render.js); the visitor picks the step. Everything
+  // in the panel is a simulation and is labelled SAMPLE.
   story: {
     kicker: 'How it works',
     heading: 'From sky to sighting',
     intro: 'Five steps turn a patch of sky into a logged record.',
-    // Shown only where the story is pinned and steps through as you scroll.
-    hint: 'Keep scrolling and watch one happen.',
+    // Shown only when JavaScript is on and the steps are selectable.
+    hint: 'Pick a step to watch it happen.',
     device: 'SAMPLE · NODE-01 · SIMULATED',
     note: 'SAMPLE: everything in this panel is a simulation, not footage.',
     stages: [

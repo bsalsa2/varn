@@ -1,5 +1,5 @@
 // The hero lens: a simulated sky view drawn on a canvas, labelled SAMPLE.
-// Three short scenes loop, and the glass sighting card beside it follows:
+// Three short scenes loop, and the sighting card beside it follows:
 //
 //   1. an aircraft crosses            -> CONFIRMED AIRCRAFT  (circle)
 //   2. a drone hovers and wanders     -> POSSIBLE DRONE      (square)
@@ -7,6 +7,9 @@
 //
 // Nothing here is a real detection. Brackets (not crosshairs) frame the target;
 // the shapes match the status shapes used everywhere else on the page.
+//
+// It stops where it is when the visitor pauses animation (motion.js).
+import { motion } from './motion.js';
 
 const TAU = Math.PI * 2;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -287,7 +290,7 @@ export function createLens({ lens, canvas, card, reduceMotion }) {
   }
 
   function start() {
-    if (running || reduceMotion) return;
+    if (running || reduceMotion || motion.paused) return;
     running = true;
     last = performance.now();
     raf = requestAnimationFrame(frame);
@@ -318,18 +321,19 @@ export function createLens({ lens, canvas, card, reduceMotion }) {
     box.y = h / 2 + s.y * (Math.min(w, h) / 2) * 0.78;
     draw(1);
   } else {
-    // Only run while visible and the tab is showing.
+    // Only run while visible, the tab is showing and animation is on.
     let visible = false;
+    const sync = () => (visible && !document.hidden && !motion.paused ? start() : stop());
     const io = new IntersectionObserver(
       ([e]) => {
         visible = e.isIntersecting;
-        if (visible && !document.hidden) start();
-        else stop();
+        sync();
       },
       { threshold: 0.05 }
     );
     io.observe(lens);
-    document.addEventListener('visibilitychange', () => (document.hidden || !visible ? stop() : start()));
+    document.addEventListener('visibilitychange', sync);
+    motion.subscribe(sync);
     lens.addEventListener('pointermove', (e) => {
       const r = lens.getBoundingClientRect();
       pointer.x = ((e.clientX - r.left) / r.width - 0.5) * 2;

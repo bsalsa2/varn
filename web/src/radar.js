@@ -2,8 +2,10 @@
 // polar grid; blips brighten as the beam passes and fade after. The blips are
 // made up: an aircraft on a straight track and a possible drone that loiters.
 //
-// Restrained on purpose: one canvas, drawn only while on screen, and a single
-// still frame (no sweep) for visitors who turn off motion.
+// Restrained on purpose: one canvas, drawn only while on screen, a single
+// still frame (no sweep) for visitors who turn off motion, and a freeze when
+// the visitor pauses animation (motion.js).
+import { motion } from './motion.js';
 
 const TAU = Math.PI * 2;
 
@@ -141,6 +143,7 @@ export function createRadar({ root, reduceMotion }) {
 
   let raf = 0;
   let last = 0;
+  let onScreen = false;
   const frame = (now) => {
     const dt = Math.min(0.05, (now - (last || now)) / 1000);
     last = now;
@@ -149,10 +152,16 @@ export function createRadar({ root, reduceMotion }) {
     draw(dt);
     raf = requestAnimationFrame(frame);
   };
-  // Only animate while visible.
-  new IntersectionObserver(([e]) => {
+  // Only animate while visible and not paused.
+  const sync = () => {
     cancelAnimationFrame(raf);
     last = 0;
-    if (e.isIntersecting) raf = requestAnimationFrame(frame);
+    if (onScreen && !document.hidden && !motion.paused) raf = requestAnimationFrame(frame);
+  };
+  new IntersectionObserver(([e]) => {
+    onScreen = e.isIntersecting;
+    sync();
   }).observe(canvas);
+  document.addEventListener('visibilitychange', sync);
+  motion.subscribe(sync);
 }

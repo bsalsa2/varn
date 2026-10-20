@@ -1,12 +1,13 @@
 /* ==========================================================================
-   Dashboard demo (demo.html). Everything in the simulated views is sample
-   data; the "SIMULATED" badges and the banner say so. Tokens come from
+   Dashboard demo (demo.html). The page is one application frame: a top bar
+   (what this is, and that nothing is connected), a notice, a sidebar of views
+   and the content. Everything in the simulated views is sample data; the
+   "Simulated" tags and the notice say so. Tokens come from styles.css and
    graphite.css; status colours always travel with a shape and a word.
    ========================================================================== */
 .demo-page {
-  position: relative; /* above the fixed stage behind the page */
-  padding-top: 112px;
-  padding-bottom: 96px;
+  position: relative;
+  padding: calc(var(--nav-h) + 40px) 0 96px;
 }
 .demo-wrap {
   display: flex;
@@ -16,25 +17,20 @@
 .demo-intro {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-}
-.demo-intro .h-section {
-  font-size: clamp(34px, 5vw, 64px);
-}
-.demo-banner {
-  display: flex;
-  align-items: flex-start;
   gap: 12px;
-  margin: 0;
-  padding: 12px 16px;
-  border-radius: var(--varn-r-card);
-  background: rgba(224, 168, 74, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(224, 168, 74, 0.35);
-  font-size: 0.8125rem;
-  letter-spacing: 0.06em;
-  line-height: 1.55;
-  text-transform: none;
+}
+.demo-title {
+  max-width: 24ch;
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: var(--fs-h1);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   color: var(--varn-text);
+}
+.demo-noscript {
+  margin: 0;
+  color: var(--ink-1);
 }
 .state-shape {
   flex: none;
@@ -47,17 +43,75 @@
   background: repeating-linear-gradient(45deg, var(--varn-amber) 0 2px, transparent 2px 4px);
   box-shadow: inset 0 0 0 1px var(--varn-amber);
 }
-.demo-noscript {
+
+/* ---- Application frame ----------------------------------------------------- */
+.demo-app {
+  /* clip, not hidden: it rounds the corners without becoming a scroll
+     container, so the mobile tab bar can still stick to the header. */
+  overflow: clip;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  background: var(--surface-page);
+}
+.demo-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 16px;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--line);
+}
+.demo-top-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
+  font-family: var(--f-display);
+  font-weight: 500;
+  color: var(--varn-text);
+}
+.demo-top-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 0;
+}
+.demo-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-label);
   color: var(--ink-1);
 }
-
-/* ---- Shell ------------------------------------------------------------------ */
+.demo-node-state {
+  color: var(--ink-3);
+}
+.demo-node-state::before {
+  content: '\00b7';
+  margin-right: 8px;
+}
+.demo-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  padding: 10px 16px;
+  background: rgba(224, 168, 74, 0.08);
+  border-bottom: 1px solid rgba(224, 168, 74, 0.4);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--varn-text);
+}
+.demo-banner .state-shape {
+  margin-top: 4px;
+}
 .demo-shell {
   display: grid;
   grid-template-columns: 208px minmax(0, 1fr);
-  gap: 32px;
-  align-items: start;
+  align-items: stretch;
 }
 .no-js .demo-side {
   display: none;
@@ -66,15 +120,9 @@
   grid-template-columns: minmax(0, 1fr);
 }
 .demo-side {
-  position: sticky;
-  top: 96px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
   padding: 12px;
-  border-radius: var(--varn-r-card);
-  background: var(--varn-surface-1);
-  box-shadow: inset 0 0 0 1px var(--line);
+  background: var(--surface-1);
+  border-right: 1px solid var(--line);
 }
 .demo-tabs {
   display: flex;
@@ -88,14 +136,15 @@
   gap: 12px;
   min-height: 44px;
   padding: 0 12px;
-  border-radius: var(--varn-r-btn);
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  border-radius: var(--r-sm);
+  font-size: 0.9375rem;
+  font-weight: 500;
   color: var(--ink-1);
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color var(--dur), color var(--dur);
 }
 .demo-tab:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(167, 179, 189, 0.1);
+  color: var(--white);
 }
 .demo-tab-mark {
   width: 6px;
@@ -104,35 +153,26 @@
   box-shadow: inset 0 0 0 1px var(--ink-3);
 }
 .demo-tab[aria-current='page'] {
-  background: rgba(75, 91, 107, 0.35);
-  color: var(--varn-text);
+  background: var(--surface-2);
+  color: var(--white);
+}
+.demo-tab[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--varn-fog);
 }
 .demo-tab[aria-current='page'] .demo-tab-mark {
   background: var(--varn-text);
   box-shadow: none;
 }
-.demo-node {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 10px;
-  margin: 0;
-  padding: 12px;
-  border-top: 1px solid var(--line);
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
-  color: var(--ink-1);
-}
-.demo-node-state {
-  flex-basis: 100%;
-  padding-left: 18px;
-  color: var(--ink-3);
-  letter-spacing: 0.08em;
-  text-transform: none;
-}
 .demo-main {
   min-width: 0;
   min-height: 70vh; /* the footer must not jump when the views appear */
+  padding: 24px;
 }
 .demo-view {
   display: flex;
@@ -153,7 +193,8 @@
   margin: 0;
   font-family: var(--f-display);
   font-weight: 500;
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: var(--fs-h2);
+  letter-spacing: -0.02em;
   color: var(--varn-text);
 }
 .demo-view-head h2:focus {
@@ -164,14 +205,14 @@
   align-self: flex-start;
   margin: 0;
   padding: 4px 10px;
-  border-radius: var(--varn-r-tag);
-  box-shadow: inset 0 0 0 1px rgba(224, 168, 74, 0.5);
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  border: 1px solid rgba(224, 168, 74, 0.55);
+  border-radius: var(--r-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--varn-amber);
 }
 .demo-badge--measured {
-  box-shadow: inset 0 0 0 1px var(--line-2);
+  border-color: var(--line-2);
   color: var(--accent-ink);
 }
 .demo-lede {
@@ -199,7 +240,7 @@
   margin: 0;
   font-family: var(--f-display);
   font-weight: 500;
-  font-size: 20px;
+  font-size: var(--fs-h3);
   color: var(--varn-text);
 }
 
@@ -208,34 +249,32 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 16px;
-  border: 0;
-  border-radius: var(--varn-r-btn);
+  border: 1px solid var(--line-ui);
+  border-radius: var(--r-sm);
   background: transparent;
-  box-shadow: inset 0 0 0 1px var(--line-2);
-  font: 500 0.75rem var(--f-mono);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font: 500 0.875rem var(--f-body);
   color: var(--varn-text);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color var(--dur), border-color var(--dur);
 }
 .demo-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--varn-fog);
+  background: rgba(167, 179, 189, 0.1);
 }
 .demo-btn:disabled {
   opacity: 0.45;
   cursor: default;
 }
-.demo-btn[aria-pressed='true'] {
+.demo-btn.is-on {
   background: var(--varn-steel-blue);
-  box-shadow: none;
+  border-color: var(--varn-steel-blue);
 }
 .demo-btn--solid {
   background: var(--varn-bone);
+  border-color: var(--varn-bone);
   color: var(--varn-charcoal);
-  box-shadow: none;
 }
 .demo-btn--solid:hover:not(:disabled) {
   background: #fff;
@@ -246,7 +285,7 @@
   width: 44px;
   height: 44px;
   border: 0;
-  border-radius: var(--varn-r-btn);
+  border-radius: var(--r-sm);
   background: transparent;
   color: var(--varn-text);
   cursor: pointer;
@@ -274,18 +313,17 @@
   min-width: 0;
 }
 .demo-field > span {
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-label);
+  letter-spacing: 0.02em;
   color: var(--ink-1);
 }
 .demo-field input,
 .demo-field select {
   min-height: 44px;
   padding: 0 12px;
-  border: 0;
-  border-radius: var(--varn-r-btn);
-  background: var(--varn-surface-1);
-  box-shadow: inset 0 0 0 1px var(--line-2);
+  border: 1px solid var(--line-ui);
+  border-radius: var(--r-sm);
+  background: var(--surface-page);
   font: inherit;
   font-size: 16px; /* 16px stops iOS zooming in on focus */
   color: var(--varn-text);
@@ -304,9 +342,9 @@
   gap: 16px;
   min-width: 0;
   padding: 20px;
-  border-radius: var(--varn-r-card);
-  background: var(--varn-surface-1);
-  box-shadow: inset 0 0 0 1px var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface-1);
+  border: 1px solid var(--line);
 }
 .demo-plate--flush {
   gap: 0;
@@ -337,14 +375,14 @@
   flex-direction: column;
   gap: 6px;
   padding: 16px 18px;
-  border-radius: var(--varn-r-stat);
-  background: var(--varn-surface-1);
-  box-shadow: inset 0 0 0 1px var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface-1);
+  border: 1px solid var(--line);
 }
 .demo-kpi-k {
   margin: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-label);
+  letter-spacing: 0.02em;
   color: var(--ink-1);
 }
 .demo-kpi-v {
@@ -361,10 +399,10 @@
   color: var(--ink-3);
 }
 .demo-kpi--aircraft {
-  box-shadow: inset 3px 0 0 var(--varn-aircraft), inset 0 0 0 1px var(--line);
+  box-shadow: inset 3px 0 0 var(--varn-aircraft);
 }
 .demo-kpi--drone {
-  box-shadow: inset 3px 0 0 var(--varn-drone), inset 0 0 0 1px var(--line);
+  box-shadow: inset 3px 0 0 var(--varn-drone);
 }
 .demo-cols {
   display: grid;
@@ -376,8 +414,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  font-size: var(--fs-label);
+  letter-spacing: 0.02em;
   color: var(--ink-1);
 }
 .demo-legend span {
@@ -408,16 +446,17 @@
   min-height: 56px;
   padding: 8px 12px;
   border: 0;
-  border-radius: var(--varn-r-btn);
-  background: rgba(255, 255, 255, 0.03);
-  box-shadow: inset 0 0 0 1px var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-page);
+  border: 1px solid var(--line);
   text-align: left;
   color: inherit;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.25s var(--ease);
+  transition: background-color var(--dur), border-color var(--dur);
 }
 .demo-row:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--surface-2);
+  border-color: var(--line-2);
 }
 .demo-row-main {
   display: flex;
@@ -427,8 +466,8 @@
   min-width: 0;
 }
 .demo-row-time {
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
+  font-size: var(--fs-label);
+  letter-spacing: 0.02em;
   color: var(--ink-1);
   text-transform: none;
 }
@@ -457,7 +496,7 @@
 }
 .demo-more {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: var(--fs-small);
 }
 
 /* ---- Tables ------------------------------------------------------------------------ */
@@ -470,8 +509,8 @@
   gap: 10px;
   min-height: 44px;
   list-style: none;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-small);
+  letter-spacing: 0;
   color: var(--accent-ink);
   cursor: pointer;
 }
@@ -504,11 +543,11 @@
 .demo-table thead th {
   position: sticky;
   top: 0;
-  background: var(--varn-surface-1);
-  font-family: var(--f-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  background: var(--surface-1);
+  font-family: var(--f-body);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: 0.02em;
   color: var(--ink-1);
   white-space: nowrap;
 }
@@ -528,7 +567,7 @@
   max-height: min(70vh, 640px);
 }
 .demo-table--events tbody tr:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--surface-2);
 }
 .demo-table--events td,
 .demo-table--events th {
@@ -562,8 +601,8 @@
   padding: 0;
   border: 0;
   background: none;
-  font-size: 0.8125rem;
-  letter-spacing: 0.06em;
+  font-size: var(--fs-label);
+  letter-spacing: 0.02em;
   color: var(--accent-ink);
   cursor: pointer;
   text-decoration: underline;
@@ -586,9 +625,8 @@
 }
 .demo-events-foot p {
   margin: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: none;
+  font-size: var(--fs-label);
+  letter-spacing: 0.02em;
   color: var(--ink-1);
 }
 .demo-foot-actions {
@@ -610,8 +648,8 @@
 .demo-area {
   display: block;
   margin-bottom: 2px;
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-label);
+  letter-spacing: 0.02em;
   color: var(--ink-3);
 }
 
@@ -621,10 +659,10 @@
   align-items: center;
   gap: 8px;
   padding: 4px 10px;
-  border-radius: var(--varn-r-tag);
-  box-shadow: inset 0 0 0 1px var(--line-2);
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  border: 1px solid var(--line-ui);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-label);
+  letter-spacing: 0.02em;
   color: var(--varn-text);
   white-space: nowrap;
 }
@@ -679,7 +717,7 @@
   top: 8px;
   width: 28px;
   height: 180px;
-  font-size: 0.75rem;
+  font-size: var(--fs-label);
   letter-spacing: 0;
   color: var(--ink-3);
 }
@@ -739,7 +777,7 @@
   right: 0;
   bottom: 0;
   height: 16px;
-  font-size: 0.75rem;
+  font-size: var(--fs-label);
   letter-spacing: 0.02em;
   color: var(--ink-3);
 }
@@ -754,13 +792,12 @@
   top: -4px;
   z-index: 2;
   padding: 8px 10px;
-  border-radius: var(--varn-r-btn);
+  border-radius: var(--r-sm);
   background: var(--varn-charcoal);
-  box-shadow: inset 0 0 0 1px var(--line-2);
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
+  border: 1px solid var(--line-2);
+  font-size: var(--fs-label);
+  letter-spacing: 0.02em;
   line-height: 1.5;
-  text-transform: none;
   color: var(--varn-text);
   transform: translate(-50%, -100%);
   white-space: nowrap;
@@ -797,7 +834,7 @@
   left: 50%;
   padding-bottom: 3px;
   transform: translateX(-50%);
-  font: 0.6875rem var(--f-mono);
+  font: 0.75rem var(--f-mono);
   color: var(--ink-1);
 }
 .db-bars .dc-seg[data-n='0'] {
@@ -808,7 +845,7 @@
 }
 .db-x {
   text-align: center;
-  font-size: 0.75rem;
+  font-size: var(--fs-label);
   letter-spacing: 0;
   color: var(--ink-3);
 }
@@ -822,8 +859,8 @@
 }
 .demo-defs > div {
   padding: 16px 18px;
-  border-radius: var(--varn-r-card);
-  box-shadow: inset 0 0 0 1px var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
 }
 .demo-defs dt {
   margin-bottom: 4px;
@@ -849,8 +886,9 @@
   padding: 0;
   border: 0;
   border-radius: 0;
-  background: var(--varn-night);
-  box-shadow: inset 1px 0 0 var(--line-2), -30px 0 60px -30px rgba(0, 0, 0, 0.8);
+  background: var(--surface-1);
+  border-left: 1px solid var(--line-2);
+  box-shadow: var(--shadow-pop);
   color: var(--ink-1);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -887,13 +925,6 @@
   letter-spacing: 0.02em;
   color: var(--varn-text);
 }
-.demo-frame {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: var(--varn-r-card);
-  box-shadow: inset 0 0 0 1px var(--line);
-}
 .demo-drawer-class {
   margin: 0;
 }
@@ -911,8 +942,8 @@
   border-bottom: 1px solid var(--line);
 }
 .demo-fields dt {
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-label);
+  letter-spacing: 0.02em;
   color: var(--ink-3);
 }
 .demo-fields dd {
@@ -936,56 +967,58 @@
 }
 
 /* ---- Small screens --------------------------------------------------------------------------------- */
-@media (max-width: 900px) {
-  .demo-page {
-    padding-top: 100px;
-  }
+@media (max-width: 56.25em) {
   .demo-shell {
     grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
   }
+  /* The sidebar becomes a tab bar that stays under the site header. */
   .demo-side {
     position: sticky;
-    top: 84px;
+    top: var(--nav-h);
     z-index: 5;
-    flex-direction: row;
     padding: 6px;
-    background: var(--varn-night);
-    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
   }
   .demo-tabs {
     flex-direction: row;
   }
-  .demo-tab {
+  .demo-tabs li {
     flex: 1;
+  }
+  .demo-tab {
     justify-content: center;
-    padding: 0 10px;
+    padding: 0 8px;
     white-space: nowrap;
+  }
+  .demo-tab[aria-current='page']::before {
+    left: 8px;
+    right: 8px;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    height: 2px;
   }
   .demo-tab-mark {
     display: none;
   }
-  .demo-node {
-    display: none;
+  .demo-main {
+    padding: 16px;
   }
   .demo-cols {
     grid-template-columns: minmax(0, 1fr);
   }
   .demo-view-head h2 {
-    scroll-margin-top: 150px;
+    scroll-margin-top: calc(var(--nav-h) + 72px);
   }
 }
-@media (max-width: 560px) {
-  .demo-tab {
-    padding: 0 6px;
-    letter-spacing: 0.06em;
-  }
+@media (max-width: 35em) {
   /* The events table scrolls sideways; its ID column stays put. */
   .demo-table--events th:first-child {
     position: sticky;
     left: 0;
     z-index: 1;
-    background: var(--varn-surface-1);
+    background: var(--surface-1);
   }
   .demo-table--events th,
   .demo-table--events td {
@@ -1021,48 +1054,20 @@
   .demo-drawer[open] {
     animation: none;
   }
-  .demo-row,
-  .demo-tab {
-    transition: none;
-  }
 }
 
-/* ---- Persistent SIMULATED label, loading, notes -------------------------------------- */
-.demo-sticky {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  padding: 8px 12px;
-  border-radius: var(--varn-r-btn);
-  background: rgba(224, 168, 74, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(224, 168, 74, 0.45);
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  color: var(--varn-amber);
-}
-.demo-sticky .state-shape {
-  margin: 0;
-}
-.demo-sticky-sub {
-  display: none;
-  color: var(--ink-1);
-  letter-spacing: 0.04em;
-  text-transform: none;
-}
+/* ---- Loading and notes ------------------------------------------------------------------ */
 .demo-status {
   margin: 0;
   padding: 12px 16px;
-  border-radius: var(--varn-r-btn);
-  box-shadow: inset 0 0 0 1px var(--line-2);
-  font-size: 0.8125rem;
-  letter-spacing: 0.06em;
-  text-transform: none;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-small);
   color: var(--ink-1);
 }
 .demo-status.is-bad,
 .demo-note.is-bad {
-  box-shadow: inset 0 0 0 1px var(--varn-amber);
+  border-color: var(--varn-amber);
   color: var(--varn-amber);
 }
 .demo-status[hidden],
@@ -1075,35 +1080,9 @@
 .demo-note {
   flex-basis: 100%;
   margin: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  text-transform: none;
+  font-size: var(--fs-label);
   color: var(--ink-1);
 }
 .demo-note.is-ok {
   color: var(--varn-text);
-}
-@media (max-width: 900px) {
-  .demo-side {
-    flex-wrap: wrap;
-  }
-  .demo-sticky {
-    flex: 1 1 100%;
-  }
-  .demo-sticky-sub {
-    display: inline;
-  }
-  .demo-tabs {
-    flex: 1 1 100%;
-  }
-}
-@media (min-width: 901px) {
-  .demo-sticky-sub {
-    display: block;
-    flex-basis: 100%;
-    margin-top: 2px;
-  }
-  .demo-sticky {
-    flex-wrap: wrap;
-  }
 }

@@ -50,6 +50,10 @@ jobs:
       - name: Build
         run: npm run build
 
+      # A missing file or a dead in-page link fails the deploy, not the visitor.
+      - name: Check the built site
+        run: npm run check:dist
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v5
         with:

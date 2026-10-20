@@ -2,7 +2,8 @@
 // data from demo-data.js: nothing here was detected by a camera. The measured
 // results, the system status and the definitions are static HTML from the
 // build (render.js), not drawn here.
-import { initHeaderAutoHide, initNavMenu } from './nav-menu.js';
+import { initNavMenu } from './nav-menu.js';
+import { initMotion } from './motion.js';
 import {
   ADSB,
   CLASSES,
@@ -18,10 +19,9 @@ import {
 } from './demo-data.js';
 import './demo.css';
 
+initMotion();
 initNavMenu();
-initHeaderAutoHide();
 
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const esc = (s) =>
@@ -316,13 +316,13 @@ function stopReplay() {
   clearInterval(replayTimer);
   replayTimer = 0;
   const b = $('#replay');
-  b.setAttribute('aria-pressed', 'false');
+  b.classList.remove('is-on');
   b.textContent = 'Replay simulated feed';
 }
 function startReplay() {
   if (replayTimer) return; // never two timers
   const b = $('#replay');
-  b.setAttribute('aria-pressed', 'true');
+  b.classList.add('is-on');
   b.textContent = 'Stop replay';
   let sent = 0;
   replayTimer = setInterval(() => {
@@ -410,4 +410,3 @@ try {
   $('#demo-status').classList.add('is-bad');
   $('#view-analytics').hidden = false;
 }
-if (reduceMotion) document.documentElement.classList.add('demo-still');

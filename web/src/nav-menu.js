@@ -26,29 +26,3 @@ export function initNavMenu() {
   // on the panel's padding, which must not close it.
   nav.addEventListener('focusout', (e) => e.relatedTarget && !nav.contains(e.relatedTarget) && set(false));
 }
-
-// The header tucks away while you read down the page and comes back when you
-// scroll up. An open mobile menu keeps it (and its close button) on screen.
-export function initHeaderAutoHide() {
-  const header = document.getElementById('top-nav');
-  if (!header) return;
-  let lastY = window.scrollY;
-  let raf = 0;
-  window.addEventListener(
-    'scroll',
-    () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const down = y > lastY + 4;
-        const up = y < lastY - 4;
-        if (down && y > window.innerHeight * 0.6 && !header.querySelector('.nav.is-open')) header.classList.add('is-hidden');
-        else if (up || y < 80) header.classList.remove('is-hidden');
-        if (down || up) lastY = y;
-      });
-    },
-    { passive: true }
-  );
-  // Keyboard users always get the nav back.
-  header.addEventListener('focusin', () => header.classList.remove('is-hidden'));
-}

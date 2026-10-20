@@ -35,9 +35,14 @@ const ARROW_DN = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4
 
 const STATUS_KINDS = { DONE: 'done', 'IN PROGRESS': 'progress', NEXT: 'next' };
 
-// Section marker row, e.g. "02-00   [ SYSTEM ]   +", over a hairline.
+// Section label, e.g. "02  How it works", over a hairline.
 const kicker = (n, text, id = '', tag = 'p') =>
-  `<${tag} class="kicker mono"${id ? ` id="${id}"` : ''}><span class="kicker-n">${pad2(n)}-00</span><span class="kicker-label">[&nbsp;${esc(text)}&nbsp;]</span><span class="kicker-plus" aria-hidden="true">+</span></${tag}>`;
+  `<${tag} class="kicker mono"${id ? ` id="${id}"` : ''}><span class="kicker-n" aria-hidden="true">${pad2(n)}</span><span class="kicker-label">${esc(text)}</span></${tag}>`;
+
+// Animation control (WCAG 2.2.2): main.js reveals these and wires them to
+// motion.js; they stay hidden for visitors who have asked for reduced motion.
+const motionButton = () =>
+  `<button class="motion-btn" type="button" data-motion hidden>Pause animation</button>`;
 
 // Status: colour always travels with a shape and a word.
 // circle = confirmed aircraft, square = possible drone, ring = no ADS-B match.
@@ -71,19 +76,19 @@ const headline = (h) => {
   const [first, ...rest] = String(h).trim().split(/\s+/);
   return [first, rest.join(' ')]
     .filter(Boolean)
-    .map((line) => `<span class="line"><span class="line-in">${esc(line)}</span></span>`)
+    .map((line) => `<span class="line">${esc(line)}</span>`)
     .join(' ');
 };
 
 // ---- Hero ---------------------------------------------------------------------
 
-// Frosted sighting card. Placeholder values, so it always carries SAMPLE.
+// Sighting card. Placeholder values, so it always carries SAMPLE.
 // hero-lens.js cycles it through the three statuses along with the lens.
 const sightingCard = (hero) => {
   const c = hero.card || {};
   const kind = STATUS[c.status] ? c.status : 'aircraft';
   return `
-      <aside class="sighting glass" id="sighting" aria-label="Sample sighting card" data-hero>
+      <aside class="sighting panel" id="sighting" aria-label="Sample sighting card">
         <div class="sighting-top">
           <span class="status-pill status-pill--${kind} mono" data-card="pill"><span class="shape shape--${kind}" aria-hidden="true"></span><span data-card="pill-text">${esc(STATUS[kind])}</span></span>
           <span class="sample-tag mono">${esc(c.label || 'SAMPLE')}</span>
@@ -101,11 +106,10 @@ const sightingCard = (hero) => {
       </aside>`;
 };
 
-// The glass lens: a simulated sky view (hero-lens.js draws into the canvas).
-// Without JavaScript it is simply the Split mark behind glass.
+// The lens: a simulated sky view (hero-lens.js draws into the canvas).
+// Without JavaScript it is simply the Split mark in a circle.
 const heroLens = () => `
       <div class="lens" id="lens">
-        <span class="lens-sweep" aria-hidden="true"></span>
         ${mark(250, 'mark lens-mark')}
         <canvas class="lens-canvas" id="lens-canvas" aria-hidden="true"></canvas>
         <span class="lens-tag mono">SAMPLE · SIMULATED SKY</span>
@@ -114,7 +118,7 @@ const heroLens = () => `
 // Real footage, once it exists (see hero.footage in content.js). main.js
 // starts playback only for visitors who haven't turned off motion.
 const heroFootage = (f) => `
-      <figure class="footage glass" data-hero>
+      <figure class="footage panel">
         <video class="hero-video" muted loop playsinline preload="metadata"${f.poster ? ` poster="${esc(f.poster)}"` : ''} aria-label="${esc(f.caption)}">
           <source src="${esc(f.video)}" />
         </video>
@@ -126,11 +130,10 @@ const heroFootage = (f) => `
 // Simulated camera view. Boxes and readouts are animated by sensor.js; the
 // static markup is a complete, sensible still on its own.
 const sensorBlock = (s) => `
-      <figure class="sensor glass" id="sensor" data-reveal>
-        <span class="glass-sheen" aria-hidden="true"></span>
+      <figure class="sensor panel" id="sensor">
         <div class="sensor-head">
           <span class="mono sensor-label"><span class="live-dot" aria-hidden="true"></span>${esc(s.label)}</span>
-          <span class="mono sensor-id">NODE-01</span>
+          ${motionButton()}
         </div>
         <div class="frame" id="sensor-frame" role="img" aria-label="Simulated camera view: a drone locked in a bold amber box near the centre, and an aircraft in a thin green box higher up.">
           <div class="frame-sky" data-sensor="sky"></div>
@@ -156,10 +159,10 @@ const sensorBlock = (s) => `
 // Simulated radar-style plot. radar.js draws it; without JavaScript the
 // browser shows the static picture inside the canvas instead.
 const radarBlock = (r) => `
-      <figure class="radar glass" id="radar" data-reveal>
+      <figure class="radar panel" id="radar">
         <div class="sensor-head">
           <span class="mono sensor-label">${esc(r.label)}</span>
-          <span class="mono sensor-id">N ↑</span>
+          ${motionButton()}
         </div>
         <canvas class="radar-canvas" role="img" aria-label="Simulated plot: a slow sweep over range rings, with a sample aircraft (circle) crossing and a sample possible drone (square) loitering."><svg class="radar-still" viewBox="-100 -100 200 200" aria-hidden="true"><g fill="none" stroke="#4b5b6b" stroke-opacity=".7"><circle r="94"/><circle r="62"/><circle r="31"/><path d="M-94 0H94M0-94V94" stroke-opacity=".5"/></g><circle cx="-60" cy="-30" r="3" fill="#7a8b7e"/><text x="-52" y="-36" fill="#a7b3bd" font-size="8" font-family="monospace">AIRCRAFT</text><rect x="28" y="14" width="6" height="6" fill="#e0a84a"/><text x="38" y="12" fill="#a7b3bd" font-size="8" font-family="monospace">DRONE?</text></svg></canvas>
         <figcaption class="sensor-caption">${esc(r.caption)}</figcaption>
@@ -167,11 +170,18 @@ const radarBlock = (r) => `
 
 // Pan-tilt mount: a still image first, replaced by a live 3D view (mount.js).
 const mountBlock = (m) => `
-      <figure class="mount glass" id="mount" data-reveal>
-        <div class="mount-stage" id="mount-stage">
-          <img class="mount-still" src="./models/pantilt-still.webp" width="900" height="760" loading="lazy" decoding="async"
-            alt="3D render of the Varn pan-tilt mount from its CAD files: a base holding the pan servo, a yoke on top, and a camera arm between the yoke's uprights." />
-          <span class="mono mount-hint" aria-hidden="true">DRAG TO TURN</span>
+      <figure class="mount panel" id="mount">
+        <div class="mount-view">
+          <div class="mount-stage" id="mount-stage">
+            <img class="mount-still" src="./models/pantilt-still.webp" width="900" height="760" loading="lazy" decoding="async"
+              alt="3D render of the Varn pan-tilt mount from its CAD files: a base holding the pan servo, a yoke on top, and a camera arm between the yoke's uprights." />
+          </div>
+          <div class="mount-controls" role="group" aria-label="Turn the 3D model" hidden>
+            <button class="ctl-btn" type="button" data-turn="-0.3">Turn left</button>
+            <button class="ctl-btn" type="button" data-turn="0.3">Turn right</button>
+            <button class="ctl-btn" type="button" data-turn="0">Reset view</button>
+            ${motionButton()}
+          </div>
         </div>
         <figcaption class="mount-info">
           <p class="mono mount-label"><span class="node-dot" aria-hidden="true"></span>${esc(m.label)}</p>
@@ -199,7 +209,7 @@ const resultBar = (b) => `
             ${b.detail ? `<p class="rc-detail">${esc(b.detail)}</p>` : ''}
           </li>`;
 const resultChart = (ch, i) => `
-      <figure class="rc-panel rc-panel--${ch.kind === 'drone' ? 'drone' : 'aircraft'} glass" data-reveal aria-labelledby="rc-title-${i}">
+      <figure class="rc-panel rc-panel--${ch.kind === 'drone' ? 'drone' : 'aircraft'} panel" aria-labelledby="rc-title-${i}">
         <figcaption class="rc-cap">
           <h3 class="rc-title" id="rc-title-${i}"><span class="shape shape--${ch.kind === 'drone' ? 'drone' : 'aircraft'}" aria-hidden="true"></span>${esc(ch.title)}</h3>
           <p class="rc-unit">${esc(ch.unit)}</p>
@@ -233,12 +243,12 @@ export const resultsSection = (r, next) => {
   if (!r || !Array.isArray(r.charts) || r.charts.length === 0) return '';
   const caveats = Array.isArray(r.caveats) ? r.caveats : [];
   return `
-  <section class="results section" id="results" aria-labelledby="results-title">
+  <section class="results section" id="results" aria-labelledby="results-title" data-spy="results">
     <div class="wrap">
       <header class="section-head">
         ${kicker(next(), r.kicker || 'Recorded video test')}
         <h2 class="h-section" id="results-title">${esc(r.heading)}</h2>
-        ${r.intro ? `<p class="lede" data-reveal>${esc(r.intro)}</p>` : ''}
+        ${r.intro ? `<p class="lede">${esc(r.intro)}</p>` : ''}
       </header>
       ${
         r.tag || r.sample
@@ -250,7 +260,7 @@ export const resultsSection = (r, next) => {
       <div class="rc-grid">${r.charts.map(resultChart).join('')}
         ${
           caveats.length
-            ? `<aside class="rc-caveats" data-reveal aria-labelledby="rc-caveats-title">
+            ? `<aside class="rc-caveats" aria-labelledby="rc-caveats-title">
           <h3 class="rc-caveats-title mono" id="rc-caveats-title">What this test does not show</h3>
           <ul>${caveats.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
         </aside>`
@@ -267,7 +277,7 @@ export const resultsSection = (r, next) => {
 const limitsSection = (l, next) => {
   if (!l || !Array.isArray(l.items) || l.items.length === 0) return '';
   return `
-  <section class="limits section" id="limits" aria-labelledby="limits-title">
+  <section class="limits section" id="limits" aria-labelledby="limits-title" data-spy="results">
     <div class="wrap">
       <header class="section-head">
         ${kicker(next(), l.kicker || 'Honest limits')}
@@ -277,7 +287,7 @@ const limitsSection = (l, next) => {
         ${l.items
           .map(
             (it) => `
-        <li class="limit glass" data-reveal>
+        <li class="limit">
           <span class="mono limit-tag">${esc(it.tag)}</span>
           <p>${esc(it.text)}</p>
         </li>`
@@ -288,10 +298,10 @@ const limitsSection = (l, next) => {
   </section>`;
 };
 
-// ---- Story (pinned, scroll-driven) ----------------------------------------------
+// ---- Story (step by step) ----------------------------------------------------
 
 // One animated scene per stage. They are pure markup + CSS animation: the
-// active scene is switched by main.js while you scroll. All values are SAMPLE.
+// active scene is switched by story.js when a step is chosen. All values are SAMPLE.
 const SCENES = [
   // 01 SEE: range rings, a slow sweep, light arriving. Nothing leaves.
   () => `
@@ -347,63 +357,60 @@ const SCENES = [
 ];
 
 const storySection = (st, n) => `
-  <section class="story" id="story" aria-labelledby="story-title">
-    <div class="story-pin">
-      <div class="wrap story-inner">
-        <header class="story-head">
-          ${kicker(n, st.kicker)}
-          <h2 class="h-section" id="story-title">${esc(st.heading)}</h2>
-          <p class="lede">${esc(st.intro)}${st.hint ? ` <span class="story-hint">${esc(st.hint)}</span>` : ''}</p>
-        </header>
-        <div class="story-body">
-          <ol class="story-steps">
-            ${st.stages
-              .map(
-                (s, i) => `
-            <li class="story-step${i === 0 ? ' is-active' : ''}" data-stage="${i}">
-              <div class="story-step-top"><span class="mono story-num">${esc(s.number)}</span><h3 class="story-title">${esc(s.title)}</h3></div>
+  <section class="story section" id="story" aria-labelledby="story-title" data-spy="story">
+    <div class="wrap story-inner">
+      <header class="section-head">
+        ${kicker(n, st.kicker)}
+        <h2 class="h-section" id="story-title">${esc(st.heading)}</h2>
+        <p class="lede">${esc(st.intro)}${st.hint ? ` <span class="story-hint">${esc(st.hint)}</span>` : ''}</p>
+      </header>
+      <div class="story-body">
+        <ol class="story-steps">
+          ${st.stages
+            .map(
+              (s, i) => `
+          <li class="story-step${i === 0 ? ' is-active' : ''}" data-stage="${i}">
+            <h3 class="story-step-head"><span class="mono story-num">${esc(s.number)}</span><span class="story-title">${esc(s.title)}</span></h3>
+            <div class="story-panel" id="story-panel-${i}">
               <p class="story-text">${esc(s.body)}</p>
-              <span class="mono chip story-fact">${esc(s.fact)}</span>
-            </li>`
-              )
+              <p class="mono chip story-fact">${esc(s.fact)}</p>
+            </div>
+          </li>`
+            )
+            .join('')}
+        </ol>
+        <figure class="story-device panel" aria-label="Simulated detection pipeline">
+          <div class="device-head">
+            <span class="mono device-label"><span class="live-dot" aria-hidden="true"></span>${esc(st.device)}</span>
+            <span class="mono device-step" id="story-step" aria-hidden="true">01 / 0${st.stages.length}</span>
+          </div>
+          <div class="device-screen">
+            ${SCENES.slice(0, st.stages.length)
+              .map((fn, i) => `<div class="scene${i === 0 ? ' is-active' : ''}" data-scene="${i}">${fn()}</div>`)
               .join('')}
-          </ol>
-          <figure class="story-device glass" aria-label="Simulated detection pipeline">
-            <span class="glass-sheen" aria-hidden="true"></span>
-            <div class="device-head">
-              <span class="mono device-label"><span class="live-dot" aria-hidden="true"></span>${esc(st.device)}</span>
-              <span class="mono device-step" id="story-step">01 / 0${st.stages.length}</span>
-            </div>
-            <div class="device-screen">
-              ${SCENES.slice(0, st.stages.length)
-                .map((fn, i) => `<div class="scene${i === 0 ? ' is-active' : ''}" data-scene="${i}">${fn()}</div>`)
-                .join('')}
-            </div>
-            <div class="device-rail" aria-hidden="true">${st.stages
-              .map((s, i) => `<span class="rail-dot${i === 0 ? ' is-active' : ''}" data-rail="${i}"><b class="mono">${esc(s.title)}</b></span>`)
-              .join('<span class="rail-line"><span></span></span>')}</div>
-            <figcaption class="device-note">${esc(st.note)}</figcaption>
-          </figure>
-        </div>
+          </div>
+          <div class="device-rail" aria-hidden="true">${st.stages
+            .map((s, i) => `<span class="rail-dot${i === 0 ? ' is-active' : ''}" data-rail="${i}"></span>`)
+            .join('<span class="rail-line"><span></span></span>')}</div>
+          <figcaption class="device-note">${esc(st.note)}</figcaption>
+        </figure>
       </div>
     </div>
   </section>`;
 
 const labelsSection = (l, n) => `
-  <section class="labels section" id="labels" aria-labelledby="labels-title">
-    ${stage('how-stage labels-stage')}
-    <div class="wrap">
+  <section class="labels section" id="labels" aria-labelledby="labels-title" data-spy="story">
+    <div class="wrap labels-inner">
       <header class="section-head">
         ${kicker(n, l.kicker)}
         <h2 class="h-section" id="labels-title">${esc(l.heading)}</h2>
-        <p class="lede" data-reveal>${esc(l.intro)}</p>
+        <p class="lede">${esc(l.intro)}</p>
       </header>
       <ul class="label-grid">
         ${l.items
           .map(
             (it) => `
-        <li class="label-card glass tilt">
-          <span class="glass-sheen" aria-hidden="true"></span>
+        <li class="label-card">
           <span class="label-shape label-shape--${it.kind}" aria-hidden="true"><i class="shape shape--${it.kind}"></i></span>
           ${statusPill(it.kind)}
           <p class="mono label-shapename">${esc(it.shape)}</p>
@@ -412,7 +419,7 @@ const labelsSection = (l, n) => `
           )
           .join('')}
       </ul>
-      <p class="mono label-note" data-reveal>${esc(l.note)}</p>
+      <p class="label-note">${esc(l.note)}</p>
     </div>
   </section>`;
 
@@ -422,7 +429,7 @@ const testedSection = (t) => {
   const cols = t.columns
     .map(
       (col) => `
-        <div class="tested-col glass" data-reveal>
+        <div class="tested-col">
           <p class="mono tested-tag">${esc(col.tag)}</p>
           <h3 class="tested-title">${esc(col.title)}</h3>
           <ul class="tested-list">${col.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ul>
@@ -430,30 +437,20 @@ const testedSection = (t) => {
     )
     .join('');
   return `
-  <section class="tested section" id="tested" aria-labelledby="tested-title">
+  <section class="tested section" id="tested" aria-labelledby="tested-title" data-spy="top">
     <div class="wrap">
       <h2 class="h-section tested-heading" id="tested-title">${esc(t.heading)}</h2>
       <div class="tested-grid">${cols}</div>
-      ${t.link ? `<p class="tested-more"><a class="mono" href="${esc(t.link.href)}">${esc(t.link.label)} &darr;</a></p>` : ''}
+      ${t.link ? `<p class="tested-more"><a href="${esc(t.link.href)}">${esc(t.link.label)} &darr;</a></p>` : ''}
     </div>
   </section>`;
-};
-
-const tickerStrip = (items) => {
-  if (!Array.isArray(items) || !items.length) return '';
-  const row = items.map((t) => `<li>${esc(t)}</li>`).join('');
-  return `
-  <div class="ticker" aria-label="Key facts">
-    <ul class="ticker-track mono">${row}${row.replace(/<li>/g, '<li aria-hidden="true">')}</ul>
-  </div>`;
 };
 
 const SUN =
   '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="5"/><path d="M16 4v4M16 24v4M4 16h4M24 16h4M7.5 7.5l2.8 2.8M21.7 21.7l2.8 2.8M7.5 24.5l2.8-2.8M21.7 10.3l2.8-2.8"/></svg>';
 
 const sisterCard = (s) => `
-    <a class="sister glass tilt"${linkAttrs(s.href)} data-reveal>
-      <span class="glass-sheen" aria-hidden="true"></span>
+    <a class="sister"${linkAttrs(s.href)}>
       <span class="sister-mark">${SUN}</span>
       <span class="sister-text">
         <span class="mono sister-label">${esc(s.label)}</span>
@@ -472,33 +469,18 @@ const counter = (c) => {
     : '';
 };
 
-// SVG filter for liquid-glass refraction (Chromium only; see main.js).
-const LIQUID_FILTER = `
-<svg class="svg-defs" width="0" height="0" aria-hidden="true" focusable="false">
-  <filter id="sn-liquid" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-    <feTurbulence type="fractalNoise" baseFrequency="0.004 0.007" numOctaves="2" seed="7" result="n" />
-    <feGaussianBlur in="n" stdDeviation="3" result="b" />
-    <feDisplacementMap in="SourceGraphic" in2="b" scale="70" xChannelSelector="R" yChannelSelector="G" />
-  </filter>
-</svg>`;
-
-// The stage every glass surface sits on: fog and steel light behind fine
-// diagonal hairlines. Glass over flat colour shows nothing.
-const stage = (cls = '') =>
-  `<div class="stage${cls ? ` ${cls}` : ''}" aria-hidden="true"><div class="stage-steel"></div><div class="stage-smoke"></div><div class="stage-lines"></div></div>`;
-
 function siteNav(c, { home = true, current = '' } = {}) {
   const pre = home ? '' : './';
   const href = (h) => (h.startsWith('#') ? `${pre}${h}` : h);
   const links = c.nav.links
-    .map((l, i) => {
+    .map((l) => {
       const cur = current && l.href === `./${current}` ? ' aria-current="page"' : '';
-      return `<li><a class="nav-link mono" href="${esc(href(l.href))}"${cur}><span class="nav-n" aria-hidden="true">${pad2(i + 1)}</span>${esc(l.label)}</a></li>`;
+      return `<li><a class="nav-link" href="${esc(href(l.href))}"${cur}>${esc(l.label)}</a></li>`;
     })
     .join('');
   return `
 <header class="site-header" id="top-nav">
-  <nav class="nav glass" aria-label="Primary">
+  <nav class="nav" aria-label="Primary">
     <a class="brand" href="${home ? '#top' : './'}" aria-label="${esc(c.nav.brand)}, home">
       ${mark(36)}
       ${wordmark()}
@@ -538,7 +520,7 @@ export function renderHead(c) {
 }
 
 export function renderBody(c) {
-  const { hero, math, how, status, results, limits, build, roadmap, sister, footer } = c;
+  const { hero, math, how, status, results, limits, build, roadmap, sister } = c;
   const footage = hero.footage && hero.footage.video ? hero.footage : null;
 
   const facts = hero.facts.map((f) => `<li>${esc(f)}</li>`).join('');
@@ -548,7 +530,7 @@ export function renderBody(c) {
       (s) => `
         <div class="stat${s.highlight ? ' stat--hi' : ''}">
           <dt class="mono">${esc(s.label)}</dt>
-          <dd class="stat-value${/\d/.test(s.value) ? '' : ' stat-value--text'}" data-count="${esc(s.value)}">${esc(s.value)}</dd>
+          <dd class="stat-value${/\d/.test(s.value) ? '' : ' stat-value--text'}">${esc(s.value)}</dd>
         </div>`
     )
     .join('');
@@ -568,7 +550,7 @@ export function renderBody(c) {
   const phases = roadmap.phases
     .map(
       (p, i) => `
-        <li class="phase${i === 0 ? ' phase--now' : ''}" data-phase="${i}">
+        <li class="phase${i === 0 ? ' phase--now' : ''}">
           <span class="phase-node" aria-hidden="true"></span>
           <p class="mono phase-label">${esc(p.phase)}</p>
           <h3 class="phase-title">${esc(p.title)}</h3>
@@ -577,16 +559,16 @@ export function renderBody(c) {
     )
     .join('');
 
-  let n = 0; // section numbers follow the order on the page
+  // Sections run in the order a visitor needs them: what it is, how it works,
+  // what was measured (and its limits), the hardware, where it stands, and
+  // who is behind it. Numbers follow the order on the page.
+  let n = 0;
   return `
 <a class="skip-link" href="#main">Skip to content</a>
-${LIQUID_FILTER}
-<div class="progress" id="progress" aria-hidden="true"><span></span></div>
 ${siteNav(c)}
 
 <main id="main" tabindex="-1">
-  <section class="hero" id="top" aria-labelledby="hero-title">
-    ${stage('hero-stage')}
+  <section class="hero" id="top" aria-labelledby="hero-title" data-spy="top">
     <div class="hero-photo" aria-hidden="true"></div>
     <svg class="hero-track" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
       <path class="hero-track-line" pathLength="1" d="M700 800 C 720 560, 800 250, 1120 118" />
@@ -599,48 +581,48 @@ ${siteNav(c)}
 
     <div class="hero-inner wrap">
       <div class="hero-copy">
-        <p class="eyebrow mono" data-hero>[ ${esc(hero.eyebrow)} ]</p>
+        <p class="eyebrow">${esc(hero.eyebrow)}</p>
         <h1 class="hero-title" id="hero-title">${headline(hero.headline)}</h1>
-        ${hero.stage ? `<p class="hero-stage-line" data-hero><span class="mono hero-stage-label">${esc(hero.stage.label)}</span>${esc(hero.stage.text)}</p>` : ''}
-        <p class="hero-sub" data-hero>${esc(hero.sub)}</p>
-        <div class="hero-actions" data-hero>
-          <a class="btn btn--primary btn--lg magnetic"${linkAttrs(hero.demo.href)}>
+        ${hero.stage ? `<p class="hero-stage-line"><span class="mono hero-stage-label">${esc(hero.stage.label)}</span>${esc(hero.stage.text)}</p>` : ''}
+        <p class="hero-sub">${esc(hero.sub)}</p>
+        <div class="hero-actions">
+          <a class="btn btn--primary btn--lg"${linkAttrs(hero.demo.href)}>
             <span>${esc(hero.demo.label)}</span>${ARROW_UR}
           </a>
-          <a class="btn btn--glass btn--lg magnetic" href="${esc(hero.results.href)}">
+          <a class="btn btn--ghost btn--lg" href="${esc(hero.results.href)}">
             <span>${esc(hero.results.label)}</span>${ARROW_DN}
           </a>
+          <a class="hero-source"${linkAttrs(hero.source.href)}>${esc(hero.source.label)}${ARROW_UR}</a>
         </div>
-        ${hero.cost ? `<p class="hero-note" data-hero>${esc(hero.cost)}</p>` : ''}
+        ${hero.cost ? `<p class="hero-note">${esc(hero.cost)}</p>` : ''}
       </div>
       <div class="hero-visual" id="hero-visual">
         ${footage ? heroFootage(footage) : `${heroLens()}${sightingCard(hero)}`}
       </div>
     </div>
 
-    <div class="hero-foot wrap" data-hero>
+    <div class="hero-foot wrap">
       <ul class="hero-facts mono">${facts}</ul>
-      <span class="mono hero-labs">${esc(footer.brand)}</span>
+      ${footage ? '' : `<div class="hero-foot-end">${motionButton()}</div>`}
     </div>
   </section>
 
-  ${tickerStrip(c.ticker)}
   ${testedSection(c.tested)}
 
-  <section class="math section" id="math" aria-labelledby="math-title">
+  <section class="math section" id="math" aria-labelledby="math-title" data-spy="top">
     <div class="wrap math-inner">
-      ${kicker(++n, math.heading, 'math-title')}
+      ${kicker(++n, math.heading, 'math-title', 'h2')}
       ${
         math.statement
           ? `<p class="math-statement">${litWords(math.statement)}</p>`
           : `<p class="math-statement">${litWords(math.body)}</p>`
       }
-      ${stats ? `<dl class="stats" data-reveal>${stats}</dl>` : ''}
-      ${math.statsNote ? `<p class="stats-note mono" data-reveal>${esc(math.statsNote)}</p>` : ''}
-      ${math.statement ? `<p class="lede" data-reveal>${esc(math.body)}</p>` : ''}
+      ${stats ? `<dl class="stats">${stats}</dl>` : ''}
+      ${math.statsNote ? `<p class="stats-note">${esc(math.statsNote)}</p>` : ''}
+      ${math.statement ? `<p class="lede">${esc(math.body)}</p>` : ''}
       ${
         math.useCases
-          ? `<div class="note" data-reveal>
+          ? `<div class="note">
         <span class="mono note-tag">${esc(math.useCases.tag)}</span>
         <p>${esc(math.useCases.text)}</p>
       </div>`
@@ -651,9 +633,10 @@ ${siteNav(c)}
 
   ${storySection(c.story, ++n)}
   ${labelsSection(c.labels, ++n)}
+  ${resultsSection(results, () => ++n)}
+  ${limitsSection(limits, () => ++n)}
 
-  <section class="how section" id="how" aria-labelledby="how-title">
-    ${stage('how-stage')}
+  <section class="how section" id="how" aria-labelledby="how-title" data-spy="how">
     <div class="wrap how-inner">
       <header class="section-head">
         ${kicker(++n, how.kicker || 'System')}
@@ -661,7 +644,7 @@ ${siteNav(c)}
       </header>
       ${how.summary ? `<p class="lede">${esc(how.summary)}</p>` : ''}
       <details class="fold" id="how-details">
-        <summary class="fold-summary"><span class="mono">${esc(how.toggle || 'Show the views')}</span></summary>
+        <summary class="fold-summary"><span>${esc(how.toggle || 'Show the views')}</span></summary>
         <div class="fold-body">
           <div class="how-views">
             ${how.sensor ? sensorBlock(how.sensor) : ''}
@@ -670,14 +653,14 @@ ${siteNav(c)}
           ${how.mount ? mountBlock(how.mount) : ''}
         </div>
       </details>
-      <div class="note" data-reveal>
-        <span class="mono note-tag">TEST RANGE</span>
+      <div class="note">
+        <span class="mono note-tag">Test range</span>
         <p>${esc(how.note)}</p>
       </div>
     </div>
   </section>
 
-  <section class="status section" id="status" aria-labelledby="status-title">
+  <section class="status section" id="status" aria-labelledby="status-title" data-spy="status">
     <div class="wrap wrap--mid">
       <header class="section-head">
         ${kicker(++n, status.kicker || 'Where it stands')}
@@ -686,13 +669,21 @@ ${siteNav(c)}
       <ol class="status-list">${statusRows}</ol>
     </div>
   </section>
-  ${resultsSection(results, () => ++n)}
-  ${limitsSection(limits, () => ++n)}
-  <section class="build section" id="build" aria-labelledby="build-title">
-    <div class="wrap build-inner">
-      <div class="build-orb" aria-hidden="true"></div>
-      <figure class="build-card glass glass--deep" data-reveal>
-        <span class="glass-sheen" aria-hidden="true"></span>
+
+  <section class="roadmap section" id="roadmap" aria-labelledby="roadmap-title" data-spy="status">
+    <div class="wrap">
+      <header class="section-head">
+        ${kicker(++n, roadmap.kicker || 'Roadmap')}
+        <h2 class="h-section" id="roadmap-title">${esc(roadmap.heading)}</h2>
+        ${roadmap.intro ? `<p class="lede">${esc(roadmap.intro)}</p>` : ''}
+      </header>
+      <ol class="phases">${phases}</ol>
+    </div>
+  </section>
+
+  <section class="build section" id="build" aria-labelledby="build-title" data-spy="status">
+    <div class="wrap wrap--mid">
+      <figure class="build-card">
         ${kicker(++n, build.heading, 'build-title', 'h2')}
         <blockquote class="build-body"><p>${esc(build.body)}</p></blockquote>
         ${
@@ -706,21 +697,9 @@ ${siteNav(c)}
     </div>
   </section>
 
-  <section class="roadmap" id="roadmap" aria-labelledby="roadmap-title">
-    <div class="wrap">
-      <header class="section-head">
-        ${kicker(++n, roadmap.kicker || 'Roadmap')}
-        <h2 class="h-section" id="roadmap-title">${esc(roadmap.heading)}</h2>
-        ${roadmap.intro ? `<p class="lede" data-reveal>${esc(roadmap.intro)}</p>` : ''}
-      </header>
-      <div class="roadmap-track">
-        <span class="roadmap-line" aria-hidden="true"><span class="roadmap-line-fill"></span></span>
-        <ol class="phases">${phases}</ol>
-      </div>
-    </div>
-    <div class="outro">
-      ${stage('outro-stage')}
-      <div class="outro-lens" id="outro-lens" aria-hidden="true">${mark(120, 'mark outro-mark')}</div>
+  <section class="outro" aria-label="Closing statement">
+    <div class="wrap wrap--mid">
+      ${mark(40, 'mark outro-mark')}
       <p class="closing">${esc(roadmap.closing)}</p>
     </div>
   </section>
@@ -741,10 +720,12 @@ function siteFooter(c, { from = 'home', sister = null } = {}) {
     ${sister ? sisterCard(sister) : ''}
     <div class="footer-inner">
       <p class="brand brand--footer">${mark(22)}${wordmark()}<span class="mono footer-labs">${esc(footer.brand)}</span></p>
-      <ul class="footer-links">
-        ${links}
-        <li><span class="mono footer-k">${esc(footer.contactLabel)}</span> <a class="u-link"${linkAttrs(`mailto:${footer.email}`)}>${esc(footer.email)}</a></li>
-      </ul>
+      <nav aria-label="Footer">
+        <ul class="footer-links">
+          ${links}
+          <li><span class="mono footer-k">${esc(footer.contactLabel)}</span> <a class="u-link"${linkAttrs(`mailto:${footer.email}`)}>${esc(footer.email)}</a></li>
+        </ul>
+      </nav>
     </div>
   </div>
 </footer>`;
@@ -777,13 +758,11 @@ export function renderPrivacyBody(c) {
     .join('');
   return `
 <a class="skip-link" href="#main">Skip to content</a>
-${LIQUID_FILTER}
-${stage('stage-fixed')}
 ${siteNav(c, { home: false })}
 
 <main id="main" class="legal" tabindex="-1">
   <div class="wrap wrap--narrow">
-    <article class="legal-card glass">
+    <article class="legal-card">
       <p class="mono legal-updated">Updated ${esc(p.updated)}</p>
       <h1 class="legal-title">${esc(p.title)}</h1>
       <p class="legal-intro">${esc(on && p.introWithAnalytics ? p.introWithAnalytics : p.intro)}</p>
@@ -816,8 +795,6 @@ export function renderContactBody(c) {
     `<div class="field"><label class="field-label" for="c-${id}"><span class="mono field-k">${esc(label)}</span></label>${input}<p class="field-error" id="c-${id}-err" hidden></p></div>`;
   return `
 <a class="skip-link" href="#main">Skip to content</a>
-${LIQUID_FILTER}
-${stage('stage-fixed')}
 ${siteNav(c, { home: false, current: 'contact.html' })}
 
 <main id="main" class="contact-page" tabindex="-1">
@@ -828,7 +805,7 @@ ${siteNav(c, { home: false, current: 'contact.html' })}
         <h1 class="h-section" id="contact-title">${esc(ct.heading)}</h1>
         <p class="lede">${esc(ct.intro)} <a class="u-link" href="mailto:${esc(ct.email)}">${esc(ct.email)}</a></p>
       </header>
-      <form class="contact-form glass" id="contact-form" method="post" novalidate
+      <form class="contact-form" id="contact-form" method="post" novalidate
         action="mailto:${esc(ct.email)}" enctype="text/plain"
         data-email="${esc(ct.email)}" data-endpoint="${esc(ct.endpoint || '')}"
         data-sending="${esc(ct.sendingLabel)}" data-success="${esc(ct.successText)}"
@@ -884,7 +861,7 @@ export function renderDemoBody(c) {
   const tabs = d.tabs
     .map(
       (t) =>
-        `<li><a class="demo-tab mono" href="#${esc(t.id)}" data-view="${esc(t.id)}"><span class="demo-tab-mark" aria-hidden="true"></span>${esc(t.label)}</a></li>`
+        `<li><a class="demo-tab" href="#${esc(t.id)}" data-view="${esc(t.id)}"><span class="demo-tab-mark" aria-hidden="true"></span>${esc(t.label)}</a></li>`
     )
     .join('');
   const rows = d.system.rows
@@ -901,33 +878,38 @@ export function renderDemoBody(c) {
   const stateLegend = ['Verified', 'Measured', 'Testing', 'Simulated', 'Not connected', 'Pending'].map(statePill).join('');
   return `
 <a class="skip-link" href="#main">Skip to content</a>
-${LIQUID_FILTER}
-${stage('stage-fixed')}
 ${siteNav(c, { home: false, current: 'demo.html' })}
 
 <main id="main" class="demo-page" tabindex="-1">
   <div class="wrap demo-wrap">
     <header class="demo-intro">
       ${kicker(1, d.kicker, '', 'p')}
-      <h1 class="h-section" id="demo-title">${esc(d.heading)}</h1>
+      <h1 class="demo-title" id="demo-title">${esc(d.heading)}</h1>
       <p class="lede">${esc(d.intro)}</p>
     </header>
-    <p class="demo-banner mono" role="note"><span class="state-shape state-shape--sim" aria-hidden="true"></span>${esc(d.banner)}</p>
     <noscript><p class="demo-noscript">${esc(d.noscript)}</p></noscript>
-    <p class="demo-status mono" id="demo-status" role="status">Loading the demo&hellip;</p>
+    <p class="demo-status" id="demo-status" role="status">Loading the demo&hellip;</p>
+
+    <div class="demo-app">
+      <div class="demo-top">
+        <p class="demo-top-title"><span class="demo-top-mark">${mark(22)}</span>Varn dashboard</p>
+        <p class="demo-top-state">
+          <span class="state-tag state-tag--simulated mono"><span class="state-shape" aria-hidden="true"></span>Simulated data</span>
+          <span class="demo-node"><span class="shape shape--no-adsb" aria-hidden="true"></span>Node-01<span class="demo-node-state">Not connected</span></span>
+        </p>
+      </div>
+      <p class="demo-banner" role="note"><span class="state-shape state-shape--sim" aria-hidden="true"></span><span>${esc(d.banner)}</span></p>
 
     <div class="demo-shell">
       <nav class="demo-side" aria-label="Dashboard views">
-        <p class="demo-sticky mono" role="note"><span class="state-shape state-shape--sim" aria-hidden="true"></span>SIMULATED DEMO<span class="demo-sticky-sub"> &middot; sample data, no live feed</span></p>
         <ul class="demo-tabs">${tabs}</ul>
-        <p class="demo-node mono"><span class="shape shape--no-adsb" aria-hidden="true"></span>NODE-01<span class="demo-node-state">Not connected</span></p>
       </nav>
 
       <div class="demo-main">
         <section class="demo-view" id="view-overview" data-view="overview" aria-labelledby="h-overview" hidden>
           <header class="demo-view-head">
             <h2 id="h-overview" tabindex="-1">Overview</h2>
-            <p class="mono demo-badge">SIMULATED · LAST 24 HOURS</p>
+            <p class="mono demo-badge">Simulated · last 24 hours</p>
           </header>
           <div class="demo-kpis" data-slot="kpis"></div>
           <div class="demo-cols">
@@ -947,7 +929,7 @@ ${siteNav(c, { home: false, current: 'demo.html' })}
             <section class="demo-plate" aria-labelledby="h-latest">
               <header class="demo-plate-head">
                 <h3 id="h-latest">Latest events</h3>
-                <button class="demo-btn" type="button" id="replay" aria-pressed="false">Replay simulated feed</button>
+                <button class="demo-btn" type="button" id="replay">Replay simulated feed</button>
               </header>
               <ol class="demo-latest" data-slot="latest"></ol>
               <p class="demo-more"><a class="u-link mono" href="#events">All events &rarr;</a></p>
@@ -958,7 +940,7 @@ ${siteNav(c, { home: false, current: 'demo.html' })}
         <section class="demo-view" id="view-events" data-view="events" aria-labelledby="h-events" hidden>
           <header class="demo-view-head">
             <h2 id="h-events" tabindex="-1">Events</h2>
-            <p class="mono demo-badge">SIMULATED · NOT RECORDED</p>
+            <p class="mono demo-badge">Simulated · not recorded</p>
           </header>
           <form class="demo-filters" role="search" aria-label="Filter events" onsubmit="return false">
             <label class="demo-field"><span class="mono">Search</span><input type="search" id="f-q" placeholder="ID, class or time" autocomplete="off" /></label>
@@ -1002,7 +984,7 @@ ${siteNav(c, { home: false, current: 'demo.html' })}
             <p class="results-source mono">${esc(r.source || '')}</p>
           </div>
           <div class="demo-section">
-            <p class="mono demo-badge">SIMULATED · FOR ILLUSTRATION</p>
+            <p class="mono demo-badge">Simulated · for illustration</p>
             <h3>Model confidence on simulated events</h3>
             <p class="demo-lede">How sure the model reports being, for the sample events. Real confidence values will come from the physical node.</p>
             <div class="demo-chart demo-chart--bins" data-slot="bins"></div>
@@ -1042,9 +1024,10 @@ ${siteNav(c, { home: false, current: 'demo.html' })}
         </section>
       </div>
     </div>
+    </div>
   </div>
 
-  <dialog class="demo-drawer glass glass--deep" id="drawer" aria-labelledby="drawer-title">
+  <dialog class="demo-drawer" id="drawer" aria-labelledby="drawer-title">
     <div class="demo-drawer-body" data-slot="drawer"></div>
   </dialog>
 </main>

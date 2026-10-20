@@ -4,7 +4,9 @@
 // and an aircraft drifts through the frame in a thin box. The HUD bar shows
 // the pan/tilt the node would be commanding.
 //
-// Coordinates are in percent of the frame. Runs only while on screen.
+// Coordinates are in percent of the frame. Runs only while on screen, and
+// stops where it is when the visitor pauses animation (motion.js).
+import { motion } from './motion.js';
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
@@ -85,7 +87,7 @@ export function createSensor({ root, reduceMotion }) {
 
   function hud(dt) {
     hudClock += dt;
-    if (hudClock < 0.14 && !reduceMotion) return;
+    if (hudClock < 0.14 && !motion.paused) return;
     hudClock = 0;
     const pan = 92.5 + cam.x * 0.55;
     const tilt = 47 - cam.y * 0.45;
@@ -116,17 +118,18 @@ export function createSensor({ root, reduceMotion }) {
   let onScreen = false;
   let running = false;
   let last = 0;
+  const canRun = () => onScreen && !document.hidden && !motion.paused;
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     step(dt);
     render();
     hud(dt);
-    if (onScreen && !document.hidden) requestAnimationFrame(frame);
+    if (canRun()) requestAnimationFrame(frame);
     else running = false;
   }
   function wake() {
-    if (running || !onScreen || document.hidden) return;
+    if (running || !canRun()) return;
     running = true;
     last = performance.now();
     requestAnimationFrame(frame);
@@ -137,4 +140,5 @@ export function createSensor({ root, reduceMotion }) {
     wake();
   }).observe(el.frame);
   document.addEventListener('visibilitychange', wake);
+  motion.subscribe(wake);
 }
