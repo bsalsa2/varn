@@ -512,7 +512,7 @@ const heroSection = (c) => {
     </div>
     <div class="hero-foot wrap">
       <a class="scroll-cue mono" href="#process"><span class="scroll-cue-line" aria-hidden="true"></span>${esc(hero.scroll)}</a>
-      ${footage ? '' : motionButton()}
+      ${footage ? motionButton() : ''}
     </div>
   </section>`;
 };

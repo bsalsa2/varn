@@ -8,7 +8,7 @@ import { initNavMenu } from './nav-menu.js';
 import { initScrollSpy } from './scrollspy.js';
 import { initAnchors } from './anchors.js';
 import { whenNear } from './lazy.js';
-import { initHeader, initHeroDepth, initProcess } from './home-fx.js';
+import { initHeader, initProcess } from './home-fx.js';
 
 initMotion();
 initReveal();
@@ -16,7 +16,6 @@ initNavMenu();
 initScrollSpy();
 initAnchors();
 initHeader();
-initHeroDepth();
 initProcess();
 afterLoad(initGfx);
 

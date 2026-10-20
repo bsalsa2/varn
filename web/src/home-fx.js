@@ -26,35 +26,6 @@ export function initHeader() {
   update();
 }
 
-// The hero's layers drift a few pixels against the pointer, for depth. Fine
-// pointers only, never while animation is paused, and never faster than a frame.
-export function initHeroDepth() {
-  const hero = document.querySelector('.hero');
-  if (!hero || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-  let raf = 0;
-  let x = 0;
-  let y = 0;
-  const apply = () => {
-    raf = 0;
-    hero.style.setProperty('--mx', x.toFixed(3));
-    hero.style.setProperty('--my', y.toFixed(3));
-  };
-  const reset = () => {
-    x = 0;
-    y = 0;
-    apply();
-  };
-  hero.addEventListener('pointermove', (e) => {
-    if (motion.paused || e.pointerType !== 'mouse') return;
-    const r = hero.getBoundingClientRect();
-    x = ((e.clientX - r.left) / r.width) * 2 - 1;
-    y = ((e.clientY - r.top) / r.height) * 2 - 1;
-    if (!raf) raf = requestAnimationFrame(apply);
-  });
-  hero.addEventListener('pointerleave', reset);
-  motion.subscribe((paused) => paused && reset());
-}
-
 // The line through the three stages lights up as each stage reaches the
 // reading area. Without JavaScript, or with motion off, the whole line is lit.
 export function initProcess() {
