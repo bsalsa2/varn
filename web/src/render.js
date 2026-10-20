@@ -39,6 +39,11 @@ const STATUS_KINDS = { DONE: 'done', 'IN PROGRESS': 'progress', NEXT: 'next' };
 const kicker = (n, text, id = '', tag = 'p') =>
   `<${tag} class="kicker mono"${id ? ` id="${id}"` : ''}><span class="kicker-n" aria-hidden="true">${pad2(n)}</span><span class="kicker-label">${esc(text)}</span></${tag}>`;
 
+// The atmosphere every glass surface sits on: steel and fog light with fine
+// hairlines. Glass over flat colour shows nothing, so each page has one.
+const stage = (cls = '') =>
+  `<div class="stage${cls ? ` ${cls}` : ''}" aria-hidden="true"><div class="stage-steel"></div><div class="stage-smoke"></div><div class="stage-lines"></div></div>`;
+
 // Animation control (WCAG 2.2.2): main.js reveals these and wires them to
 // motion.js; they stay hidden for visitors who have asked for reduced motion.
 const motionButton = () =>
@@ -110,6 +115,7 @@ const sightingCard = (hero) => {
 // Without JavaScript it is simply the Split mark in a circle.
 const heroLens = () => `
       <div class="lens" id="lens">
+        <span class="lens-sweep" aria-hidden="true"></span>
         ${mark(250, 'mark lens-mark')}
         <canvas class="lens-canvas" id="lens-canvas" aria-hidden="true"></canvas>
         <span class="lens-tag mono">SAMPLE · SIMULATED SKY</span>
@@ -209,7 +215,7 @@ const resultBar = (b) => `
             ${b.detail ? `<p class="rc-detail">${esc(b.detail)}</p>` : ''}
           </li>`;
 const resultChart = (ch, i) => `
-      <figure class="rc-panel rc-panel--${ch.kind === 'drone' ? 'drone' : 'aircraft'} panel" aria-labelledby="rc-title-${i}">
+      <figure class="rc-panel rc-panel--${ch.kind === 'drone' ? 'drone' : 'aircraft'} panel" data-reveal aria-labelledby="rc-title-${i}">
         <figcaption class="rc-cap">
           <h3 class="rc-title" id="rc-title-${i}"><span class="shape shape--${ch.kind === 'drone' ? 'drone' : 'aircraft'}" aria-hidden="true"></span>${esc(ch.title)}</h3>
           <p class="rc-unit">${esc(ch.unit)}</p>
@@ -287,7 +293,7 @@ const limitsSection = (l, next) => {
         ${l.items
           .map(
             (it) => `
-        <li class="limit">
+        <li class="limit" data-reveal>
           <span class="mono limit-tag">${esc(it.tag)}</span>
           <p>${esc(it.text)}</p>
         </li>`
@@ -410,7 +416,7 @@ const labelsSection = (l, n) => `
         ${l.items
           .map(
             (it) => `
-        <li class="label-card">
+        <li class="label-card" data-reveal>
           <span class="label-shape label-shape--${it.kind}" aria-hidden="true"><i class="shape shape--${it.kind}"></i></span>
           ${statusPill(it.kind)}
           <p class="mono label-shapename">${esc(it.shape)}</p>
@@ -429,7 +435,7 @@ const testedSection = (t) => {
   const cols = t.columns
     .map(
       (col) => `
-        <div class="tested-col">
+        <div class="tested-col" data-reveal>
           <p class="mono tested-tag">${esc(col.tag)}</p>
           <h3 class="tested-title">${esc(col.title)}</h3>
           <ul class="tested-list">${col.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ul>
@@ -450,7 +456,7 @@ const SUN =
   '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="5"/><path d="M16 4v4M16 24v4M4 16h4M24 16h4M7.5 7.5l2.8 2.8M21.7 21.7l2.8 2.8M7.5 24.5l2.8-2.8M21.7 10.3l2.8-2.8"/></svg>';
 
 const sisterCard = (s) => `
-    <a class="sister"${linkAttrs(s.href)}>
+    <a class="sister"${linkAttrs(s.href)} data-reveal>
       <span class="sister-mark">${SUN}</span>
       <span class="sister-text">
         <span class="mono sister-label">${esc(s.label)}</span>
@@ -550,7 +556,7 @@ export function renderBody(c) {
   const phases = roadmap.phases
     .map(
       (p, i) => `
-        <li class="phase${i === 0 ? ' phase--now' : ''}">
+        <li class="phase${i === 0 ? ' phase--now' : ''}" data-reveal>
           <span class="phase-node" aria-hidden="true"></span>
           <p class="mono phase-label">${esc(p.phase)}</p>
           <h3 class="phase-title">${esc(p.title)}</h3>
@@ -565,6 +571,7 @@ export function renderBody(c) {
   let n = 0;
   return `
 <a class="skip-link" href="#main">Skip to content</a>
+${stage('stage-fixed')}
 ${siteNav(c)}
 
 <main id="main" tabindex="-1">
@@ -617,12 +624,12 @@ ${siteNav(c)}
           ? `<p class="math-statement">${litWords(math.statement)}</p>`
           : `<p class="math-statement">${litWords(math.body)}</p>`
       }
-      ${stats ? `<dl class="stats">${stats}</dl>` : ''}
+      ${stats ? `<dl class="stats" data-reveal>${stats}</dl>` : ''}
       ${math.statsNote ? `<p class="stats-note">${esc(math.statsNote)}</p>` : ''}
       ${math.statement ? `<p class="lede">${esc(math.body)}</p>` : ''}
       ${
         math.useCases
-          ? `<div class="note">
+          ? `<div class="note" data-reveal>
         <span class="mono note-tag">${esc(math.useCases.tag)}</span>
         <p>${esc(math.useCases.text)}</p>
       </div>`
@@ -653,7 +660,7 @@ ${siteNav(c)}
           ${how.mount ? mountBlock(how.mount) : ''}
         </div>
       </details>
-      <div class="note">
+      <div class="note" data-reveal>
         <span class="mono note-tag">Test range</span>
         <p>${esc(how.note)}</p>
       </div>
@@ -683,7 +690,7 @@ ${siteNav(c)}
 
   <section class="build section" id="build" aria-labelledby="build-title" data-spy="status">
     <div class="wrap wrap--mid">
-      <figure class="build-card">
+      <figure class="build-card" data-reveal>
         ${kicker(++n, build.heading, 'build-title', 'h2')}
         <blockquote class="build-body"><p>${esc(build.body)}</p></blockquote>
         ${
@@ -758,6 +765,7 @@ export function renderPrivacyBody(c) {
     .join('');
   return `
 <a class="skip-link" href="#main">Skip to content</a>
+${stage('stage-fixed')}
 ${siteNav(c, { home: false })}
 
 <main id="main" class="legal" tabindex="-1">
@@ -795,6 +803,7 @@ export function renderContactBody(c) {
     `<div class="field"><label class="field-label" for="c-${id}"><span class="mono field-k">${esc(label)}</span></label>${input}<p class="field-error" id="c-${id}-err" hidden></p></div>`;
   return `
 <a class="skip-link" href="#main">Skip to content</a>
+${stage('stage-fixed')}
 ${siteNav(c, { home: false, current: 'contact.html' })}
 
 <main id="main" class="contact-page" tabindex="-1">
@@ -878,6 +887,7 @@ export function renderDemoBody(c) {
   const stateLegend = ['Verified', 'Measured', 'Testing', 'Simulated', 'Not connected', 'Pending'].map(statePill).join('');
   return `
 <a class="skip-link" href="#main">Skip to content</a>
+${stage('stage-fixed')}
 ${siteNav(c, { home: false, current: 'demo.html' })}
 
 <main id="main" class="demo-page" tabindex="-1">

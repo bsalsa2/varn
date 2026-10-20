@@ -4,6 +4,8 @@
 // build (render.js), not drawn here.
 import { initNavMenu } from './nav-menu.js';
 import { initMotion } from './motion.js';
+import { afterLoad, initGfx } from './gfx.js';
+import { initReveal } from './reveal.js';
 import {
   ADSB,
   CLASSES,
@@ -20,6 +22,8 @@ import {
 import './demo.css';
 
 initMotion();
+initReveal();
+afterLoad(initGfx);
 initNavMenu();
 
 const $ = (sel, root = document) => root.querySelector(sel);

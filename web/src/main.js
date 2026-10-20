@@ -1,7 +1,9 @@
 // Homepage behaviour. The page is complete static HTML: everything here is an
 // enhancement, and nothing waits for it. There is no scroll-driven animation:
 // content is visible as soon as it is in the page.
+import { afterLoad, initGfx } from './gfx.js';
 import { initMotion, motion } from './motion.js';
+import { initReveal } from './reveal.js';
 import { initNavMenu } from './nav-menu.js';
 import { initScrollSpy } from './scrollspy.js';
 import { initStory } from './story.js';
@@ -10,6 +12,7 @@ const reduceMotion = motion.reduced;
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 initMotion();
+initReveal();
 initNavMenu();
 initScrollSpy();
 initStory();
@@ -64,11 +67,6 @@ if (footage) {
 // ---------------------------------------------------------------------------
 // Lazy pieces: never on the critical path.
 // ---------------------------------------------------------------------------
-const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 200));
-const afterLoad = (fn) => {
-  if (document.readyState === 'complete') idle(fn, { timeout: 1500 });
-  else window.addEventListener('load', () => idle(fn, { timeout: 1500 }), { once: true });
-};
 // Load a module when its element is about to scroll into view.
 const whenNear = (el, load) => {
   if (!el) return;
@@ -110,24 +108,8 @@ whenNear(document.getElementById('sensor'), () =>
 // Pan-tilt mount viewer (three.js). Only hardware-accelerated WebGL 2:
 // software renderers would grind the main thread, so they keep the still.
 // Add ?gl=any to the URL to force it anyway (handy for testing).
-// The WebGL 2 renderer's name, or null without WebGL 2.
-function webgl2Renderer() {
-  try {
-    const gl = document.createElement('canvas').getContext('webgl2');
-    if (!gl) return null;
-    const info = gl.getExtension('WEBGL_debug_renderer_info');
-    const renderer = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || '');
-    gl.getExtension('WEBGL_lose_context')?.loseContext();
-    return renderer;
-  } catch {
-    return null;
-  }
-}
-const SOFTWARE_GL = /swiftshader|llvmpipe|softpipe|software|basic render/i;
-
 afterLoad(() => {
-  const renderer = webgl2Renderer();
-  const soft = renderer !== null && SOFTWARE_GL.test(renderer);
+  const { renderer, soft } = initGfx();
   const stage = document.getElementById('mount-stage');
   const forced = new URLSearchParams(location.search).get('gl') === 'any';
   if (!stage || renderer === null || (soft && !forced)) return;

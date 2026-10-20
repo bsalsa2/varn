@@ -232,6 +232,8 @@ web/
   src/story.js            the "From sky to sighting" step selector
   src/scrollspy.js        marks the nav link for the section you are reading
   src/motion.js           the site-wide pause/play switch and reduced-motion handling
+  src/gfx.js              glass vs solid: detects software rendering, ?gfx=full
+  src/reveal.js           the scroll-in for glass panels
   src/nav-menu.js         the mobile menu
   src/hero-lens.js        the hero lens: a simulated sky (SAMPLE) that drives the sighting card
   src/sensor.js           the simulated sensor view in "Under the hood"
@@ -245,16 +247,29 @@ web/
 ### Design system
 
 Design: **Varn brand system v1.0** (guide, tokens and logo files in
-[`brand/`](../brand/)). The guide asks for restraint, so the site is flat:
-charcoal page, night panels, hairline dividers, crisp corners, no blur, glow
-or bevel. Steel blue marks interaction (buttons, the active nav link); status
-colours appear only for what the sensor sees, always with a shape and a word:
-sage circle = confirmed aircraft, amber square = possible drone (amber is the
-one alert colour), fog ring = no ADS-B match. The mark and wordmark are
-outlined SVG. Space Grotesk for headings, Inter for text, Geist Mono for data
-and small labels. Labels are sentence case; uppercase is kept for section
-labels and the SAMPLE / SIMULATED tags. Every simulated visual carries a
-SAMPLE or SIMULATED tag.
+[`brand/`](../brand/)): premium liquid glass over charcoal and midnight, with
+steel-blue and silver accents. A fixed **stage** of steel and fog light sits
+behind every page; glass panels float over it with a thin reflective top edge,
+a soft drop shadow and a smoked base, so text keeps its contrast over the
+brightest light. Strong glass (backdrop blur) is reserved for the nav, the hero
+lens and sighting card, the visualizations, the dashboard window and drawer, and
+the major panels; secondary content (notes, summary columns, limits) uses
+quieter translucent fill with no blur of its own. Steel blue marks interaction;
+status colours appear only for what the sensor sees, always with a shape and a
+word: sage circle = confirmed aircraft, amber square = possible drone (amber is
+the one alert colour), fog ring = no ADS-B match. Space Grotesk for headings,
+Inter for text, Geist Mono for data and small labels. Labels are sentence case;
+uppercase is kept for section labels and the SAMPLE / SIMULATED tags. Every
+simulated visual carries a SAMPLE or SIMULATED tag.
+
+**Glass fallbacks.** One set of variables (`--blur`, `--glass-fill`...) drives
+every glass surface, and it flips to a solid, still-layered surface when the
+browser has no `backdrop-filter`, when the visitor asks for reduced
+transparency, and on software rendering (`gfx.js` detects it and adds
+`.low-gfx`, because blur over moving canvases costs 12-24 fps there). Add
+`?gfx=full` to the address to keep the glass on regardless (for testing).
+Panels rise in as they scroll into view (`reveal.js`); with reduced or paused
+animation they are simply there.
 
 All of it is driven by tokens at the top of `src/styles.css`, so a change
 there reaches the home page, the dashboard demo, and the contact and privacy
@@ -262,9 +277,10 @@ pages:
 
 | Token group | Names | Notes |
 | --- | --- | --- |
-| Surfaces | `--surface-page`, `--surface-1`, `--surface-2` | one flat step per layer; `.panel` is the one container |
+| Surfaces | `--surface-page`, `--surface-1`, `--surface-2` | solid fallbacks; `.panel` is the glass container |
+| Glass | `--blur`, `--blur-deep`, `--glass-fill`, `--glass-quiet`, `--glass-deep-fill`, `--glass-border`, `--glass-edge`, `--glass-drop` | defined in `styles.css` over `graphite.css` |
 | Lines | `--line`, `--line-2`, `--line-ui` | `--line-ui` is for edges a control is found by (3.6:1) |
-| Shape | `--r-sm` 4px, `--r-md` 8px, `--r-lg` 12px, `--shadow-pop` | only floating things get a shadow |
+| Shape | `--r-sm` 4px, `--r-md` 10px, `--r-lg` 18px, `--r-xl` 26px, `--shadow-pop` | |
 | Type | `--fs-display`, `--fs-h1`, `--fs-h2`, `--fs-h3`, `--fs-body`, `--fs-lede`, `--fs-small`, `--fs-label` | 13px is the smallest text |
 | Layout | `--w-page`, `--w-mid`, `--w-narrow`, `--measure`, `--gutter`, `--section-y`, `--nav-h` | |
 | Motion | `--dur` | everything else is a CSS transition |
@@ -277,9 +293,9 @@ pairs from these tokens (`test/contrast.test.mjs`).
 
 ### How it behaves
 
-- **Nothing moves on scroll.** There is no scroll-driven animation, pinning
-  or parallax, and no content waits for an animation: the page is complete
-  static HTML.
+- **No scroll-jacking.** Nothing is pinned and there is no parallax; panels
+  only fade and rise 16px as they enter view, and no content depends on it: the
+  page is complete static HTML.
 - **Hero:** the lens is a simulated sky drawn on a canvas (an aircraft
   crosses, a drone hovers, an aircraft with no broadcast passes), and the
   sighting card changes with it. All of it is tagged SAMPLE. It only runs

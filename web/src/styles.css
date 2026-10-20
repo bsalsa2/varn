@@ -2,8 +2,9 @@
    VARN · WEBSITE SYSTEM
    Charcoal and bone, steel-blue interaction, status colours only for what the
    sensor sees (always with a shape and a word). The brand guide asks for
-   restraint: flat surfaces, thin dividers, crisp corners, sentence-case
-   labels, uppercase only for small section labels and SAMPLE/SIMULATED tags.
+   restraint: layered glass over an atmospheric stage, thin reflective edges,
+   sentence-case labels, uppercase only for small section labels and
+   SAMPLE/SIMULATED tags.
    Every page (home, demo, contact, privacy) draws from the tokens below.
 
    Breakpoints (media queries cannot read custom properties, so they are
@@ -22,24 +23,32 @@
 @import '../../brain/dashboard/graphite.css';
 
 /* Brand colours and type stacks live in graphite.css, shared with the live
-   dashboard. The website needs flat surfaces, so it redefines the shared
-   "glass" tokens as solid fills here and defines its own layout tokens. */
+   dashboard. The glass tokens below tune that material for the website: a
+   smoked base under a faint white sheen, so text on glass keeps its contrast
+   even over the brightest light on the stage. Every glass surface reads these
+   variables, so one switch (reduced transparency, no backdrop-filter, or
+   software rendering) turns all of them solid. */
 :root {
   color-scheme: dark;
 
-  /* ---- Surfaces: one flat step per layer --------------------------------- */
+  /* ---- Surfaces ---------------------------------------------------------- */
   --surface-page: var(--varn-charcoal);
-  --surface-1: var(--varn-night); /* panels, tables, inputs */
-  --surface-2: var(--varn-ink); /* hover and raised */
-  --glass-fill: var(--surface-1);
-  --glass-clear-fill: var(--surface-1);
-  --glass-deep-fill: var(--surface-1);
-  --glass-blur: none;
-  --glass-clear-blur: none;
-  --glass-deep-blur: none;
-  --glass-border: var(--line);
-  --glass-edge: none;
-  --glass-drop: none;
+  --surface-1: var(--varn-night); /* solid fallback for any glass panel */
+  --surface-2: var(--varn-ink);
+
+  /* ---- Liquid glass ------------------------------------------------------ */
+  --blur: blur(20px) saturate(165%); /* major panels */
+  --blur-deep: blur(26px) saturate(150%); /* dashboard window, drawer */
+  --glass-fill: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.028) 42%, rgba(255, 255, 255, 0.06)),
+    linear-gradient(rgba(11, 15, 20, 0.56), rgba(11, 15, 20, 0.56));
+  --glass-quiet: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.012)),
+    linear-gradient(rgba(11, 15, 20, 0.46), rgba(11, 15, 20, 0.46));
+  --glass-deep-fill: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.015)),
+    linear-gradient(rgba(11, 15, 20, 0.7), rgba(11, 15, 20, 0.7));
+  --glass-border: rgba(255, 255, 255, 0.17);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.34), inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+    inset 16px 16px 36px -28px rgba(255, 255, 255, 0.3);
+  --glass-drop: 0 28px 56px -28px rgba(0, 0, 0, 0.85);
 
   /* ---- Lines ------------------------------------------------------------- */
   --line: rgba(167, 179, 189, 0.18); /* dividers and panel edges */
@@ -49,9 +58,10 @@
 
   /* ---- Shape ------------------------------------------------------------- */
   --r-sm: 4px; /* tags, buttons, inputs */
-  --r-md: 8px; /* inner screens */
-  --r-lg: 12px; /* panels */
-  --shadow-pop: 0 16px 40px -16px rgba(0, 0, 0, 0.7); /* only for things that float */
+  --r-md: 10px; /* inner screens */
+  --r-lg: 18px; /* panels */
+  --r-xl: 26px; /* the largest glass: hero card, dashboard window */
+  --shadow-pop: 0 20px 48px -20px rgba(0, 0, 0, 0.8); /* things that float */
 
   /* ---- Type scale -------------------------------------------------------- */
   --fs-display: clamp(40px, 5.6vw, 72px);
@@ -196,9 +206,15 @@ svg {
 /* ---- Surfaces ----------------------------------------------------------- */
 /* A panel is the one container: flat fill, hairline edge, crisp corners. */
 .panel {
-  background: var(--surface-1);
-  border: 1px solid var(--line);
+  position: relative;
+  isolation: isolate;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
   border-radius: var(--r-lg);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--glass-edge), var(--glass-drop);
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.3s;
 }
 
 /* ---- Mark + wordmark --------------------------------------------------- */
@@ -3084,5 +3100,428 @@ h2.kicker {
   .shape,
   .rc-bar {
     forced-color-adjust: none;
+  }
+}
+
+/* ==========================================================================
+   LIQUID GLASS
+   A stage of steel and fog light, glass panels with a reflective top edge,
+   and quieter translucent surfaces for secondary content. Strong glass
+   (blur) is reserved for the hero, the visualizations, the dashboard window
+   and the major panels; everything else is translucent fill only.
+   ========================================================================== */
+
+/* ---- Stage -------------------------------------------------------------- */
+.stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 30% 20%, var(--varn-surface-2), var(--varn-base) 65%);
+}
+.stage-fixed {
+  position: fixed;
+  z-index: 0;
+}
+.stage-steel,
+.stage-smoke {
+  position: absolute;
+  border-radius: 50%;
+}
+.stage-steel {
+  left: 46%;
+  top: -30%;
+  width: 760px;
+  height: 760px;
+  background: var(--stage-steel);
+}
+.stage-smoke {
+  left: -10%;
+  top: 30%;
+  width: 560px;
+  height: 560px;
+  background: var(--stage-smoke);
+}
+.stage-lines {
+  position: absolute;
+  inset: 0;
+  background-image: var(--stage-hairlines);
+}
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Floating glass nav -------------------------------------------------- */
+html {
+  scroll-padding-top: calc(var(--nav-h) + 40px);
+}
+.site-header {
+  inset: 12px 0 auto;
+  background: none;
+  border: 0;
+  pointer-events: none;
+}
+.nav {
+  pointer-events: auto;
+  max-width: 1180px;
+  width: calc(100% - 24px);
+  padding: 0 12px 0 24px;
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  /* Smoked: the charcoal tint keeps the small nav text readable over the
+     brightest content that scrolls underneath. */
+  background: linear-gradient(rgba(11, 15, 20, 0.72), rgba(11, 15, 20, 0.72)), linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.08));
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--glass-edge), var(--glass-drop);
+}
+.nav-link[aria-current] {
+  text-shadow: 0 0 18px rgba(167, 179, 189, 0.45);
+}
+@media (max-width: 65em) {
+  .nav {
+    padding: 0 8px 0 18px;
+  }
+  .nav-links {
+    top: calc(100% + 8px);
+    padding: 8px 12px 14px;
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    /* Solid: the nav's own backdrop-filter stops a blur here from reaching the page. */
+    background: var(--varn-charcoal);
+    box-shadow: var(--shadow-pop);
+  }
+}
+
+/* ---- Buttons: steel with a lit edge; glass for the secondary ------------- */
+.btn--primary {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 82%, #fff), var(--accent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 10px 26px -12px rgba(75, 91, 107, 0.9);
+}
+.btn--primary:hover {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff), color-mix(in srgb, var(--accent) 90%, #fff));
+}
+.btn--ghost,
+.motion-btn,
+.ctl-btn,
+.fold-summary {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.025));
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.btn--ghost:hover,
+.motion-btn:hover,
+.ctl-btn:hover,
+.fold-summary:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ---- Hero ---------------------------------------------------------------- */
+.hero-inner {
+  padding-top: calc(var(--nav-h) + 76px);
+}
+.hero-title {
+  text-shadow: 0 2px 40px rgba(167, 179, 189, 0.18);
+}
+/* A pool of steel light behind the lens. */
+.hero-visual::before {
+  content: '';
+  position: absolute;
+  inset: -12% -18%;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgba(75, 91, 107, 0.5), rgba(75, 91, 107, 0) 72%);
+  pointer-events: none;
+}
+.lens {
+  background: radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.05) 50%, rgba(167, 179, 189, 0.14)),
+    linear-gradient(rgba(11, 15, 20, 0.35), rgba(11, 15, 20, 0.35));
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  -webkit-backdrop-filter: blur(28px) saturate(175%);
+  backdrop-filter: blur(28px) saturate(175%);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.42), inset 0 -50px 90px -40px rgba(11, 15, 20, 0.65), 0 60px 110px -40px rgba(0, 0, 0, 0.9);
+}
+.lens-sweep {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%);
+  opacity: 0;
+  pointer-events: none;
+}
+.js-motion .lens-sweep {
+  opacity: 1;
+  animation: sweep 40s linear infinite;
+}
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+.lens-mark {
+  opacity: 0.16;
+}
+.lens-tag,
+.sample-tag,
+.status-pill,
+.chip,
+.note-tag,
+.hero-stage-label {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.lens-tag {
+  background: rgba(11, 15, 20, 0.62);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.sighting {
+  border-radius: var(--r-xl);
+  padding: 20px;
+  -webkit-backdrop-filter: var(--blur-deep);
+  backdrop-filter: var(--blur-deep);
+}
+.hero-note {
+  border-left-color: rgba(167, 179, 189, 0.5);
+}
+
+/* ---- Secondary surfaces: quiet translucent glass (no blur of their own) --- */
+.stats {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-edge), var(--glass-drop);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+}
+.stat {
+  background: linear-gradient(rgba(11, 15, 20, 0.62), rgba(11, 15, 20, 0.62));
+}
+.stat--hi {
+  background: linear-gradient(135deg, rgba(167, 179, 189, 0.16), rgba(167, 179, 189, 0.04)), linear-gradient(rgba(11, 15, 20, 0.62), rgba(11, 15, 20, 0.62));
+}
+.note,
+.tested-col,
+.label-card,
+.limit {
+  position: relative;
+  background: var(--glass-quiet);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-edge);
+  border-radius: var(--r-lg);
+}
+.tested-col,
+.label-card,
+.limit {
+  padding: 24px;
+}
+.tested-col {
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+.tested-col:last-child {
+  border-top-color: rgba(255, 255, 255, 0.3);
+}
+.limits-list {
+  gap: 16px;
+}
+.label-shape {
+  background: radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.03) 62%);
+  border-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.label-card {
+  padding-top: 24px;
+}
+@media (hover: hover) {
+  .label-card:hover .label-shape .shape {
+    box-shadow: 0 0 30px color-mix(in srgb, var(--c) 45%, transparent);
+  }
+}
+.label-shape .shape {
+  transition: box-shadow 0.4s;
+}
+.build-card,
+.contact-form,
+.legal-card {
+  background: var(--glass-deep-fill);
+  border-color: var(--glass-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--glass-edge), var(--glass-drop);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+}
+.legal-card {
+  padding: clamp(24px, 4vw, 48px);
+}
+.sister {
+  background: var(--glass-fill);
+  border-color: var(--glass-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--glass-edge), var(--glass-drop);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+}
+.sister:hover {
+  background: var(--glass-fill);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.sister-mark {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.14), transparent 70%);
+}
+.site-footer {
+  background: linear-gradient(180deg, transparent, rgba(11, 15, 20, 0.7) 40%);
+  border-top: 0;
+}
+
+/* ---- Visualizations and data -------------------------------------------- */
+.panel:hover {
+  border-color: rgba(255, 255, 255, 0.26);
+}
+.sensor,
+.radar,
+.mount,
+.story-device,
+.rc-panel {
+  padding: 20px;
+}
+.device-screen,
+.frame,
+.mount-stage {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  border: 0;
+}
+.mount-parts li {
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.mount-parts li.is-active {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.rc-caveats {
+  border-radius: var(--r-lg);
+  background: rgba(11, 15, 20, 0.35);
+}
+.rc-track {
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.rc-bar {
+  box-shadow: 0 0 14px -2px color-mix(in srgb, currentColor 0%, transparent);
+}
+.story-step.is-active {
+  border-top-color: rgba(255, 255, 255, 0.45);
+}
+.story-btn:hover {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 70%);
+}
+.rail-dot.is-active {
+  box-shadow: 0 0 0 5px rgba(167, 179, 189, 0.16), 0 0 16px rgba(167, 179, 189, 0.5);
+}
+.status-row {
+  transition: background-color 0.25s;
+}
+.status-row:hover {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 70%);
+}
+.status-row--progress .status-dot {
+  box-shadow: 0 0 0 4px rgba(244, 243, 239, 0.14), 0 0 16px rgba(244, 243, 239, 0.5);
+}
+.phase--now .phase-node {
+  box-shadow: 0 0 0 5px rgba(244, 243, 239, 0.12), 0 0 16px rgba(244, 243, 239, 0.55);
+}
+.pill--done {
+  background: rgba(255, 255, 255, 0.07);
+}
+.math-statement {
+  color: color-mix(in srgb, var(--varn-text-2) 80%, var(--varn-base));
+}
+.field input,
+.field textarea {
+  background: rgba(0, 0, 0, 0.32);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* ---- Scroll reveals: a short rise, never required to see content ---------- */
+.reveal-ready [data-reveal] {
+  transition: opacity 0.55s var(--ease), transform 0.7s var(--ease-expo), border-color 0.25s, box-shadow 0.25s;
+}
+.reveal-ready:not(.motion-off) [data-reveal]:not(.is-in) {
+  opacity: 0;
+  transform: translateY(16px);
+}
+[data-reveal]:nth-child(2) {
+  transition-delay: 0.06s;
+}
+[data-reveal]:nth-child(3) {
+  transition-delay: 0.12s;
+}
+[data-reveal]:nth-child(4) {
+  transition-delay: 0.18s;
+}
+
+/* ---- Fallbacks: one switch turns every glass surface solid ---------------- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --blur: none;
+    --blur-deep: none;
+    --glass-fill: var(--surface-1);
+    --glass-quiet: var(--surface-1);
+    --glass-deep-fill: var(--surface-1);
+  }
+  .nav,
+  .stat,
+  .lens-tag {
+    background: var(--surface-1);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --blur: none;
+    --blur-deep: none;
+    --glass-fill: var(--surface-1);
+    --glass-quiet: var(--surface-1);
+    --glass-deep-fill: var(--surface-1);
+  }
+  .nav,
+  .stat,
+  .lens-tag,
+  .lens {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--surface-1);
+  }
+}
+/* Software rendering (gfx.js adds .low-gfx): blurring over moving canvases is
+   redrawn on the CPU each frame, so glass becomes a solid, still-layered
+   surface. Measured earlier: 12-24 fps with blur, 54-60 without. */
+.low-gfx {
+  --blur: none;
+  --blur-deep: none;
+}
+.low-gfx .nav,
+.low-gfx .lens,
+.low-gfx .lens-tag,
+.low-gfx .stats,
+.low-gfx .sighting {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.low-gfx .nav,
+.low-gfx .stat,
+.low-gfx .lens-tag {
+  background: linear-gradient(rgba(11, 15, 20, 0.9), rgba(11, 15, 20, 0.9));
+}
+.low-gfx .lens {
+  background-color: var(--surface-1);
+}
+@media (forced-colors: active) {
+  .nav,
+  .lens,
+  .stats {
+    border: 1px solid CanvasText;
   }
 }

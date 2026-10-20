@@ -92,3 +92,18 @@ test('the tokens the design system promises exist', () => {
   // 13px is the smallest text on the site.
   assert.equal(vars['--fs-label'], '0.8125rem');
 });
+
+test('text on glass keeps 4.5:1 over the brightest light on the stage (worst case)', () => {
+  // The brightest thing under any panel is the steel light on the stage
+  // (55% steel over charcoal). A panel adds a 56% charcoal smoke and at most a
+  // 12% white sheen on top of it; the real fill is darker than this.
+  const mix = (a, b, t) => a.map((v, i) => v * t + b[i] * (1 - t));
+  const stageLight = mix(tok('--varn-steel-blue'), tok('--varn-charcoal'), 0.55);
+  const smoked = mix(tok('--varn-charcoal'), stageLight, 0.56);
+  const worst = mix([255, 255, 255], smoked, 0.12);
+  for (const fg of ['--varn-text', '--ink-1', '--ink-2', '--ink-3', '--accent-ink', '--drone']) {
+    const r = ratio(tok(fg), worst);
+    assert.ok(r >= 4.5, `${fg} on worst-case glass is ${r.toFixed(2)}:1`);
+  }
+  // Sage status text sits in a pill with its own dark ground, not directly on glass.
+});

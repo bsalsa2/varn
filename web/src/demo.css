@@ -1086,3 +1086,137 @@
 .demo-note.is-ok {
   color: var(--varn-text);
 }
+
+/* ==========================================================================
+   LIQUID GLASS: the dashboard is one glass window over the stage. Inside it,
+   panels are translucent fill only (a window cannot usefully blur itself);
+   the sidebar, tabs, tiles, tables and drawer share the same reflective edge.
+   ========================================================================== */
+.demo-app {
+  border-radius: var(--r-xl);
+  background: var(--glass-deep-fill);
+  border-color: var(--glass-border);
+  -webkit-backdrop-filter: var(--blur-deep);
+  backdrop-filter: var(--blur-deep);
+  box-shadow: var(--glass-edge), 0 40px 80px -36px rgba(0, 0, 0, 0.9);
+}
+.demo-top {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+.demo-side {
+  background: rgba(255, 255, 255, 0.025);
+  border-right-color: rgba(255, 255, 255, 0.1);
+}
+.demo-tab[aria-current='page'] {
+  background: linear-gradient(180deg, rgba(167, 179, 189, 0.24), rgba(167, 179, 189, 0.09));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 6px 18px -10px rgba(0, 0, 0, 0.8);
+}
+.demo-tab[aria-current='page']::before {
+  box-shadow: 0 0 12px rgba(167, 179, 189, 0.7);
+}
+.demo-plate,
+.demo-kpi,
+.demo-defs > div {
+  background: var(--glass-quiet);
+  border-color: rgba(255, 255, 255, 0.12);
+  border-radius: var(--r-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.demo-kpi--aircraft {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 3px 0 0 var(--varn-aircraft);
+}
+.demo-kpi--drone {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 3px 0 0 var(--varn-drone);
+}
+.demo-kpi {
+  transition: border-color 0.25s, transform 0.3s;
+}
+.demo-kpi:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+}
+.demo-row {
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.demo-row:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+.demo-table thead th {
+  background: rgba(14, 20, 27, 0.92);
+}
+.demo-table--events tbody tr:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.demo-field input,
+.demo-field select {
+  background: rgba(0, 0, 0, 0.32);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.demo-btn {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.025));
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.demo-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.demo-btn.is-on {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--varn-steel-blue) 80%, #fff), var(--varn-steel-blue));
+}
+.demo-btn--solid {
+  background: linear-gradient(180deg, #fff, var(--varn-bone));
+}
+.demo-banner {
+  background: linear-gradient(90deg, rgba(224, 168, 74, 0.13), rgba(224, 168, 74, 0.05));
+}
+.dc-col:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.dc-tip {
+  background: rgba(11, 15, 20, 0.92);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-pop);
+}
+.demo-drawer {
+  background: var(--glass-deep-fill);
+  border-left-color: var(--glass-border);
+  -webkit-backdrop-filter: var(--blur-deep);
+  backdrop-filter: var(--blur-deep);
+  box-shadow: var(--glass-edge), -30px 0 60px -30px rgba(0, 0, 0, 0.8);
+}
+.demo-drawer::backdrop {
+  background: rgba(3, 5, 8, 0.6);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+@media (max-width: 56.25em) {
+  .demo-side {
+    background: rgba(11, 15, 20, 0.82);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .demo-app,
+  .demo-drawer {
+    background: var(--surface-1);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .demo-drawer::backdrop {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+.low-gfx .demo-app,
+.low-gfx .demo-drawer,
+.low-gfx .demo-drawer::backdrop,
+.low-gfx .dc-tip {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.low-gfx .demo-app {
+  background: linear-gradient(rgba(14, 20, 27, 0.92), rgba(14, 20, 27, 0.92));
+}
