@@ -684,40 +684,33 @@ main,
 .hero-sky {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(60% 50% at 82% 62%, rgba(150, 195, 240, 0.22), transparent 70%),
-    linear-gradient(180deg, #03060b 0%, #070e19 40%, #0b1625 72%, #0d1a2b 100%);
+  background: #03060b;
 }
-/* The mountains and last light from the brand's own approved mockup art
-   (docs/design/home-mockup.webp, cropped below its sky). Dark by itself, it
-   sits at the bottom right and dissolves upward into the sky. */
+/* One sharp landscape, shown at its native resolution (never scaled up past
+   it, never filtered, masked or transformed): near-black on the left for the
+   headline, a cold blue-white horizon and misty ridges on the right. It is
+   generated artwork, not a photograph of anything VARN built or saw. */
 .hero-photo {
   position: absolute;
   inset: 0;
-  background: url('./assets/hero-ridge-lg.webp') right bottom / auto 66% no-repeat;
-  -webkit-mask-image: linear-gradient(180deg, transparent 33%, #000 64%);
-  mask-image: linear-gradient(180deg, transparent 33%, #000 64%);
-  transform: translate3d(calc(var(--mx) * -10px), calc(var(--my) * -5px), 0);
-  transition: transform 0.9s var(--ease);
+  background: #03060b url('./assets/hero-bg-2560.webp') right center / cover no-repeat;
 }
-@media (max-width: 1280px) {
+@media (max-width: 1700px) and (max-resolution: 1.5dppx) {
   .hero-photo {
-    background-image: url('./assets/hero-ridge-sm.webp');
+    background-image: url('./assets/hero-bg-1600.webp');
   }
 }
-/* A cold light grazing the ridge, shifting slowly. */
-.hero-limb {
-  position: absolute;
-  inset: auto 0 12% 40%;
-  height: 40%;
-  background: radial-gradient(ellipse 50% 50% at 80% 70%, rgba(236, 247, 255, 0.28), transparent 70%);
+@media (max-width: 900px) and (max-resolution: 1.5dppx) {
+  .hero-photo {
+    background-image: url('./assets/hero-bg-1100.webp');
+  }
 }
 .hero-haze {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(3, 6, 11, 0.97) 0%, rgba(3, 6, 11, 0.88) 30%, rgba(3, 6, 11, 0.45) 55%, transparent 78%),
-    linear-gradient(180deg, rgba(3, 6, 11, 0.5) 0%, transparent 22%, transparent 80%, var(--obsidian) 100%);
+    linear-gradient(90deg, rgba(3, 6, 11, 0.8) 0%, rgba(3, 6, 11, 0.5) 34%, transparent 62%),
+    linear-gradient(180deg, transparent 80%, var(--obsidian) 100%);
 }
 .hero-figure {
   position: absolute;
@@ -771,7 +764,6 @@ main,
   line-height: 0.94;
   letter-spacing: -0.045em;
   color: var(--text-1);
-  text-shadow: 0 2px 70px rgba(167, 214, 255, 0.22);
   margin-block: 4px 6px;
 }
 .hero-title .line {
@@ -852,9 +844,8 @@ main,
 .scroll-cue-line::after {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: 0 70% 0 0;
   background: var(--ice);
-  transform: translateX(-100%);
 }
 .hero-foot .motion-btn {
   margin-left: auto;
@@ -865,15 +856,14 @@ main,
     min-height: max(900px, 100svh);
   }
   .hero-inner {
-    padding-top: calc(var(--nav-h) + 36svh);
+    padding-top: calc(var(--nav-h) + 44svh);
   }
   .hero-photo {
-    inset: 56px 0 auto;
-    height: 48%;
-    background-size: auto 100%;
-    background-position: 74% 100%;
-    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 40%, #000 62%, transparent 100%);
-    mask-image: linear-gradient(180deg, transparent 0%, #000 40%, #000 62%, transparent 100%);
+    inset: 0 0 auto;
+    height: 36%;
+    background-position: 76% 100%;
+    -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 70%, transparent 100%);
   }
   .hero-haze {
     background: linear-gradient(180deg, rgba(2, 4, 10, 0.5) 0%, transparent 24%, transparent 40%, rgba(2, 4, 10, 0.82) 56%, var(--obsidian) 100%);
@@ -2196,31 +2186,6 @@ h2.kicker {
     transform: translateY(18px);
   }
 }
-.js-motion .hero-photo {
-  animation: light-shift 18s ease-in-out infinite alternate;
-}
-@keyframes light-shift {
-  from {
-    opacity: 0.7;
-    scale: 0.96 1;
-  }
-  to {
-    opacity: 1;
-    scale: 1.06 1;
-  }
-}
-.js-motion .scroll-cue-line::after {
-  animation: cue 2.8s var(--ease) infinite;
-}
-@keyframes cue {
-  0% {
-    transform: translateX(-100%);
-  }
-  60%,
-  100% {
-    transform: translateX(100%);
-  }
-}
 
 /* Reduced motion, or animation paused (motion.js): every animation jumps to
    its end state, so nothing is left half drawn or hidden. */
@@ -2243,9 +2208,6 @@ h2.kicker {
   animation-delay: 0s !important;
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
-}
-.motion-off .hero-photo {
-  transform: none;
 }
 
 /* ---- Fallbacks: one switch turns every glass surface solid ---------------- */
