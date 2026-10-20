@@ -145,7 +145,7 @@ export const content = {
     heading: 'Built in the open. Measured honestly.',
     text: 'VARN is a research prototype. Every result is published with its limits, and every simulation is labeled as one.',
     disclosure: 'Research prototype. Software has been tested on recorded video and in simulation. The physical hardware node has not been built or validated. Images marked CONCEPT or SIMULATED are not footage and not live detections.',
-    copyright: 'Copyright 2026 Varn Labs. Source code released under the MIT License. The hero image is generated artwork, not a photograph of VARN or its equipment.',
+    copyright: 'Copyright 2026 Varn Labs. Source code released under the MIT License. The hero photographs show a third-party aircraft for atmosphere; they are not VARN hardware or footage.',
   },
 
   // WHAT WE'VE TESTED: the short version, near the top. Three columns:
