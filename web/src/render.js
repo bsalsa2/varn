@@ -489,8 +489,7 @@ const heroSection = (c) => {
   <section class="hero" id="top" aria-labelledby="hero-title">
     <div class="hero-bg" aria-hidden="true">
       <div class="hero-sky"></div>
-      <div class="hero-earth"></div>
-      <div class="hero-limb"></div>
+      <div class="hero-photo"></div>
       <div class="hero-haze"></div>
     </div>
     ${
@@ -503,6 +502,7 @@ const heroSection = (c) => {
         <p class="eyebrow hero-rise" style="--i:0">${esc(hero.eyebrow)}</p>
         <h1 class="hero-title hero-rise" style="--i:1" id="hero-title">${headline(hero.headline)}</h1>
         <p class="hero-sub hero-rise" style="--i:2">${esc(hero.sub)}</p>
+        <p class="hero-explain hero-rise" style="--i:3">${esc(hero.explain)}</p>
         <p class="hero-status mono hero-rise" style="--i:3"><span class="hero-status-mark" aria-hidden="true"></span>${esc(hero.status)}</p>
         <div class="hero-actions hero-rise" style="--i:4">
           <a class="btn btn--glass btn--lg"${linkAttrs(hero.demo.href)}><span>${esc(hero.demo.label)}</span>${ARROW_UR}</a>
@@ -538,7 +538,7 @@ const processSection = (p) => `
           )
           .join('')}
       </ol>
-      <p class="proc-note">${esc(p.note)} <a class="u-link" href="${esc(p.link.href)}">${esc(p.link.label)}</a></p>
+      <p class="proc-note">${p.note ? `${esc(p.note)} ` : ''}<a class="u-link" href="${esc(p.link.href)}">${esc(p.link.label)}</a></p>
     </div>
   </section>`;
 
