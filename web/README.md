@@ -118,11 +118,17 @@ street, or anything else that reveals where you live.
 
 ## When there are accuracy numbers
 
-In `content.js`, add entries to `results.items`, for example
-`{ value: '91%', label: 'Aircraft detected', note: 'Daytime, clear sky' }`,
-and fill in `results.source` with how and when they were measured. A
-**Results** section appears after Status. It stays hidden while `items` is
-empty, and the build refuses numbers without a source.
+In `content.js`, each measurement under `results.charts` is drawn as bars
+on a 0 to 100% scale, so a small number looks small. Add a bar like
+`{ label: 'Aircraft detected', value: 91, detail: 'Daytime, clear sky' }`
+(the value is a plain number: `91` means 91%). Each chart says what the
+percentage is a share of and which way is better (`unit`), and whether it is
+about aircraft or drones (`kind`, which sets the colour and shape).
+`results.caveats` lists what the test does not show, printed beside the
+charts, and the same numbers appear in a table under them. Fill in
+`results.source` with how and when they were measured. The section stays
+hidden while `charts` is empty, and the build refuses numbers without a
+source or values outside 0 to 100.
 
 ## The 3D pan-tilt mount
 

@@ -263,17 +263,43 @@ export const content = {
     ],
   },
 
-  // ACCURACY RESULTS: this section stays hidden until items has entries.
+  // ACCURACY RESULTS: this section stays hidden until charts has entries.
   // Only add numbers you have actually measured, and fill in source with how
   // and when they were measured. The build refuses numbers without a source.
+  //
+  // Each chart is one measurement, drawn as bars on a 0 to 100% scale.
+  //   kind:   'aircraft' or 'drone' (sets the bar colour and its shape)
+  //   unit:   what the percentage is a share of, and which way is better
+  //   bars:   value is a plain number (7.5 means 7.5%). detail is optional.
+  //           part: true indents a bar as a breakdown of the one above it.
+  // caveats are printed next to the charts: what this test does NOT show.
   results: {
     heading: 'Results so far',
     intro: 'The v2 model, run on 43 real-world videos of planes, military jets and drones. This tests the model on recorded video. It is not a hardware test.',
-    items: [
-      { value: '7.5%', label: 'False-drone rate on real aircraft', note: '798 of 10,657 frames were called a drone' },
-      { value: '14.9%', label: 'Drone clips labeled correctly', note: 'v2 is weak at drones. v3 is training to fix this.' },
-      { value: '0.8%', label: 'Civilian planes called drones' },
-      { value: '10.8%', label: 'Military jets called drones', note: 'Mostly distant F-35s' },
+    tag: 'MEASURED · RECORDED VIDEO',
+    sample: '43 real-world videos · model v2',
+    charts: [
+      {
+        kind: 'aircraft',
+        title: 'Aircraft wrongly called a drone',
+        unit: 'Share of aircraft frames. Lower is better.',
+        bars: [
+          { label: 'All aircraft', value: 7.5, detail: '798 of 10,657 frames' },
+          { label: 'Civilian planes', value: 0.8, part: true },
+          { label: 'Military jets', value: 10.8, detail: 'Mostly distant F-35s', part: true },
+        ],
+      },
+      {
+        kind: 'drone',
+        title: 'Drones labeled correctly',
+        unit: 'Share of drone clips. Higher is better.',
+        bars: [{ label: 'Drone clips', value: 14.9, detail: 'v2 is weak at drones. v3 is training to fix this.' }],
+      },
+    ],
+    caveats: [
+      'Recorded video only. Nothing has run on the physical node yet.',
+      'One model, v2. v3 is in training and has no results yet.',
+      'Not yet checked against real flight data (ADS-B).',
     ],
     source: 'Model v2, 43 real-world videos. v3 (drone and aircraft classes, 960 px input) is in training. There are no v3 results yet.',
   },
