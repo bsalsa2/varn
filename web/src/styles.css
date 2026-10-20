@@ -409,7 +409,9 @@ svg {
   gap: 16px;
   padding: 0 12px 0 24px;
   border-radius: 20px;
-  background: var(--glass-clear-fill);
+  /* Smoked: the charcoal tint keeps the small nav text at 4.5:1 or better
+     over the brightest content that scrolls underneath. */
+  background: linear-gradient(rgba(11, 15, 20, 0.7), rgba(11, 15, 20, 0.7)), var(--glass-clear-fill);
   border: 1px solid var(--glass-border);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
@@ -2129,7 +2131,7 @@ svg {
 }
 .legal-updated {
   font-size: 0.8125rem;
-  color: var(--ink-3);
+  color: var(--ink-1);
 }
 .legal-title {
   font-family: var(--f-display);
@@ -3283,7 +3285,7 @@ svg {
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink-3, var(--ink-2));
+  color: var(--ink-1);
 }
 .field input,
 .field textarea {

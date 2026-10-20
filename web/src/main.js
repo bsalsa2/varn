@@ -571,11 +571,18 @@ afterLoad(() => {
           url: new URL('models/pantilt.bin', document.baseURI).href,
           reduceMotion,
           finePointer,
-          onTooSlow: () => stage.classList.remove('is-ready'),
+          onTooSlow: () => {
+            stage.classList.remove('is-ready');
+            stage.removeAttribute('tabindex');
+          },
         })
       )
       .then((mount) => {
         stage.classList.add('is-ready');
+        // Reachable from the keyboard only once there is a model to turn.
+        stage.tabIndex = 0;
+        stage.setAttribute('role', 'group');
+        stage.setAttribute('aria-label', '3D view of the pan-tilt mount. The left and right arrow keys turn it.');
         // A mouse highlights a part while hovering its row. Touch can't
         // hover (the browser sends leave right after the tap), so a tap
         // toggles the highlight instead.
@@ -591,6 +598,10 @@ afterLoad(() => {
           li.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && show(i));
           li.addEventListener('pointerleave', (e) => e.pointerType === 'mouse' && show(-1));
           li.addEventListener('click', () => lastType !== 'mouse' && show(current === i ? -1 : i));
+          // Keyboard: focusing a part's row highlights it in the model.
+          li.tabIndex = 0;
+          li.addEventListener('focus', () => show(i));
+          li.addEventListener('blur', () => show(-1));
         });
       })
       .catch((err) => console.warn('[varn] mount viewer unavailable, keeping the still.', err))

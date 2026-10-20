@@ -278,6 +278,14 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
   container.addEventListener('pointerup', endDrag);
   container.addEventListener('pointercancel', endDrag);
   container.addEventListener('pointerleave', () => (hoverX = 0));
+  // Keyboard: once the viewer is ready main.js makes it focusable; the left
+  // and right arrow keys turn it like a drag does.
+  container.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    yawDrag += e.key === 'ArrowLeft' ? -0.2 : 0.2;
+    wake();
+  });
 
   // ---- Highlight a part (hovering its name in the list) --------------------
   let active = -1;
