@@ -104,8 +104,15 @@ async function send(file) {
         retry.type = 'button';
         retry.className = 'quiet';
         retry.textContent = 'Retry';
-        retry.onclick = () => { retry.remove(); attempt(); };
+        retry.onclick = () => {
+          // Park focus on the row so it isn't lost with the button.
+          ui.item.tabIndex = -1;
+          ui.item.focus();
+          retry.remove();
+          attempt();
+        };
         ui.item.append(retry);
+        if (document.activeElement === ui.item) retry.focus();
       }
     }
   };

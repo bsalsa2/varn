@@ -209,6 +209,14 @@ svg {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
+/* Without the blur the lens would be a clear window onto the photo and the
+   sample track; give it a solid ground under its gradient. */
+.low-gfx .lens {
+  background-color: var(--varn-surface-1);
+}
+.low-gfx .btn--glass:hover {
+  background: color-mix(in srgb, var(--varn-surface-2) 85%, #fff) !important;
+}
 /* Light that follows the cursor across a glass surface. */
 .glass-sheen {
   position: absolute;
@@ -2186,6 +2194,7 @@ svg {
   .hero-foot {
     /* In flow, but painted above the hero photo's shade. */
     position: relative;
+    bottom: auto;
     padding-bottom: 28px;
   }
   .sighting {

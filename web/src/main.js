@@ -6,7 +6,7 @@ const root = document.documentElement;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 // The pinned story needs this much room; keep in step with .story--pinned in styles.css.
-const STORY_PIN_QUERY = '(min-width: 901px) and (min-height: 650px)';
+const STORY_PIN_QUERY = '(min-width: 901px) and (min-height: 750px)';
 
 if (!reduceMotion) root.classList.add('js-motion');
 // Everything below decides once, at load, whether to animate. If the visitor
@@ -83,9 +83,12 @@ function cssColor(value) {
   document.body.append(probe);
   const c = getComputedStyle(probe).color;
   probe.remove();
-  const n = (c.match(/[\d.]+/g) || ['0', '0', '0']).slice(0, 3).map(Number);
-  const rgb = c.startsWith('color(') ? n.map((v) => Math.round(v * 255)) : n.map(Math.round);
-  return `rgb(${rgb.join(', ')})`;
+  // Paint it and read the pixel back: handles every colour space.
+  const px = document.createElement('canvas').getContext('2d');
+  px.fillStyle = c;
+  px.fillRect(0, 0, 1, 1);
+  const [r, g, b, a] = px.getImageData(0, 0, 1, 1).data;
+  return `rgba(${r}, ${g}, ${b}, ${+(a / 255).toFixed(3)})`;
 }
 function splitWords(el) {
   const text = el.textContent.trim();
@@ -112,13 +115,8 @@ function splitWords(el) {
 // backdrop-filter. Safari and Firefox parse the rule but drop the whole
 // backdrop, so gate it on a Chromium-only API and keep plain blur elsewhere.
 // ---------------------------------------------------------------------------
-if (
-  !root.classList.contains('low-gfx') &&
-  'userAgentData' in navigator &&
-  window.CSS?.supports?.('backdrop-filter', 'url(#sn-liquid) blur(1px)')
-) {
-  root.classList.add('has-refraction');
-}
+const canRefract = 'userAgentData' in navigator && !!window.CSS?.supports?.('backdrop-filter', 'url(#sn-liquid) blur(1px)');
+if (canRefract && !root.classList.contains('low-gfx')) root.classList.add('has-refraction');
 
 // ---------------------------------------------------------------------------
 // Nav: tucks away while you read down the page, comes back when you scroll
@@ -360,8 +358,19 @@ if (!reduceMotion) {
       if (counter) counter.textContent = `0${i + 1} / 0${n}`;
     };
     gsap.matchMedia().add(STORY_PIN_QUERY, () => {
+      // Adding the pin after load (rotation, resize) refreshes every trigger,
+      // which would otherwise jump the page to the top: put the reader back.
+      if (document.readyState === 'complete' && window.scrollY > 0) {
+        // The window can refresh more than once (debounced resize), so keep
+        // putting the reader back for a moment.
+        const y = window.scrollY;
+        const back = () => window.scrollTo(0, y);
+        ScrollTrigger.addEventListener('refresh', back);
+        setTimeout(() => ScrollTrigger.removeEventListener('refresh', back), 1500);
+      }
       story.classList.add('story--pinned');
       ScrollTrigger.create({
+        refreshPriority: 1, // sort all triggers by page position on refresh
         trigger: '.story-pin',
         start: 'top top',
         end: () => `+=${Math.round(window.innerHeight * 0.75 * n)}`,
@@ -554,7 +563,7 @@ afterLoad(() => {
   const renderer = webgl2Renderer();
   const soft = renderer !== null && SOFTWARE_GL.test(renderer);
   root.classList.toggle('low-gfx', soft);
-  if (soft) root.classList.remove('has-refraction');
+  root.classList.toggle('has-refraction', canRefract && !soft);
   try {
     if (soft) localStorage.setItem(GFX_KEY, 'soft');
     else localStorage.removeItem(GFX_KEY);
@@ -574,6 +583,9 @@ afterLoad(() => {
           onTooSlow: () => {
             stage.classList.remove('is-ready');
             stage.removeAttribute('tabindex');
+            stage.removeAttribute('role');
+            stage.removeAttribute('aria-label');
+            document.querySelectorAll('.mount-parts li').forEach((li) => li.removeAttribute('tabindex'));
           },
         })
       )
@@ -594,13 +606,17 @@ afterLoad(() => {
           mount.setActive(i);
         };
         parts.forEach((li, i) => {
-          li.addEventListener('pointerdown', (e) => (lastType = e.pointerType));
+          let before = -1;
+          li.addEventListener('pointerdown', (e) => {
+            lastType = e.pointerType;
+            before = current; // a tap focuses the row first; decide from the state before it
+          });
           li.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && show(i));
           li.addEventListener('pointerleave', (e) => e.pointerType === 'mouse' && show(-1));
-          li.addEventListener('click', () => lastType !== 'mouse' && show(current === i ? -1 : i));
+          li.addEventListener('click', () => lastType !== 'mouse' && show(before === i ? -1 : i));
           // Keyboard: focusing a part's row highlights it in the model.
           li.tabIndex = 0;
-          li.addEventListener('focus', () => show(i));
+          li.addEventListener('focus', () => li.matches(':focus-visible') && show(i));
           li.addEventListener('blur', () => show(-1));
         });
       })
