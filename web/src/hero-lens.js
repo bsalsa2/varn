@@ -89,13 +89,6 @@ export function createLens({ lens, canvas, card, reduceMotion }) {
       }
     : null;
 
-  // Fake "UTC" clock for the card: starts where the static markup does.
-  let clockBase = 14 * 3600 + 32 * 60 + 7;
-  const stamp = (offset) => {
-    const t = (clockBase + Math.floor(offset)) % 86400;
-    return `${pad(Math.floor(t / 3600))}:${pad(Math.floor((t % 3600) / 60))}:${pad(t % 60)}Z`;
-  };
-
   function applyCard(scene) {
     if (!hud || !hud.pill) return;
     const k = scene.kind;
@@ -210,7 +203,6 @@ export function createLens({ lens, canvas, card, reduceMotion }) {
       sceneIndex = i;
       trail.length = 0;
       applyCard(scene);
-      if (hud && hud.time) hud.time.textContent = stamp(clock);
     }
 
     // Fade in/out at the ends of each scene.
@@ -283,8 +275,6 @@ export function createLens({ lens, canvas, card, reduceMotion }) {
       ctx.restore();
     }
 
-    // Keep the card clock moving.
-    if (hud && hud.time && Math.floor(clock * 2) % 2 === 0) hud.time.textContent = stamp(clock);
   }
 
   function frame(now) {

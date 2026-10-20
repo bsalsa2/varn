@@ -55,9 +55,12 @@ export const content = {
       label: 'Research prototype',
       text: 'Software tested on recorded video and in simulation. Physical hardware validation pending.',
     },
-    sub: 'Passive visual sensing that tells drones from aircraft and logs every sighting.',
+    sub: 'A prototype for passive visual sensing: a camera and a detection model label what they see as drone or aircraft, and every sighting is logged. The current model is weak at drones.',
+    // Nav button and footer link to the code.
     primary: { label: 'View the code', href: 'https://github.com/bsalsa2/varn' },
-    secondary: { label: 'See where it stands', href: '#status' },
+    // The two hero buttons: the interactive demo, then the measured results.
+    demo: { label: 'Explore the dashboard demo', href: './demo.html' },
+    results: { label: 'Read the measured results', href: '#results' },
     // Cost note, shown under the buttons. Keep the exclusions in the sentence.
     cost: 'Estimated sensing-hardware parts cost: about $113 (camera, servos, mount, power), before the computer that runs the model. Not a validated system.',
     // The line along the bottom of the hero. Plain facts only.
@@ -111,7 +114,7 @@ export const content = {
         items: [
           'Model v2 on 43 real-world clips',
           '14.9% of drone clips labeled correctly: v2 is weak at drones',
-          '7.5% of aircraft frames wrongly called a drone',
+          '7.5% of aircraft video frames wrongly called a drone (a different unit)',
         ],
       },
       {
@@ -201,26 +204,28 @@ export const content = {
   },
 
   math: {
-    heading: 'The math is backwards',
+    heading: 'The cost goal',
     // Words inside [square brackets] light up white; the rest stay grey.
-    statement: 'A small drone costs [a few hundred dollars.] Systems built to detect one cost [tens of thousands.]',
+    statement: 'The goal is a sensing layer [cheap enough to put almost anywhere.] One node\'s estimated parts come to [about $113.]',
     stats: [
-      { label: 'A small drone', value: '$100s' },
-      { label: 'Typical detection system', value: '$10,000s' },
-      { label: 'Estimated Varn sensing-hardware parts (excludes the computer)', value: '~$113', highlight: true },
+      { label: 'Estimated sensing-hardware parts, one node', value: '~$113', highlight: true },
+      { label: 'Not in that total', value: 'Computer' },
+      { label: 'Already owned, not priced', value: 'Pico + breadboard' },
     ],
     // Printed under the numbers so they can't be read as a capability claim.
-    statsNote: 'Price comparison only, not a capability comparison. Varn is one passive camera node and has not run on real hardware yet.',
+    statsNote: 'A parts estimate from the bill of materials (bom.csv in the repo), before shipping. It says nothing about capability: the node is not built, and nothing has run on real hardware. No comparison with other detection systems is made here.',
     body: 'Varn is a first step toward making that sensing layer cheap enough to put anywhere.',
     useCases: {
       tag: 'USE CASES',
-      text: `Early use cases I'm exploring: farms, small airports, stadiums, and power substations. First hypothesis to test: small general-aviation airfields.`,
+      text: `Early use cases I'm exploring: farms, small airports, stadiums, and power substations. First hypothesis to test: small general-aviation airfields. None of these is tested yet.`,
     },
   },
 
   how: {
     kicker: 'Under the hood',
     heading: 'The hardware and the view',
+    summary: 'Three views, all of them simulations or CAD renders and none of them footage: what the camera overlay will look like, a sky picture of sightings, and a 3D model of the pan-tilt mount.',
+    toggle: 'Show the overlay, sky picture and 3D mount',
     // 3D viewer of the pan-tilt mount, built from the STL files in /hardware.
     mount: {
       label: 'PAN-TILT MOUNT',
@@ -244,7 +249,7 @@ export const content = {
       caption:
         'SAMPLE: made-up blips showing how sightings could be plotted around the node. Circle = aircraft, square = possible drone. Varn has no radar; this is a map of what the camera reports.',
     },
-    note: 'The test range is free: real air traffic passes overhead all day. Planes publicly broadcast their positions (ADS-B), so I can compare what the camera saw with what actually flew over and report real accuracy numbers.',
+    note: 'The test range is free: real air traffic passes overhead all day. Planes publicly broadcast their positions (ADS-B), so once the node is built I can compare what the camera saw with what actually flew over. That comparison is written but has not been run, so there are no accuracy numbers from it yet.',
   },
 
   status: {
@@ -296,13 +301,14 @@ export const content = {
         kind: 'drone',
         title: 'Drones labeled correctly',
         unit: 'Share of drone clips. Higher is better.',
-        bars: [{ label: 'Drone clips', value: 14.9, detail: 'v2 is weak at drones. v3 is training to fix this.' }],
+        bars: [{ label: 'Drone clips', value: 14.9, detail: 'The number of drone clips is not listed here. v2 is weak at drones, and v3 is training to improve this.' }],
       },
     ],
     caveats: [
       'Recorded video only. Nothing has run on the physical node yet.',
       'One model, v2. v3 is in training and has no results yet.',
       'Not yet checked against real flight data (ADS-B).',
+      'The two charts use different units (frames of aircraft video, and drone clips), so their percentages are not comparable with each other.',
     ],
     source: 'Model v2, 43 real-world videos. v3 (drone and aircraft classes, 960 px input) is in training. There are no v3 results yet.',
   },
@@ -453,10 +459,10 @@ export const content = {
   // Update the date whenever you change this page.
   privacy: {
     title: 'Privacy policy',
-    updated: 'October 4, 2026',
-    intro: `This site doesn't collect personal information. There are no accounts, cookies, ads, or trackers. The contact form only sends what you type in it.`,
+    updated: 'October 21, 2026',
+    intro: `This site has no accounts, cookies, ads, or trackers. Reading it sends nothing about you anywhere. The contact form sends only what you type in it, and goes through a form service (see Contact form below).`,
     // Used instead of intro when the visit counter is on.
-    introWithAnalytics: `This site doesn't collect personal information. There are no accounts, cookies, ads, or trackers. The contact form only sends what you type in it. It counts visits anonymously, as explained below.`,
+    introWithAnalytics: `This site has no accounts, cookies, ads, or tracking beyond an anonymous visit counter, explained below. The contact form sends only what you type in it, and goes through a form service (see Contact form below).`,
     sections: [
       {
         heading: 'What the site loads',
@@ -472,12 +478,13 @@ export const content = {
       },
       {
         heading: 'Hosting',
-        text: `The site is hosted by Netlify. Like any web host, Netlify's servers handle each visit and may keep standard technical logs, such as IP addresses and browser type, to run and protect the service. This site adds no tracking on top of that.`,
-        link: { label: `Netlify's privacy policy`, href: 'https://www.netlify.com/privacy/' },
+        text: `The site is hosted on GitHub Pages. Like any web host, GitHub's servers handle each visit and may keep standard technical logs, such as IP addresses and browser type, to run and protect the service. This site adds no tracking on top of that.`,
+        link: { label: `GitHub's privacy statement`, href: 'https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement' },
       },
       {
         heading: 'Contact form',
-        text: `If you use the contact form, the name, email address, and message you type are sent to hello@tryvarn.com, or open in your own email app, and are used only to reply to you. Nothing is stored on this site.`,
+        text: `If you use the contact form, the name, email address, and message you type are sent to Formspree, a form service, which forwards them to hello@tryvarn.com and may keep a copy under its own policy. They are used only to reply to you. Nothing is stored on this site. The form loads nothing from Formspree until you press send. If the form is unavailable, you can email hello@tryvarn.com directly.`,
+        link: { label: `Formspree's privacy policy`, href: 'https://formspree.io/legal/privacy-policy/' },
       },
       {
         heading: 'Links to other sites',

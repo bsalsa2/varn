@@ -152,8 +152,10 @@ list('nav.links').forEach((l, i) => {
 ['eyebrow', 'headline', 'sub', 'caption'].forEach((k) => text(`hero.${k}`));
 text('hero.primary.label');
 link('hero.primary.href');
-text('hero.secondary.label');
-link('hero.secondary.href');
+text('hero.demo.label');
+link('hero.demo.href');
+text('hero.results.label');
+link('hero.results.href');
 list('hero.facts').forEach((f, i) => text(`hero.facts.${i}`, f));
 if (get('hero.cost') !== undefined) {
   text('hero.cost');

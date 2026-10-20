@@ -132,6 +132,7 @@
 }
 .demo-main {
   min-width: 0;
+  min-height: 70vh; /* the footer must not jump when the views appear */
 }
 .demo-view {
   display: flex;
@@ -678,7 +679,7 @@
   top: 8px;
   width: 28px;
   height: 180px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0;
   color: var(--ink-3);
 }
@@ -738,7 +739,7 @@
   right: 0;
   bottom: 0;
   height: 16px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.02em;
   color: var(--ink-3);
 }
@@ -807,7 +808,7 @@
 }
 .db-x {
   text-align: center;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0;
   color: var(--ink-3);
 }
@@ -1023,5 +1024,86 @@
   .demo-row,
   .demo-tab {
     transition: none;
+  }
+}
+
+/* ---- Persistent SIMULATED label, loading, notes -------------------------------------- */
+.demo-sticky {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--varn-r-btn);
+  background: rgba(224, 168, 74, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(224, 168, 74, 0.45);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--varn-amber);
+}
+.demo-sticky .state-shape {
+  margin: 0;
+}
+.demo-sticky-sub {
+  display: none;
+  color: var(--ink-1);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+.demo-status {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--varn-r-btn);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--ink-1);
+}
+.demo-status.is-bad,
+.demo-note.is-bad {
+  box-shadow: inset 0 0 0 1px var(--varn-amber);
+  color: var(--varn-amber);
+}
+.demo-status[hidden],
+.demo-note[hidden] {
+  display: none;
+}
+.no-js .demo-status {
+  display: none;
+}
+.demo-note {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--ink-1);
+}
+.demo-note.is-ok {
+  color: var(--varn-text);
+}
+@media (max-width: 900px) {
+  .demo-side {
+    flex-wrap: wrap;
+  }
+  .demo-sticky {
+    flex: 1 1 100%;
+  }
+  .demo-sticky-sub {
+    display: inline;
+  }
+  .demo-tabs {
+    flex: 1 1 100%;
+  }
+}
+@media (min-width: 901px) {
+  .demo-sticky-sub {
+    display: block;
+    flex-basis: 100%;
+    margin-top: 2px;
+  }
+  .demo-sticky {
+    flex-wrap: wrap;
   }
 }

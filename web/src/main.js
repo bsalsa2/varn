@@ -124,6 +124,31 @@ if (canRefract && !root.classList.contains('low-gfx')) root.classList.add('has-r
 // ---------------------------------------------------------------------------
 initHeaderAutoHide();
 
+// "Under the hood" starts collapsed. Open it when a link points into it, and
+// re-measure the scroll triggers below whenever it opens or closes.
+{
+  const fold = document.getElementById('how-details');
+  if (fold) {
+    const inside = (hash) => !!hash && (hash === '#how' || fold.querySelector(hash));
+    const openFor = (hash) => {
+      try {
+        if (inside(hash)) fold.open = true;
+      } catch {}
+    };
+    openFor(location.hash);
+    addEventListener('hashchange', () => openFor(location.hash));
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href^="#"]');
+      if (a) openFor(a.getAttribute('href'));
+    });
+    fold.addEventListener('toggle', () => {
+      try {
+        ScrollTrigger.refresh();
+      } catch {}
+    });
+  }
+}
+
 const navLinks = [...document.querySelectorAll('.nav-link')].filter((l) => l.getAttribute('href').startsWith('#'));
 const sectionFor = new Map(
   navLinks.map((link) => [document.querySelector(link.getAttribute('href')), link]).filter(([s]) => s)

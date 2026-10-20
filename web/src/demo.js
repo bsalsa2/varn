@@ -153,7 +153,7 @@ const COLUMNS = [
   { key: 'cls', label: 'Class' },
   { key: 'confidence', label: 'Confidence', num: true },
   { key: 'duration', label: 'Duration', num: true },
-  { key: 'adsb', label: 'ADS-B' },
+  { key: 'adsb', label: 'ADS-B (sim.)' },
 ];
 
 function filtered() {
@@ -188,6 +188,8 @@ function renderEvents() {
     : 'Showing 0 simulated events';
   $('#more').hidden = shown.length >= all.length;
   $('#export').disabled = !all.length;
+  $('#export').textContent = all.length ? `Export ${all.length} as CSV` : 'Export CSV';
+  $('#export-note').hidden = true; // the note described the previous filter
 }
 
 function resetFilters() {
@@ -231,23 +233,6 @@ function renderBins() {
 const drawer = $('#drawer');
 let returnFocus = null;
 
-function frameSvg(e) {
-  // A stand-in picture, placed from the id so it is stable. Not a real image.
-  let h = 0;
-  for (const ch of e.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  const x = 60 + (h % 200);
-  const y = 40 + ((h >> 8) % 90);
-  const c = e.cls === 'drone' ? 'var(--varn-drone)' : 'var(--varn-aircraft)';
-  const mark = e.cls === 'drone' ? `<rect x="${x - 3}" y="${y - 3}" width="6" height="6" fill="${c}"/>` : `<circle cx="${x}" cy="${y}" r="3.5" fill="${c}"/>`;
-  return `<svg class="demo-frame" viewBox="0 0 320 180" role="img" aria-label="Illustration of the detection frame. Not a real image.">
-    <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a2430"/><stop offset="1" stop-color="#46505b"/></linearGradient></defs>
-    <rect width="320" height="180" fill="url(#sky)"/>
-    <g stroke="#ffffff" stroke-opacity=".06">${[64, 128, 192, 256].map((v) => `<path d="M${v} 0V180"/>`).join('')}${[45, 90, 135].map((v) => `<path d="M0 ${v}H320"/>`).join('')}</g>
-    ${mark}
-    <path d="M${x - 16} ${y - 10}v-8h8M${x + 16} ${y - 10}v-8h-8M${x - 16} ${y + 10}v8h8M${x + 16} ${y + 10}v8h-8" fill="none" stroke="${c}" stroke-width="1.4"/>
-    <text x="10" y="170" fill="#a7b3bd" font-size="9" font-family="monospace" letter-spacing="1">SAMPLE · NOT A REAL IMAGE</text></svg>`;
-}
-
 function renderDrawer() {
   const list = filtered();
   const i = list.findIndex((e) => e.id === state.open);
@@ -259,17 +244,16 @@ function renderDrawer() {
       <div><p class="mono demo-badge">SIMULATED EVENT</p><h2 id="drawer-title">${esc(e.id)}</h2></div>
       <button type="button" class="demo-icon" data-close aria-label="Close details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
     </header>
-    ${frameSvg(e)}
     <p class="demo-drawer-class">${classPill(e.cls)}</p>
     <dl class="demo-fields">
       ${field('Time', `${when(e.time)}`)}
       ${field('Model confidence', `<span class="mono">${e.confidence.toFixed(2)}</span> ${meter(e.confidence)}`)}
       ${field('Duration', `<span class="mono">${e.duration} s</span>`)}
-      ${field('Flight data (ADS-B)', adsbText(e.adsb))}
+      ${field('Flight data (ADS-B, simulated)', adsbText(e.adsb))}
       ${field('Camera pointing', `<span class="mono">pan ${e.pan.toFixed(1)}°, tilt ${e.tilt.toFixed(1)}°</span>`)}
       ${field('Source', '<span class="mono">Simulated: generated in your browser</span>')}
     </dl>
-    <p class="demo-drawer-note">This record and picture are illustrations. No camera saw this event, and the model never labeled it.</p>
+    <p class="demo-drawer-note">This record is sample data generated in your browser. No camera saw this event, there is no snapshot, and the model never labeled it. The label and the ADS-B result are made up for the demo.</p>
     <footer class="demo-drawer-foot">
       <button type="button" class="demo-btn" data-step="-1" ${i <= 0 ? 'disabled' : ''}>&larr; Newer in list</button>
       <button type="button" class="demo-btn" data-step="1" ${i < 0 || i >= list.length - 1 ? 'disabled' : ''}>Older in list &rarr;</button>
@@ -316,6 +300,7 @@ function show(view, { focus = false } = {}) {
     else a.removeAttribute('aria-current');
   });
   document.title = `${TITLES[view]} · Dashboard demo | Varn`;
+  if (view !== 'overview' && replayTimer) stopReplay(); // nothing keeps running out of sight
   if (focus) $(`#h-${view}`)?.focus({ preventScroll: false });
 }
 
@@ -335,6 +320,7 @@ function stopReplay() {
   b.textContent = 'Replay simulated feed';
 }
 function startReplay() {
+  if (replayTimer) return; // never two timers
   const b = $('#replay');
   b.setAttribute('aria-pressed', 'true');
   b.textContent = 'Stop replay';
@@ -388,8 +374,23 @@ const onFilter = () => {
 };
 ['#f-cls', '#f-adsb', '#f-hours'].forEach((s) => $(s).addEventListener('change', onFilter));
 $('#f-q').addEventListener('input', onFilter);
-$('#export').addEventListener('click', () => download('varn-simulated-events.csv', toCsv(filtered()), 'text/csv;charset=utf-8'));
+$('#export').addEventListener('click', () => {
+  const rows = filtered();
+  const note = $('#export-note');
+  try {
+    if (!rows.length) throw new Error('empty');
+    download('varn-simulated-events.csv', toCsv(rows), 'text/csv;charset=utf-8');
+    note.textContent = `Exported ${plural(rows.length, 'simulated event', 'simulated events')} as varn-simulated-events.csv.`;
+    note.className = 'mono demo-note is-ok';
+  } catch {
+    note.textContent = 'The export did not work in this browser. Nothing was saved.';
+    note.className = 'mono demo-note is-bad';
+  }
+  note.hidden = false;
+});
 $('#replay').addEventListener('click', () => (replayTimer ? stopReplay() : startReplay()));
+document.addEventListener('visibilitychange', () => document.hidden && replayTimer && stopReplay());
+addEventListener('pagehide', () => stopReplay());
 
 // Polite announcements for the replay.
 const live = document.createElement('p');
@@ -399,6 +400,14 @@ live.setAttribute('role', 'status');
 live.setAttribute('aria-live', 'polite');
 document.body.append(live);
 
-renderAll();
-route(false);
+try {
+  renderAll();
+  route(false);
+  $('#demo-status').hidden = true;
+} catch (err) {
+  console.warn('[varn] demo failed to start', err);
+  $('#demo-status').textContent = 'The demo could not start in this browser. The measured results and system status are still shown below.';
+  $('#demo-status').classList.add('is-bad');
+  $('#view-analytics').hidden = false;
+}
 if (reduceMotion) document.documentElement.classList.add('demo-still');

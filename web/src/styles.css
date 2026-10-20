@@ -648,7 +648,7 @@ svg {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 10px 24px;
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   color: var(--ink-3);
 }
@@ -656,7 +656,7 @@ svg {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 10px;
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 .hero-facts li + li::before {
@@ -664,7 +664,7 @@ svg {
   margin-right: 10px;
 }
 .hero-labs {
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
 }
 
@@ -767,7 +767,7 @@ svg {
   min-width: 0;
 }
 .sighting-grid dt {
-  font-size: 10px;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
   color: var(--ink-1);
 }
@@ -796,7 +796,7 @@ svg {
   border-radius: var(--varn-r-tag);
   background: var(--varn-text);
   color: var(--varn-base);
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.1em;
 }
@@ -970,6 +970,11 @@ svg {
 .stat dt {
   color: var(--ink-3);
 }
+.stat-value--text {
+  font-size: clamp(22px, 2.6vw, 34px) !important;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
 .stat-value {
   font-family: var(--f-mono);
   font-weight: 400;
@@ -1036,7 +1041,7 @@ svg {
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.3);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
   color: var(--ink-1);
   white-space: nowrap;
@@ -1072,13 +1077,13 @@ svg {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--halo);
 }
 .sensor-id {
   flex: none;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--ink-3);
 }
 .live-dot {
@@ -1139,7 +1144,7 @@ svg {
   bottom: 100%;
   margin-bottom: 5px;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
 }
 .det-label b {
@@ -1228,7 +1233,7 @@ svg {
     right: 10px;
     bottom: 10px;
     padding: 10px 14px;
-    font-size: 10.5px;
+    font-size: 0.75rem;
   }
   .frame-bar span:nth-child(4) {
     display: none;
@@ -1290,7 +1295,7 @@ svg {
   position: absolute;
   left: 16px;
   bottom: 14px;
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--ink-3);
   opacity: 0;
   transition: opacity 0.6s;
@@ -1338,7 +1343,7 @@ svg {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
 }
 .mount-part-name {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--halo);
 }
 .mount-parts p {
@@ -1374,7 +1379,7 @@ svg {
   padding: 6px 12px;
   border-radius: 999px;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--halo);
 }
 .note p {
@@ -1451,7 +1456,7 @@ svg {
   padding: 6px 12px;
   border-radius: 999px;
   text-align: center;
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   white-space: nowrap;
 }
@@ -1520,7 +1525,7 @@ svg {
   padding: 6px 12px;
   border-radius: 999px;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--halo);
 }
 .limit p {
@@ -1678,7 +1683,7 @@ svg {
   justify-content: space-between;
   padding-top: 6px;
   border-top: 1px solid var(--line);
-  font-size: 10px;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
   color: var(--ink-3);
 }
@@ -1749,7 +1754,7 @@ svg {
 }
 .rc-table thead th {
   font-family: var(--f-mono);
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -1832,7 +1837,7 @@ svg {
   text-wrap: pretty;
 }
 .build-motto .mono {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--ink-3);
 }
 
@@ -1900,7 +1905,7 @@ svg {
   box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.12), 0 0 18px rgba(255, 255, 255, 0.7);
 }
 .phase-label {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--ink-3);
 }
 .phase--now .phase-label {
@@ -2051,7 +2056,7 @@ svg {
   gap: 4px;
 }
 .sister-label {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--ink-3);
 }
 .sister-name {
@@ -2112,7 +2117,7 @@ svg {
 }
 .footer-k {
   margin-right: 8px;
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   color: var(--ink-3);
 }
@@ -2120,7 +2125,7 @@ svg {
   margin-left: 6px;
   padding-left: 14px;
   border-left: 1px solid var(--line-2);
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
   color: var(--ink-3);
 }
@@ -2300,7 +2305,7 @@ svg {
   border-radius: var(--varn-r-chip);
   background: rgba(11, 15, 20, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  font-size: 10px;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
   color: var(--ink-1);
   white-space: nowrap;
@@ -2479,7 +2484,7 @@ svg {
   align-items: center;
   gap: 12px;
   padding: 2px 6px 0;
-  font-size: 11px;
+  font-size: 0.75rem;
 }
 .device-label {
   display: inline-flex;
@@ -2838,7 +2843,7 @@ svg {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
   text-transform: none;
   color: var(--varn-text);
@@ -2906,7 +2911,7 @@ svg {
 .sc-pill {
   align-self: flex-start;
   opacity: 0;
-  font-size: 11px;
+  font-size: 0.75rem;
   text-transform: none;
   letter-spacing: 0.04em;
   padding: 6px 10px;
@@ -3020,7 +3025,7 @@ svg {
   box-shadow: 0 0 36px color-mix(in srgb, var(--c) 55%, transparent);
 }
 .label-shapename {
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   color: var(--ink-3);
 }
@@ -3110,7 +3115,7 @@ svg {
   padding: 3px 8px;
   border: 1px solid var(--accent-ink);
   border-radius: var(--varn-radius-sm);
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--accent-ink);
@@ -3131,7 +3136,7 @@ svg {
 }
 .tested-tag {
   margin: 0 0 var(--varn-space-2);
-  font-size: 11px;
+  font-size: 0.75rem;
   letter-spacing: 0.16em;
   color: var(--accent-ink);
 }
@@ -3238,6 +3243,48 @@ svg {
   }
 }
 
+/* ---- Collapsible detail ("Under the hood") ------------------------------------ */
+.fold {
+  margin-top: 8px;
+}
+.fold-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: var(--varn-r-btn);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  color: var(--varn-text);
+  list-style: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.fold-summary::-webkit-details-marker {
+  display: none;
+}
+.fold-summary::before {
+  content: '+';
+  font-family: var(--f-mono);
+  font-size: 16px;
+}
+.fold[open] > .fold-summary::before {
+  content: '\2212';
+}
+.fold[open] > .fold-summary > span::after {
+  content: ' (hide)';
+  color: var(--ink-3);
+}
+.fold-summary:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.fold-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 24px;
+}
+
 /* ---- Sensor view + radar ------------------------------------------------------ */
 .how-views {
   display: grid;
@@ -3289,6 +3336,19 @@ svg {
 .field {
   display: grid;
   gap: 8px;
+}
+.field-error {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--varn-amber);
+}
+.field-error[hidden] {
+  display: none;
+}
+.field input[aria-invalid='true'],
+.field textarea[aria-invalid='true'] {
+  box-shadow: inset 0 0 0 1.5px var(--varn-amber);
 }
 .field-k {
   font-size: 12px;

@@ -145,11 +145,9 @@ const sensorBlock = (s) => `
             <svg class="det-obj" viewBox="0 0 40 24" aria-hidden="true"><path d="M4 12h32M20 12l-8-9M20 12l-8 9M34 12l3-5M34 12l3 5" /></svg>
           </div>
           <div class="frame-bar mono">
-            <span data-sensor="fps">24.8 FPS</span>
             <span data-sensor="pan">PAN 092.5°</span>
             <span data-sensor="tilt">TILT 47.0°</span>
-            <span>LINK WI-FI</span>
-            <span class="frame-state"><span class="state-dot" aria-hidden="true"></span>TRACKING</span>
+            <span class="frame-state"><span class="state-dot" aria-hidden="true"></span>SIMULATED</span>
           </div>
         </div>
         <figcaption class="sensor-caption">${esc(s.caption)}</figcaption>
@@ -550,7 +548,7 @@ export function renderBody(c) {
       (s) => `
         <div class="stat${s.highlight ? ' stat--hi' : ''}">
           <dt class="mono">${esc(s.label)}</dt>
-          <dd class="stat-value" data-count="${esc(s.value)}">${esc(s.value)}</dd>
+          <dd class="stat-value${/\d/.test(s.value) ? '' : ' stat-value--text'}" data-count="${esc(s.value)}">${esc(s.value)}</dd>
         </div>`
     )
     .join('');
@@ -606,11 +604,11 @@ ${siteNav(c)}
         ${hero.stage ? `<p class="hero-stage-line" data-hero><span class="mono hero-stage-label">${esc(hero.stage.label)}</span>${esc(hero.stage.text)}</p>` : ''}
         <p class="hero-sub" data-hero>${esc(hero.sub)}</p>
         <div class="hero-actions" data-hero>
-          <a class="btn btn--primary btn--lg magnetic"${linkAttrs(hero.primary.href)}>
-            <span>${esc(hero.primary.label)}</span>${ARROW_UR}
+          <a class="btn btn--primary btn--lg magnetic"${linkAttrs(hero.demo.href)}>
+            <span>${esc(hero.demo.label)}</span>${ARROW_UR}
           </a>
-          <a class="btn btn--glass btn--lg magnetic" href="${esc(hero.secondary.href)}">
-            <span>${esc(hero.secondary.label)}</span>${ARROW_DN}
+          <a class="btn btn--glass btn--lg magnetic" href="${esc(hero.results.href)}">
+            <span>${esc(hero.results.label)}</span>${ARROW_DN}
           </a>
         </div>
         ${hero.cost ? `<p class="hero-note" data-hero>${esc(hero.cost)}</p>` : ''}
@@ -661,11 +659,17 @@ ${siteNav(c)}
         ${kicker(++n, how.kicker || 'System')}
         <h2 class="h-section" id="how-title">${esc(how.heading)}</h2>
       </header>
-      <div class="how-views">
-        ${how.sensor ? sensorBlock(how.sensor) : ''}
-        ${how.radar ? radarBlock(how.radar) : ''}
-      </div>
-      ${how.mount ? mountBlock(how.mount) : ''}
+      ${how.summary ? `<p class="lede">${esc(how.summary)}</p>` : ''}
+      <details class="fold" id="how-details">
+        <summary class="fold-summary"><span class="mono">${esc(how.toggle || 'Show the views')}</span></summary>
+        <div class="fold-body">
+          <div class="how-views">
+            ${how.sensor ? sensorBlock(how.sensor) : ''}
+            ${how.radar ? radarBlock(how.radar) : ''}
+          </div>
+          ${how.mount ? mountBlock(how.mount) : ''}
+        </div>
+      </details>
       <div class="note" data-reveal>
         <span class="mono note-tag">TEST RANGE</span>
         <p>${esc(how.note)}</p>
@@ -807,8 +811,9 @@ export function renderContactHead(c) {
 
 export function renderContactBody(c) {
   const ct = c.contact;
+  // Each field has its own error line, filled in by contact.js (aria-describedby).
   const field = (id, label, input) =>
-    `<label class="field" for="c-${id}"><span class="mono field-k">${esc(label)}</span>${input}</label>`;
+    `<div class="field"><label class="field-label" for="c-${id}"><span class="mono field-k">${esc(label)}</span></label>${input}<p class="field-error" id="c-${id}-err" hidden></p></div>`;
   return `
 <a class="skip-link" href="#main">Skip to content</a>
 ${LIQUID_FILTER}
@@ -823,16 +828,16 @@ ${siteNav(c, { home: false, current: 'contact.html' })}
         <h1 class="h-section" id="contact-title">${esc(ct.heading)}</h1>
         <p class="lede">${esc(ct.intro)} <a class="u-link" href="mailto:${esc(ct.email)}">${esc(ct.email)}</a></p>
       </header>
-      <form class="contact-form glass" id="contact-form" method="post"
+      <form class="contact-form glass" id="contact-form" method="post" novalidate
         action="mailto:${esc(ct.email)}" enctype="text/plain"
         data-email="${esc(ct.email)}" data-endpoint="${esc(ct.endpoint || '')}"
         data-sending="${esc(ct.sendingLabel)}" data-success="${esc(ct.successText)}"
         data-mailto="${esc(ct.mailtoText)}" data-error="${esc(ct.errorText)}">
         <div class="field-row">
-          ${field('name', ct.nameLabel, '<input id="c-name" name="name" type="text" autocomplete="name" required maxlength="100" />')}
-          ${field('email', ct.emailLabel, '<input id="c-email" name="email" type="email" autocomplete="email" required maxlength="200" />')}
+          ${field('name', ct.nameLabel, '<input id="c-name" name="name" type="text" autocomplete="name" required maxlength="100" aria-describedby="c-name-err" />')}
+          ${field('email', ct.emailLabel, '<input id="c-email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="200" aria-describedby="c-email-err" />')}
         </div>
-        ${field('message', ct.messageLabel, '<textarea id="c-message" name="message" rows="6" required maxlength="4000"></textarea>')}
+        ${field('message', ct.messageLabel, '<textarea id="c-message" name="message" rows="6" required minlength="10" maxlength="4000" aria-describedby="c-message-err"></textarea>')}
         <input class="field-trap" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" />
         <div class="contact-actions">
           <button class="btn btn--primary" type="submit"><span class="btn-label">${esc(ct.submitLabel)}</span>${ARROW_UR}</button>
@@ -909,9 +914,11 @@ ${siteNav(c, { home: false, current: 'demo.html' })}
     </header>
     <p class="demo-banner mono" role="note"><span class="state-shape state-shape--sim" aria-hidden="true"></span>${esc(d.banner)}</p>
     <noscript><p class="demo-noscript">${esc(d.noscript)}</p></noscript>
+    <p class="demo-status mono" id="demo-status" role="status">Loading the demo&hellip;</p>
 
     <div class="demo-shell">
       <nav class="demo-side" aria-label="Dashboard views">
+        <p class="demo-sticky mono" role="note"><span class="state-shape state-shape--sim" aria-hidden="true"></span>SIMULATED DEMO<span class="demo-sticky-sub"> &middot; sample data, no live feed</span></p>
         <ul class="demo-tabs">${tabs}</ul>
         <p class="demo-node mono"><span class="shape shape--no-adsb" aria-hidden="true"></span>NODE-01<span class="demo-node-state">Not connected</span></p>
       </nav>
@@ -971,6 +978,7 @@ ${siteNav(c, { home: false, current: 'demo.html' })}
                 <button class="demo-btn" type="button" id="more">Show more</button>
                 <button class="demo-btn demo-btn--solid" type="button" id="export">Export CSV</button>
               </div>
+              <p class="mono demo-note" id="export-note" role="status" hidden></p>
             </footer>
           </div>
         </section>

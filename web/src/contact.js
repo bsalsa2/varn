@@ -18,9 +18,53 @@ export function initContactForm() {
   // the page. The flag stops a second send while one is in flight.
   let sending = false;
 
+  // ---- Validation: one clear message per field, in text (not just colour).
+  const fields = {
+    name: { el: form.elements.name, test: (v) => v.trim().length > 0, msg: 'Enter your name.' },
+    email: {
+      el: form.elements.email,
+      test: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()),
+      msg: 'Enter an email address I can reply to, like name@example.com.',
+    },
+    message: {
+      el: form.elements.message,
+      test: (v) => v.trim().length >= 10,
+      msg: 'Write a message of at least 10 characters.',
+    },
+  };
+  const errorOf = (f) => document.getElementById(`${f.el.id}-err`);
+  const setError = (f, text) => {
+    const out = errorOf(f);
+    out.textContent = text || '';
+    out.hidden = !text;
+    if (text) f.el.setAttribute('aria-invalid', 'true');
+    else f.el.removeAttribute('aria-invalid');
+  };
+  const validate = () => {
+    let first = null;
+    for (const f of Object.values(fields)) {
+      const bad = !f.test(f.el.value);
+      setError(f, bad ? f.msg : '');
+      if (bad && !first) first = f.el;
+    }
+    return first;
+  };
+  // Clear a field's message as soon as it is fixed; re-check when leaving it.
+  for (const f of Object.values(fields)) {
+    f.el.addEventListener('input', () => f.test(f.el.value) && setError(f, ''));
+    f.el.addEventListener('blur', () => f.el.value && setError(f, f.test(f.el.value) ? '' : f.msg));
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (sending) return;
+    status.hidden = true;
+    const firstBad = validate();
+    if (firstBad) {
+      say('Please fix the highlighted fields and send again.', true);
+      firstBad.focus();
+      return;
+    }
     const data = new FormData(form);
     if (data.get('company')) return; // honeypot: bots fill hidden fields
     const name = String(data.get('name')).trim();

@@ -18,7 +18,6 @@ export function createSensor({ root, reduceMotion }) {
     aircraft: $('aircraft'),
     droneConf: $('drone-conf'),
     airConf: $('air-conf'),
-    fps: $('fps'),
     pan: $('pan'),
     tilt: $('tilt'),
   };
@@ -92,7 +91,6 @@ export function createSensor({ root, reduceMotion }) {
     const tilt = 47 - cam.y * 0.45;
     el.pan.textContent = `PAN ${pan.toFixed(1).padStart(5, '0')}°`;
     el.tilt.textContent = `TILT ${tilt.toFixed(1)}°`;
-    el.fps.textContent = `${(24.8 + (Math.random() - 0.5) * 0.8).toFixed(1)} FPS`;
     // Confidence dips a touch when the target moves fast across the frame.
     const speed = Math.hypot(cam.vx, cam.vy);
     el.droneConf.textContent = clamp(0.93 - speed * 0.004 + (Math.random() - 0.5) * 0.02, 0.8, 0.96).toFixed(2);

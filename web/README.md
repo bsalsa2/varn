@@ -143,6 +143,17 @@ live in the `demo` block of `content.js`; the system states are `Verified`,
 rows as hardware is built, and never mark something Verified that has only
 run in simulation without saying so in its detail text.
 
+## Keeping the site honest
+
+`test/truth.test.mjs` (run by `npm test`) fails if the wording drifts back to
+claims the repository cannot support: that the model reliably tells drones
+from aircraft, an uncited price comparison, a privacy page that does not match
+how the site is hosted and how the contact form works, or fake live
+telemetry. When the hosting, the form service or the analytics change, update
+the privacy text in `content.js` in the same commit. The two published v2
+numbers use different units (aircraft frames, and drone clips) and must keep
+their units and the "not comparable" caveat.
+
 ## The 3D pan-tilt mount
 
 The mount in "How it works" is your real CAD design. Before each build,

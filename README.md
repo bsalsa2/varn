@@ -12,7 +12,7 @@ The name is close to the Swedish word *värn* (protection, defense), and it soun
 
 **A low-cost visual sensing platform, starting with one passive sky-tracking node.**
 
-A webcam on a pan-tilt mount watches the sky, a YOLO model finds aircraft and birds in each frame, the mount turns to follow the target, and every sighting is logged. This is Phase 1: one node, mostly tested in simulation so far. The physical unit is not built yet.
+A webcam on a pan-tilt mount watches the sky, a YOLO model labels drones and aircraft in each frame, the mount turns to follow the target, and every sighting is logged. This is Phase 1: one node, mostly tested in simulation so far. The physical unit is not built yet.
 
 > **Scope:** passive sensing and tracking only. No payloads, no effectors, and nothing that interacts with or interferes with aircraft. No jamming, no spoofing, and no transmitting on aviation or drone-control frequencies. Ordinary Wi-Fi and USB networking between Varn's own parts is fine.
 
