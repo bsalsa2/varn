@@ -5,6 +5,8 @@
 // accents, angular geometry. Status colours appear only for what the sensor
 // sees; amber is the one alert colour.
 
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { MARK_PATH, MARK_SMALL_PATH, MARK_VIEWBOX, WORDMARK_PATH, WORDMARK_VIEWBOX } from './logo.js';
 
 const esc = (s) =>
@@ -86,50 +88,6 @@ const headline = (h) => {
 };
 
 // ---- Hero ---------------------------------------------------------------------
-
-// Sighting card. Placeholder values, so it always carries SAMPLE.
-// hero-lens.js cycles it through the three statuses along with the lens.
-const sightingCard = (hero) => {
-  const c = hero.card || {};
-  const kind = STATUS[c.status] ? c.status : 'aircraft';
-  return `
-      <aside class="sighting panel" id="sighting" aria-label="Sample sighting card">
-        <div class="sighting-top">
-          <span class="status-pill status-pill--${kind} mono" data-card="pill"><span class="shape shape--${kind}" aria-hidden="true"></span><span data-card="pill-text">${esc(STATUS[kind])}</span></span>
-          <span class="sample-tag mono">${esc(c.label || 'SAMPLE')}</span>
-        </div>
-        <div class="sighting-head">
-          <span class="sighting-title">Sighting</span>
-          <span class="mono sighting-time" data-card="time">${esc(c.time || '')}</span>
-        </div>
-        <dl class="sighting-grid mono">
-          <div><dt>CLASS</dt><dd data-card="class">${esc(c.class || '')}</dd></div>
-          <div><dt>CONF</dt><dd data-card="conf">${esc(c.conf || '')}</dd></div>
-          <div><dt>ADS-B</dt><dd class="sighting-adsb sighting-adsb--${kind}" data-card="adsb">${esc(c.adsb || '')}</dd></div>
-        </dl>
-        <p class="sighting-caption">${esc(hero.caption)}</p>
-      </aside>`;
-};
-
-// The lens: a simulated sky view (hero-lens.js draws into the canvas).
-// Without JavaScript it is simply the Split mark in a circle.
-const heroLens = () => `
-      <div class="lens" id="lens">
-        <span class="lens-sweep" aria-hidden="true"></span>
-        ${mark(250, 'mark lens-mark')}
-        <canvas class="lens-canvas" id="lens-canvas" aria-hidden="true"></canvas>
-        <span class="lens-tag mono">SAMPLE · SIMULATED SKY</span>
-      </div>`;
-
-// Real footage, once it exists (see hero.footage in content.js). main.js
-// starts playback only for visitors who haven't turned off motion.
-const heroFootage = (f) => `
-      <figure class="footage panel">
-        <video class="hero-video" muted loop playsinline preload="metadata"${f.poster ? ` poster="${esc(f.poster)}"` : ''} aria-label="${esc(f.caption)}">
-          <source src="${esc(f.video)}" />
-        </video>
-        <figcaption class="hud-caption">${esc(f.caption)}</figcaption>
-      </figure>`;
 
 // ---- How it works ----------------------------------------------------------------
 
@@ -279,31 +237,6 @@ export const resultsSection = (r, next) => {
   </section>`;
 };
 
-// Known limits: what Varn can't do, stated plainly. Hidden if empty.
-const limitsSection = (l, next) => {
-  if (!l || !Array.isArray(l.items) || l.items.length === 0) return '';
-  return `
-  <section class="limits section" id="limits" aria-labelledby="limits-title" data-spy="results">
-    <div class="wrap">
-      <header class="section-head">
-        ${kicker(next(), l.kicker || 'Honest limits')}
-        <h2 class="h-section" id="limits-title">${esc(l.heading)}</h2>
-      </header>
-      <ul class="limits-list">
-        ${l.items
-          .map(
-            (it) => `
-        <li class="limit" data-reveal>
-          <span class="mono limit-tag">${esc(it.tag)}</span>
-          <p>${esc(it.text)}</p>
-        </li>`
-          )
-          .join('')}
-      </ul>
-    </div>
-  </section>`;
-};
-
 // ---- Story (step by step) ----------------------------------------------------
 
 // One animated scene per stage. They are pure markup + CSS animation: the
@@ -404,52 +337,25 @@ const storySection = (st, n) => `
     </div>
   </section>`;
 
-const labelsSection = (l, n) => `
-  <section class="labels section" id="labels" aria-labelledby="labels-title" data-spy="story">
-    <div class="wrap labels-inner">
-      <header class="section-head">
-        ${kicker(n, l.kicker)}
-        <h2 class="h-section" id="labels-title">${esc(l.heading)}</h2>
-        <p class="lede">${esc(l.intro)}</p>
-      </header>
-      <ul class="label-grid">
-        ${l.items
-          .map(
-            (it) => `
-        <li class="label-card" data-reveal>
-          <span class="label-shape label-shape--${it.kind}" aria-hidden="true"><i class="shape shape--${it.kind}"></i></span>
-          ${statusPill(it.kind)}
-          <p class="mono label-shapename">${esc(it.shape)}</p>
-          <p class="label-rule">${esc(it.rule)}</p>
-        </li>`
-          )
-          .join('')}
-      </ul>
-      <p class="label-note">${esc(l.note)}</p>
-    </div>
-  </section>`;
-
-// What we've tested: three plain columns near the top. Hidden if empty.
+// What we've tested: three plain columns, on the Research page under
+// "Validation status".
 const testedSection = (t) => {
   if (!t || !Array.isArray(t.columns) || !t.columns.length) return '';
   const cols = t.columns
     .map(
       (col) => `
-        <div class="tested-col" data-reveal>
+        <div class="tested-col">
           <p class="mono tested-tag">${esc(col.tag)}</p>
-          <h3 class="tested-title">${esc(col.title)}</h3>
+          <h4 class="tested-title">${esc(col.title)}</h4>
           <ul class="tested-list">${col.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ul>
         </div>`
     )
     .join('');
   return `
-  <section class="tested section" id="tested" aria-labelledby="tested-title" data-spy="top">
-    <div class="wrap">
-      <h2 class="h-section tested-heading" id="tested-title">${esc(t.heading)}</h2>
-      <div class="tested-grid">${cols}</div>
-      ${t.link ? `<p class="tested-more"><a href="${esc(t.link.href)}">${esc(t.link.label)} &darr;</a></p>` : ''}
-    </div>
-  </section>`;
+      <div class="subsection" id="tested">
+        <h3 class="h-sub">${esc(t.heading)}</h3>
+        <div class="tested-grid">${cols}</div>
+      </div>`;
 };
 
 const SUN =
@@ -475,6 +381,10 @@ const counter = (c) => {
     : '';
 };
 
+// ---- Page chrome: navigation and footer --------------------------------------
+
+// Compact navigation. Transparent over the hero, dark glass once the page
+// scrolls (main.js toggles .is-scrolled); pages without a hero start solid.
 function siteNav(c, { home = true, current = '' } = {}) {
   const pre = home ? '' : './';
   const href = (h) => (h.startsWith('#') ? `${pre}${h}` : h);
@@ -484,32 +394,82 @@ function siteNav(c, { home = true, current = '' } = {}) {
       return `<li><a class="nav-link" href="${esc(href(l.href))}"${cur}>${esc(l.label)}</a></li>`;
     })
     .join('');
+  const cta = c.nav.cta;
+  const ctaCur = current && cta.href === `./${current}` ? ' aria-current="page"' : '';
   return `
-<header class="site-header" id="top-nav">
+<header class="site-header${home ? '' : ' is-solid'}" id="top-nav">
   <nav class="nav" aria-label="Primary">
     <a class="brand" href="${home ? '#top' : './'}" aria-label="${esc(c.nav.brand)}, home">
-      ${mark(36)}
+      ${mark(34)}
       ${wordmark()}
     </a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu"><span></span><span></span></button>
     <ul class="nav-links" id="nav-menu">
       ${links}
-      <li class="nav-cta-li"><a class="btn btn--primary btn--sm"${linkAttrs(c.hero.primary.href)}>${esc(c.hero.primary.label)}</a></li>
+      <li class="nav-cta-li"><a class="btn btn--glass btn--sm nav-cta"${linkAttrs(cta.href)}${ctaCur}>${esc(cta.label)}</a></li>
     </ul>
-    <a class="btn btn--primary btn--sm nav-cta"${linkAttrs(c.hero.primary.href)}>${esc(c.hero.primary.label)}</a>
   </nav>
 </header>`;
 }
 
+// Footer used on every page. The home page puts its closing statement above it.
+function siteFooter(c, { from = '', close = null } = {}) {
+  const footer = c.footer;
+  const keep = (l) => !(from && l.href.includes(`${from}.html`));
+  const item = (l) => `<li><a class="foot-link"${linkAttrs(l.href)}>${esc(l.label)}</a></li>`;
+  const links = footer.links.filter(keep).map(item).join('');
+  const legal = footer.legal.filter(keep).map(item).join('');
+  return `
+<footer class="site-footer" id="close">
+  <div class="wrap footer-wrap">
+    ${
+      close
+        ? `<div class="close-statement" data-reveal>
+      <h2 class="close-title" id="close-title">${esc(close.heading)}</h2>
+      <p class="close-text">${esc(close.text)}</p>
+    </div>`
+        : ''
+    }
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <p class="brand brand--footer">${mark(26)}${wordmark()}</p>
+        <p class="mono footer-labs">${esc(footer.brand)}</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer">
+        <ul class="footer-links">${links}</ul>
+        <ul class="footer-links footer-links--quiet">${legal}
+          <li><span class="mono footer-k">${esc(footer.contactLabel)}</span> <a class="foot-link"${linkAttrs(`mailto:${footer.email}`)}>${esc(footer.email)}</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="footer-fine">
+      <p>${esc((close && close.disclosure) || c.close.disclosure)}</p>
+      <p>${esc(c.close.copyright)}</p>
+    </div>
+  </div>
+</footer>`;
+}
+
+// ---- Head ---------------------------------------------------------------------
+
+// Old links pointed at sections of the one long page (#story, #results,
+// #status ...). Those sections now live on the Research page under the same
+// ids, so a visit to an old address lands in the right place.
+const LEGACY_HASHES = ['story', 'labels', 'results', 'limits', 'how', 'mount', 'math', 'tested', 'status', 'roadmap'];
+const legacyRedirect = () =>
+  `<script>(function(){var k=${JSON.stringify(LEGACY_HASHES)},g=function(){var h=location.hash.slice(1);if(h==='build'){location.replace('./about.html#build');}else if(k.indexOf(h)>-1){location.replace('./research.html#'+h);}};g();addEventListener('hashchange',g);})();</script>`;
+
 export function renderHead(c) {
   const { title, description, url } = c.meta;
   const image = new URL('og-image.png', url).href;
+  const img = c.hero.image;
   return `${counter(c)}
     <title>${esc(title)}</title>
     <meta name="description" content="${esc(description)}" />
     <link rel="canonical" href="${esc(url)}" />
     <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="preload" as="image" type="image/webp" href="${esc(img.small)}" imagesrcset="${esc(img.small)} 700w, ${esc(img.src)} 1400w" imagesizes="(min-width: 900px) 46vw, 80vw" fetchpriority="high" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Varn Labs" />
     <meta property="og:title" content="${esc(title)}" />
@@ -522,26 +482,282 @@ export function renderHead(c) {
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${esc(title)}" />
     <meta name="twitter:description" content="${esc(description)}" />
-    <meta name="twitter:image" content="${esc(image)}" />`;
+    <meta name="twitter:image" content="${esc(image)}" />
+    ${legacyRedirect()}`;
 }
 
-export function renderBody(c) {
-  const { hero, math, how, status, results, limits, build, roadmap, sister } = c;
+// ---- Home sections ---------------------------------------------------------------
+
+// Section label: small, uppercase, over a hairline.
+const label = (text) => `<p class="kicker mono"><span class="kicker-label">${esc(text)}</span></p>`;
+
+const heroSection = (c) => {
+  const { hero } = c;
   const footage = hero.footage && hero.footage.video ? hero.footage : null;
+  const img = hero.image;
+  const media = footage
+    ? `<video class="hero-video hero-model" muted loop playsinline preload="metadata"${footage.poster ? ` poster="${esc(footage.poster)}"` : ''} aria-label="${esc(footage.caption)}"><source src="${esc(footage.video)}" /></video>`
+    : `<img class="hero-model" src="${esc(img.src)}" srcset="${esc(img.small)} 700w, ${esc(img.src)} 1400w" sizes="(min-width: 900px) 46vw, 80vw" width="${img.width}" height="${img.height}" alt="${esc(img.alt)}" decoding="async" fetchpriority="high" />`;
+  return `
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="hero-bg" aria-hidden="true">
+      <div class="hero-sky"></div>
+      <div class="hero-glow"></div>
+      <div class="hero-horizon"></div>
+      <div class="hero-haze"></div>
+    </div>
+    <figure class="hero-figure">
+      <div class="hero-light" aria-hidden="true"></div>
+      ${media}
+      <figcaption class="hero-tag glass-2 mono"><span class="hero-tag-mark" aria-hidden="true"></span>${esc(footage ? footage.caption : img.caption)}</figcaption>
+    </figure>
+    <div class="hero-inner wrap">
+      <div class="hero-copy">
+        <p class="eyebrow hero-rise" style="--i:0">${esc(hero.eyebrow)}</p>
+        <h1 class="hero-title hero-rise" style="--i:1" id="hero-title">${headline(hero.headline)}</h1>
+        <p class="hero-sub hero-rise" style="--i:2">${esc(hero.sub)}</p>
+        <p class="hero-status mono hero-rise" style="--i:3"><span class="hero-status-mark" aria-hidden="true"></span>${esc(hero.status)}</p>
+        <div class="hero-actions hero-rise" style="--i:4">
+          <a class="btn btn--glass btn--lg"${linkAttrs(hero.demo.href)}><span>${esc(hero.demo.label)}</span>${ARROW_UR}</a>
+          <a class="btn btn--quiet btn--lg"${linkAttrs(hero.results.href)}><span>${esc(hero.results.label)}</span>${ARROW_UR}</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-foot wrap">
+      <a class="scroll-cue mono" href="#process"><span class="scroll-cue-line" aria-hidden="true"></span>${esc(hero.scroll)}</a>
+      ${footage ? '' : motionButton()}
+    </div>
+  </section>`;
+};
 
-  const facts = hero.facts.map((f) => `<li>${esc(f)}</li>`).join('');
+const processSection = (p) => `
+  <section class="process section" id="process" aria-labelledby="process-title">
+    <div class="wrap">
+      <header class="section-head">
+        ${label(p.label)}
+        <h2 class="h-section" id="process-title">${esc(p.heading)}</h2>
+      </header>
+      <ol class="proc" id="proc">
+        <li class="proc-rail" aria-hidden="true"><span class="proc-rail-fill"></span></li>
+        ${p.stages
+          .map(
+            (s, i) => `
+        <li class="proc-stage proc-stage--${esc(s.state)}" data-stage="${i}">
+          <span class="proc-node" aria-hidden="true"></span>
+          <h3 class="proc-name"><span class="proc-index mono" aria-hidden="true">0${i + 1}</span>${esc(s.name)}</h3>
+          <p class="proc-text">${esc(s.text)}</p>
+          <p class="proc-status mono"><span class="proc-status-mark" aria-hidden="true"></span>${esc(s.status)}</p>
+        </li>`
+          )
+          .join('')}
+      </ol>
+      <p class="proc-note">${esc(p.note)} <a class="u-link" href="${esc(p.link.href)}">${esc(p.link.label)}</a></p>
+    </div>
+  </section>`;
 
-  const stats = (math.stats || [])
+// The dashboard window. The tabs, the banner and the measured and system
+// panels are plain HTML; platform-preview.js fills in the simulated overview
+// and events from the same generator the full demo uses.
+const platformSection = (c) => {
+  const pl = c.platform;
+  const d = c.demo;
+  const r = c.results;
+  const fig = (ch) => {
+    const b = ch.bars[0];
+    return `
+          <figure class="pv-measure pv-measure--${ch.kind === 'drone' ? 'drone' : 'aircraft'}">
+            <figcaption class="pv-measure-cap"><span class="shape shape--${ch.kind === 'drone' ? 'drone' : 'aircraft'}" aria-hidden="true"></span>${esc(ch.title)}</figcaption>
+            <p class="pv-measure-v mono">${esc(pct(b.value))}</p>
+            <div class="rc-track" aria-hidden="true"><span class="rc-bar" style="--v:${Number(b.value)}"></span></div>
+            <p class="pv-measure-u">${esc(ch.unit)}</p>
+          </figure>`;
+  };
+  const rows = d.system.rows
+    .slice(0, 6)
     .map(
-      (s) => `
-        <div class="stat${s.highlight ? ' stat--hi' : ''}">
-          <dt class="mono">${esc(s.label)}</dt>
-          <dd class="stat-value${/\d/.test(s.value) ? '' : ' stat-value--text'}">${esc(s.value)}</dd>
-        </div>`
+      (row) => `
+            <tr><th scope="row">${esc(row.name)}</th><td>${statePill(row.state)}</td></tr>`
     )
     .join('');
+  const tabs = pl.tabs
+    .map(
+      (t, i) =>
+        `<li><a class="pv-tab" href="./demo.html#${esc(t.id)}" data-pv-tab="${esc(t.id)}"${i === 0 ? ' aria-current="page"' : ''}>${esc(t.label)}</a></li>`
+    )
+    .join('');
+  return `
+  <section class="platform section" id="platform" aria-labelledby="platform-title" data-spy="platform">
+    <div class="wrap">
+      <header class="section-head section-head--split">
+        <div>
+          ${label(pl.label)}
+          <h2 class="h-section" id="platform-title">${esc(pl.heading)}</h2>
+        </div>
+        <p class="lede">${esc(pl.sub)}</p>
+      </header>
+      <div class="pv glass-1" id="pv">
+        <div class="pv-top">
+          <p class="pv-title">${mark(22)}<span>${esc(pl.window)}</span></p>
+          <p class="pv-state">
+            <span class="sim-badge mono"><span class="sim-badge-mark" aria-hidden="true"></span>${esc(pl.badge)}</span>
+            <span class="pv-node mono"><span class="shape shape--no-adsb" aria-hidden="true"></span>${esc(pl.node)}</span>
+          </p>
+        </div>
+        <p class="pv-banner" role="note">${esc(pl.banner)}</p>
+        <div class="pv-body">
+          <nav class="pv-nav" aria-label="Dashboard preview views"><ul class="pv-tabs" id="pv-tabs">${tabs}</ul></nav>
+          <div class="pv-panels">
+            <section class="pv-panel" id="pv-overview" data-pv-panel="overview" aria-label="Overview">
+              <div class="pv-kpis" data-pv="kpis"></div>
+              <div class="pv-grid">
+                <div class="pv-card"><p class="pv-card-h mono">Events per hour · simulated</p><div class="demo-chart" data-pv="hourly"></div></div>
+                <div class="pv-card"><p class="pv-card-h mono">Latest events · simulated</p><ol class="pv-list" data-pv="latest"></ol></div>
+              </div>
+              <noscript><p class="pv-noscript">${esc(pl.noscript)}</p></noscript>
+              <p class="pv-loading mono" data-pv="loading">Loading the simulated preview&hellip;</p>
+            </section>
+            <section class="pv-panel" id="pv-events" data-pv-panel="events" aria-label="Events" hidden>
+              <div class="pv-card pv-card--flush"><div class="pv-table" data-pv="events" tabindex="0" role="region" aria-label="Simulated events"></div></div>
+              <p class="pv-more"><a class="u-link mono" href="./demo.html#events">Search, filter and export in the full demo &rarr;</a></p>
+            </section>
+            <section class="pv-panel" id="pv-analytics" data-pv-panel="analytics" aria-label="Analytics" hidden>
+              <p class="pv-badge mono">${esc(r.tag)}</p>
+              <div class="pv-measures">${r.charts.map(fig).join('')}</div>
+              <p class="pv-note">${esc(r.sample)}. ${esc(r.caveats[3])}</p>
+              <p class="pv-more"><a class="u-link mono" href="./research.html#results">Full tables and limits on the Research page &rarr;</a></p>
+            </section>
+            <section class="pv-panel" id="pv-system" data-pv-panel="system" aria-label="System" hidden>
+              <div class="pv-card pv-card--flush"><div class="pv-table" tabindex="0" role="region" aria-label="System status"><table class="demo-table pv-system"><thead><tr><th scope="col">Part</th><th scope="col">State</th></tr></thead><tbody>${rows}
+              </tbody></table></div></div>
+              <p class="pv-more"><a class="u-link mono" href="./demo.html#system">Every part and its detail in the full demo &rarr;</a></p>
+            </section>
+          </div>
+        </div>
+      </div>
+      <p class="platform-cta"><a class="btn btn--glass btn--lg"${linkAttrs(pl.cta.href)}><span>${esc(pl.cta.label)}</span>${ARROW_UR}</a></p>
+    </div>
+  </section>`;
+};
 
-  const statusRows = status.items
+// A restrained research snapshot. The numbers are read from `results`, so
+// they can never drift from the Research page; render fails loudly if they do.
+const snapshotSection = (c) => {
+  const s = c.snapshot;
+  const byKind = (k) => c.results.charts.find((ch) => ch.kind === k).bars[0].value;
+  const figures = s.figures
+    .map((f) => {
+      const live = f.kind === 'drone' || f.kind === 'aircraft' ? byKind(f.kind) : null;
+      const value = live === null ? f.value : pct(live);
+      const bar =
+        live === null
+          ? ''
+          : `<div class="rc-track snap-track" aria-hidden="true"><span class="rc-bar" style="--v:${Number(live)}"></span></div>`;
+      return `
+        <li class="snap-fig snap-fig--${esc(f.kind)}" data-reveal>
+          <p class="snap-value">${esc(value)}</p>
+          ${bar}
+          <p class="snap-label">${f.kind === 'drone' || f.kind === 'aircraft' ? `<span class="shape shape--${f.kind}" aria-hidden="true"></span>` : ''}${esc(f.label)}</p>
+          <p class="snap-unit mono">${esc(f.unit)}</p>
+        </li>`;
+    })
+    .join('');
+  return `
+  <section class="snapshot section" id="research" aria-labelledby="research-title">
+    <div class="wrap">
+      <header class="section-head section-head--split">
+        <div>
+          ${label(s.label)}
+          <h2 class="h-section" id="research-title">${esc(s.heading)}</h2>
+        </div>
+        <p class="lede">${esc(s.intro)}</p>
+      </header>
+      <ul class="snap-figs">${figures}
+      </ul>
+      <p class="snap-scope"><span class="mono snap-tag">${esc(c.results.tag)}</span>${esc(s.notComparable)}</p>
+      <div class="snap-foot">
+        <p class="snap-disclaimer">${esc(s.disclaimer)}</p>
+        <div class="snap-more">
+          <a class="btn btn--glass btn--lg" href="${esc(s.link.href)}"><span>${esc(s.link.label)}</span>${ARROW_UR}</a>
+          <ul class="snap-inside mono" aria-label="Inside the Research page">${s.inside.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>
+  </section>`;
+};
+
+export function renderBody(c) {
+  return `
+<a class="skip-link" href="#main">Skip to content</a>
+${siteNav(c)}
+
+<main id="main" tabindex="-1">
+  ${heroSection(c)}
+  ${processSection(c.process)}
+  ${platformSection(c)}
+  ${snapshotSection(c)}
+</main>
+
+${siteFooter(c, { close: c.close })}`;
+}
+
+// ---- Research page (research.html) -----------------------------------------
+export function renderResearchHead(c) {
+  const r = c.researchPage;
+  const url = new URL('research.html', c.meta.url).href;
+  return `${counter(c)}
+    <title>${esc(r.title)} | Varn</title>
+    <meta name="description" content="${esc(r.description)}" />
+    <link rel="canonical" href="${esc(url)}" />
+    <meta property="og:title" content="${esc(r.title)} | Varn" />
+    <meta property="og:description" content="${esc(r.description)}" />`;
+}
+
+// bom.csv at the repository root is the single source for the parts table.
+// If a host builds web/ alone, the table is replaced by a link.
+function readBom() {
+  try {
+    const path = fileURLToPath(new URL('../../bom.csv', import.meta.url));
+    const [head, ...rows] = readFileSync(path, 'utf8').trim().split(/\r?\n/);
+    const keys = head.split(',');
+    return rows.map((line) => {
+      const cells = line.split(',');
+      const row = {};
+      // The link is last and has no commas; the free-text columns never do either.
+      keys.forEach((k, i) => (row[k] = (cells[i] || '').trim()));
+      return row;
+    });
+  } catch {
+    return null;
+  }
+}
+
+const money = (n) => `$${Number(n).toFixed(2)}`;
+
+function bomTable(c) {
+  const rows = readBom();
+  const h = c.researchPage.hardware;
+  if (!rows) return `<p class="lede">${esc(h.bomNote)} <a class="u-link" href="https://github.com/bsalsa2/varn/blob/main/bom.csv" target="_blank" rel="noopener">bom.csv</a></p>`;
+  const total = rows.reduce((n, r) => n + (Number(r.est_cost_usd) || 0), 0);
+  const cost = (r) => (r.est_cost_usd === '' ? 'not included' : Number(r.est_cost_usd) === 0 ? 'owned' : money(r.est_cost_usd));
+  return `
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Bill of materials">
+        <table class="spec-table">
+          <thead><tr><th scope="col">Part</th><th scope="col" class="is-num">Qty</th><th scope="col">Purpose</th><th scope="col" class="is-num">Est. cost</th></tr></thead>
+          <tbody>${rows
+            .map(
+              (r) => `
+            <tr><th scope="row">${esc(r.part)}</th><td class="is-num mono">${esc(r.quantity)}</td><td>${esc(r.purpose)}</td><td class="is-num mono">${esc(cost(r))}</td></tr>`
+            )
+            .join('')}
+          </tbody>
+          <tfoot><tr><th scope="row" colspan="3">Total to buy (excludes the computer, and parts already owned)</th><td class="is-num mono">${esc(money(total))}</td></tr></tfoot>
+        </table>
+      </div>
+      <p class="table-note">${esc(h.bomNote)}</p>`;
+}
+
+const statusSection = (st) => {
+  const rows = st.items
     .map((it) => {
       const kind = STATUS_KINDS[String(it.label).trim().toUpperCase()] || 'next';
       return `
@@ -552,11 +768,134 @@ export function renderBody(c) {
         </li>`;
     })
     .join('');
+  return `
+      <div class="subsection" id="status">
+        <h3 class="h-sub">${esc(st.heading)}</h3>
+        <ol class="status-list">${rows}</ol>
+      </div>`;
+};
+
+export function renderResearchBody(c) {
+  const r = c.researchPage;
+  const m = r.methodology;
+  const { math, how, status, results, limits, roadmap, labels, tested } = c;
+  let n = 0;
+  const sec = (id, title, inner, cls = '') => `
+  <section class="rsec section ${cls}" id="${id}" aria-labelledby="${id}-title">
+    <div class="wrap">
+      <header class="section-head">
+        ${kicker(++n, title)}
+        <h2 class="h-section" id="${id}-title">${esc(title)}</h2>
+      </header>
+      ${inner}
+    </div>
+  </section>`;
+
+  const toc = r.sections.map((s, i) => `<li><a href="#${esc(s.id)}"><span class="mono toc-n" aria-hidden="true">${pad2(i + 1)}</span>${esc(s.label)}</a></li>`).join('');
+
+  const methodology = sec(
+    'methodology',
+    m.heading,
+    `<div class="prose">${m.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</div>
+      <div class="subsection">
+        <h3 class="h-sub">${esc(m.unitsHeading)}</h3>
+        <dl class="units">${m.units.map((u) => `<div><dt>${esc(u.term)}</dt><dd>${esc(u.text)}</dd></div>`).join('')}</dl>
+        <p class="table-note">${esc(m.unitsNote)}</p>
+      </div>`
+  );
+  const pipeline = storySection(c.story, ++n);
+
+  const resultsHtml = resultsSection(results, () => ++n);
+
+  const models = sec(
+    'models',
+    r.models.heading,
+    `<div class="table-wrap" tabindex="0" role="region" aria-label="Model versions">
+        <table class="spec-table">
+          <thead><tr><th scope="col">Model</th><th scope="col">Status</th><th scope="col">What is known</th></tr></thead>
+          <tbody>${r.models.rows
+            .map((row) => `<tr><th scope="row">${esc(row.model)}</th><td>${statePill(row.state)}</td><td>${esc(row.text)}</td></tr>`)
+            .join('')}
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">${esc(r.resultsNote)}</p>
+      <div class="subsection" id="limits">
+        <h3 class="h-sub">${esc(r.models.limitsHeading)}</h3>
+        <ul class="limits-list">${limits.items
+          .map((it) => `<li class="limit"><span class="mono limit-tag">${esc(it.tag)}</span><p>${esc(it.text)}</p></li>`)
+          .join('')}</ul>
+      </div>
+      <div class="subsection" id="labels">
+        <h3 class="h-sub">${esc(labels.heading)}</h3>
+        <p class="lede">${esc(labels.intro)}</p>
+        <ul class="label-grid">${labels.items
+          .map(
+            (it) => `
+          <li class="label-card">
+            ${statusPill(it.kind)}
+            <p class="mono label-shapename">${esc(it.shape)}</p>
+            <p class="label-rule">${esc(it.rule)}</p>
+          </li>`
+          )
+          .join('')}</ul>
+        <p class="table-note">${esc(labels.note)}</p>
+      </div>`
+  );
+
+  const stats = (math.stats || [])
+    .map(
+      (s) => `
+        <div class="stat${s.highlight ? ' stat--hi' : ''}">
+          <dt class="mono">${esc(s.label)}</dt>
+          <dd class="stat-value${/\d/.test(s.value) ? '' : ' stat-value--text'}">${esc(s.value)}</dd>
+        </div>`
+    )
+    .join('');
+  const hw = r.hardware;
+  const hardware = sec(
+    'hardware',
+    hw.heading,
+    `<p class="lede">${esc(hw.intro)}</p>
+      <div class="subsection" id="math">
+        <h3 class="h-sub">${esc(hw.costHeading)}</h3>
+        <dl class="stats">${stats}</dl>
+        <p class="table-note">${esc(hw.costNote)}</p>
+        <p class="table-note">${esc(math.useCases.text)}</p>
+      </div>
+      <div class="subsection">
+        <h3 class="h-sub">${esc(hw.bomHeading)}</h3>
+        ${bomTable(c)}
+      </div>
+      <div class="subsection" id="how">
+        <h3 class="h-sub">${esc(hw.viewsHeading)}</h3>
+        <p class="lede">${esc(how.summary)}</p>
+        <details class="fold" id="how-details">
+          <summary class="fold-summary"><span>${esc(how.toggle || 'Show the views')}</span></summary>
+          <div class="fold-body">
+            <div class="how-views">
+              ${how.sensor ? sensorBlock(how.sensor) : ''}
+              ${how.radar ? radarBlock(how.radar) : ''}
+            </div>
+            ${how.mount ? mountBlock(how.mount) : ''}
+          </div>
+        </details>
+        <p class="table-note">${esc(how.note)}</p>
+      </div>`
+  );
+
+  const validation = sec(
+    'validation',
+    r.validation.heading,
+    `<p class="lede">${esc(r.validation.intro)}</p>
+      ${testedSection(tested)}
+      ${statusSection(status)}`
+  );
 
   const phases = roadmap.phases
     .map(
       (p, i) => `
-        <li class="phase${i === 0 ? ' phase--now' : ''}" data-reveal>
+        <li class="phase${i === 0 ? ' phase--now' : ''}">
           <span class="phase-node" aria-hidden="true"></span>
           <p class="mono phase-label">${esc(p.phase)}</p>
           <h3 class="phase-title">${esc(p.title)}</h3>
@@ -564,178 +903,85 @@ export function renderBody(c) {
         </li>`
     )
     .join('');
+  const roadmapSec = sec('roadmap', roadmap.heading, `${roadmap.intro ? `<p class="lede">${esc(roadmap.intro)}</p>` : ''}<ol class="phases">${phases}</ol><p class="table-note">${esc(roadmap.closing)}</p>`);
 
-  // Sections run in the order a visitor needs them: what it is, how it works,
-  // what was measured (and its limits), the hardware, where it stands, and
-  // who is behind it. Numbers follow the order on the page.
-  let n = 0;
+  const refs = sec(
+    'references',
+    r.references.heading,
+    `<p class="lede">${esc(r.references.intro)}</p>
+      <ul class="ref-list">${r.references.items
+        .map((x) => `<li><a class="ref" href="${esc(x.href)}" target="_blank" rel="noopener"><span class="ref-name">${esc(x.label)}${ARROW_UR}</span><span class="ref-text">${esc(x.text)}</span></a></li>`)
+        .join('')}</ul>`
+  );
+
   return `
 <a class="skip-link" href="#main">Skip to content</a>
 ${stage('stage-fixed')}
-${siteNav(c)}
+${siteNav(c, { home: false, current: 'research.html' })}
 
-<main id="main" tabindex="-1">
-  <section class="hero" id="top" aria-labelledby="hero-title" data-spy="top">
-    <div class="hero-photo" aria-hidden="true"></div>
-    <svg class="hero-track" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
-      <path class="hero-track-line" pathLength="1" d="M700 800 C 720 560, 800 250, 1120 118" />
-      <g class="hero-track-frame" transform="translate(1120 118)">
-        <path d="M-34 -22v-10h10M24 -32h10v10M34 22v10h-10M-24 32h-10v-10" />
-        <circle r="3" />
-        <text x="-44" y="-20" text-anchor="end">SAMPLE TRACK</text>
-      </g>
-    </svg>
-
-    <div class="hero-inner wrap">
-      <div class="hero-copy">
-        <p class="eyebrow">${esc(hero.eyebrow)}</p>
-        <h1 class="hero-title" id="hero-title">${headline(hero.headline)}</h1>
-        ${hero.stage ? `<p class="hero-stage-line"><span class="mono hero-stage-label">${esc(hero.stage.label)}</span>${esc(hero.stage.text)}</p>` : ''}
-        <p class="hero-sub">${esc(hero.sub)}</p>
-        <div class="hero-actions">
-          <a class="btn btn--primary btn--lg"${linkAttrs(hero.demo.href)}>
-            <span>${esc(hero.demo.label)}</span>${ARROW_UR}
-          </a>
-          <a class="btn btn--ghost btn--lg" href="${esc(hero.results.href)}">
-            <span>${esc(hero.results.label)}</span>${ARROW_DN}
-          </a>
-          <a class="hero-source"${linkAttrs(hero.source.href)}>${esc(hero.source.label)}${ARROW_UR}</a>
-        </div>
-        ${hero.cost ? `<p class="hero-note">${esc(hero.cost)}</p>` : ''}
-      </div>
-      <div class="hero-visual" id="hero-visual">
-        ${footage ? heroFootage(footage) : `${heroLens()}${sightingCard(hero)}`}
-      </div>
-    </div>
-
-    <div class="hero-foot wrap">
-      <ul class="hero-facts mono">${facts}</ul>
-      ${footage ? '' : `<div class="hero-foot-end">${motionButton()}</div>`}
-    </div>
-  </section>
-
-  ${testedSection(c.tested)}
-
-  <section class="math section" id="math" aria-labelledby="math-title" data-spy="top">
-    <div class="wrap math-inner">
-      ${kicker(++n, math.heading, 'math-title', 'h2')}
-      ${
-        math.statement
-          ? `<p class="math-statement">${litWords(math.statement)}</p>`
-          : `<p class="math-statement">${litWords(math.body)}</p>`
-      }
-      ${stats ? `<dl class="stats" data-reveal>${stats}</dl>` : ''}
-      ${math.statsNote ? `<p class="stats-note">${esc(math.statsNote)}</p>` : ''}
-      ${math.statement ? `<p class="lede">${esc(math.body)}</p>` : ''}
-      ${
-        math.useCases
-          ? `<div class="note" data-reveal>
-        <span class="mono note-tag">${esc(math.useCases.tag)}</span>
-        <p>${esc(math.useCases.text)}</p>
-      </div>`
-          : ''
-      }
-    </div>
-  </section>
-
-  ${storySection(c.story, ++n)}
-  ${labelsSection(c.labels, ++n)}
-  ${resultsSection(results, () => ++n)}
-  ${limitsSection(limits, () => ++n)}
-
-  <section class="how section" id="how" aria-labelledby="how-title" data-spy="how">
-    <div class="wrap how-inner">
-      <header class="section-head">
-        ${kicker(++n, how.kicker || 'System')}
-        <h2 class="h-section" id="how-title">${esc(how.heading)}</h2>
-      </header>
-      ${how.summary ? `<p class="lede">${esc(how.summary)}</p>` : ''}
-      <details class="fold" id="how-details">
-        <summary class="fold-summary"><span>${esc(how.toggle || 'Show the views')}</span></summary>
-        <div class="fold-body">
-          <div class="how-views">
-            ${how.sensor ? sensorBlock(how.sensor) : ''}
-            ${how.radar ? radarBlock(how.radar) : ''}
-          </div>
-          ${how.mount ? mountBlock(how.mount) : ''}
-        </div>
-      </details>
-      <div class="note" data-reveal>
-        <span class="mono note-tag">Test range</span>
-        <p>${esc(how.note)}</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="status section" id="status" aria-labelledby="status-title" data-spy="status">
-    <div class="wrap wrap--mid">
-      <header class="section-head">
-        ${kicker(++n, status.kicker || 'Where it stands')}
-        <h2 class="h-section" id="status-title">${esc(status.heading)}</h2>
-      </header>
-      <ol class="status-list">${statusRows}</ol>
-    </div>
-  </section>
-
-  <section class="roadmap section" id="roadmap" aria-labelledby="roadmap-title" data-spy="status">
+<main id="main" class="research-page" tabindex="-1">
+  <header class="research-head">
     <div class="wrap">
+      ${label(r.kicker)}
+      <h1 class="page-title" id="research-title">${esc(r.heading)}</h1>
+      <p class="lede">${esc(r.intro)}</p>
+      <nav class="toc" aria-label="${esc(r.contentsLabel)}"><ol>${toc}</ol></nav>
+    </div>
+  </header>
+  ${methodology}
+  ${pipeline}
+  ${resultsHtml}
+  ${models}
+  ${hardware}
+  ${validation}
+  ${roadmapSec}
+  ${refs}
+</main>
+${siteFooter(c, { from: 'research' })}`;
+}
+
+// ---- About page (about.html) -----------------------------------------------
+export function renderAboutHead(c) {
+  const a = c.about;
+  const url = new URL('about.html', c.meta.url).href;
+  return `${counter(c)}
+    <title>${esc(a.title)} | Varn</title>
+    <meta name="description" content="${esc(a.description)}" />
+    <link rel="canonical" href="${esc(url)}" />`;
+}
+
+export function renderAboutBody(c) {
+  const a = c.about;
+  const { build, sister } = c;
+  return `
+<a class="skip-link" href="#main">Skip to content</a>
+${stage('stage-fixed')}
+${siteNav(c, { home: false, current: 'about.html' })}
+
+<main id="main" class="about-page" tabindex="-1">
+  <section class="about section" aria-labelledby="about-title">
+    <div class="wrap wrap--mid">
       <header class="section-head">
-        ${kicker(++n, roadmap.kicker || 'Roadmap')}
-        <h2 class="h-section" id="roadmap-title">${esc(roadmap.heading)}</h2>
-        ${roadmap.intro ? `<p class="lede">${esc(roadmap.intro)}</p>` : ''}
+        ${label(a.kicker)}
+        <h1 class="page-title" id="about-title">${esc(a.heading)}</h1>
       </header>
-      <ol class="phases">${phases}</ol>
-    </div>
-  </section>
-
-  <section class="build section" id="build" aria-labelledby="build-title" data-spy="status">
-    <div class="wrap wrap--mid">
-      <figure class="build-card" data-reveal>
-        ${kicker(++n, build.heading, 'build-title', 'h2')}
+      <div class="about-card glass-2" id="build" tabindex="-1">
+        <h2 class="mono about-h">${esc(build.heading)}</h2>
         <blockquote class="build-body"><p>${esc(build.body)}</p></blockquote>
-        ${
-          build.quote
-            ? `<figcaption class="build-motto"><p>&ldquo;${esc(build.quote)}&rdquo;</p>${
-                build.signature ? `<span class="mono">&mdash; ${esc(build.signature)}</span>` : ''
-              }</figcaption>`
-            : ''
-        }
-      </figure>
-    </div>
-  </section>
-
-  <section class="outro" aria-label="Closing statement">
-    <div class="wrap wrap--mid">
-      ${mark(40, 'mark outro-mark')}
-      <p class="closing">${esc(roadmap.closing)}</p>
+      </div>
+      <div class="about-scope">
+        <h2 class="h-sub">${esc(a.scopeHeading)}</h2>
+        <ul class="scope-list">${a.scope.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+      </div>
+      <div class="about-contact">
+        <p>${esc(a.contactText)}</p>
+        <a class="btn btn--glass btn--lg" href="${esc(a.contactCta.href)}"><span>${esc(a.contactCta.label)}</span>${ARROW_UR}</a>
+      </div>
+      ${sister ? sisterCard(sister) : ''}
     </div>
   </section>
 </main>
-
-${siteFooter(c, { sister })}`;
-}
-
-function siteFooter(c, { from = 'home', sister = null } = {}) {
-  const footer = c.footer;
-  const links = footer.links
-    .filter((l) => !(l.href.includes(`${from}.html`)))
-    .map((l) => `<li><a class="u-link"${linkAttrs(l.href)}>${esc(l.label)}</a></li>`)
-    .join('');
-  return `
-<footer class="site-footer">
-  <div class="wrap footer-wrap">
-    ${sister ? sisterCard(sister) : ''}
-    <div class="footer-inner">
-      <p class="brand brand--footer">${mark(22)}${wordmark()}<span class="mono footer-labs">${esc(footer.brand)}</span></p>
-      <nav aria-label="Footer">
-        <ul class="footer-links">
-          ${links}
-          <li><span class="mono footer-k">${esc(footer.contactLabel)}</span> <a class="u-link"${linkAttrs(`mailto:${footer.email}`)}>${esc(footer.email)}</a></li>
-        </ul>
-      </nav>
-    </div>
-  </div>
-</footer>`;
+${siteFooter(c, { from: 'about' })}`;
 }
 
 // ---- Privacy page (privacy.html) -------------------------------------------

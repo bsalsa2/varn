@@ -1,6 +1,6 @@
 # Varn website
 
-The landing page for Varn: a single static page built with Vite, vanilla
+The Varn website: a home page of five sections (hero, process, dashboard preview, research snapshot, close), plus Research, About, Demo, Contact and Privacy pages, built with Vite, vanilla
 JavaScript, and Three.js (for the 3D mount only). Everything below can be done from a web
 browser.
 
@@ -363,3 +363,11 @@ Lighthouse runs Chrome without a GPU, so it gets the static images, not the
 3D views. On a real phone, the 3D loads after the first paint, so first
 paint and LCP stay the same. To measure on real hardware, run PageSpeed
 Insights (pagespeed.web.dev) on the live URL.
+
+
+## Site structure and the hero image
+
+- `index.html` is the home page. Everything it leaves out lives on `research.html` (methodology, results, models, hardware and bill of materials, validation, roadmap, references) and `about.html`. Old links such as `/#results` or `/#status` are redirected to the same ids on the Research page by a small script in the home page head (`LEGACY_HASHES` in `src/render.js`).
+- The hero picture is a CAD render of the **planned** pan-tilt mount, drawn with three.js from `hardware/*.stl` (via `public/models/pantilt.bin`) and exported as `public/models/hero-mount-*.webp`. It is labelled CAD and not built on the page; replace it only with something equally honest. Real footage can still replace it through `hero.footage` in `content.js`.
+- The home page's dashboard preview (`src/platform-preview.js`) uses the same simulated generator as the demo (`src/demo-data.js`), loads only when scrolled near, and is labelled SIMULATED.
+- The parts table on the Research page is read from `bom.csv` at build time.

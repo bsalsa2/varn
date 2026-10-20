@@ -1,0 +1,22 @@
+/* The home page's dashboard preview borrows the demo's chart and table styles
+   (demo.css) and only adjusts them to sit inside the glass window. */
+.pv .dc-plot {
+  height: 190px;
+}
+.pv .dc-x {
+  margin-top: 10px;
+}
+.pv .demo-table {
+  width: 100%;
+  min-width: 480px;
+}
+.pv .demo-table th,
+.pv .demo-table td {
+  background: transparent;
+}
+.pv .pv-system {
+  min-width: 360px;
+}
+.pv .demo-meter {
+  margin-left: 8px;
+}

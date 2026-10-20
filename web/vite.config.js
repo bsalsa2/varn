@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import { content } from './src/content.js';
 import { fileURLToPath } from 'node:url';
-import { renderHead, renderBody, renderPrivacyHead, renderPrivacyBody, renderContactHead, renderContactBody, renderDemoHead, renderDemoBody } from './src/render.js';
+import { renderHead, renderBody, renderPrivacyHead, renderPrivacyBody, renderContactHead, renderContactBody, renderDemoHead, renderDemoBody, renderResearchHead, renderResearchBody, renderAboutHead, renderAboutBody } from './src/render.js';
 
 // Renders src/content.js into index.html at build time, so the page is
 // plain static HTML (fast, readable without JavaScript, good for search).
@@ -16,9 +16,29 @@ const varnContent = () => ({
       .replace('<!--varn:contact-head-->', renderContactHead(content))
       .replace('<!--varn:contact-body-->', renderContactBody(content))
       .replace('<!--varn:demo-head-->', renderDemoHead(content))
-      .replace('<!--varn:demo-body-->', renderDemoBody(content));
+      .replace('<!--varn:demo-body-->', renderDemoBody(content))
+      .replace('<!--varn:research-head-->', renderResearchHead(content))
+      .replace('<!--varn:research-body-->', renderResearchBody(content))
+      .replace('<!--varn:about-head-->', renderAboutHead(content))
+      .replace('<!--varn:about-body-->', renderAboutBody(content));
   },
 });
+
+// CSS files that lazy chunks need (directly, or through a chunk they import).
+// Those are loaded by link at run time, so the inliner must leave them intact.
+function lazyCss(bundle) {
+  const chunks = new Map(Object.values(bundle).filter((c) => c.type === 'chunk').map((c) => [c.fileName, c]));
+  const css = new Set();
+  const seen = new Set();
+  const visit = (c) => {
+    if (!c || seen.has(c.fileName)) return;
+    seen.add(c.fileName);
+    (c.viteMetadata?.importedCss || []).forEach((f) => css.add(f));
+    (c.imports || []).forEach((f) => visit(chunks.get(f)));
+  };
+  chunks.forEach((c) => c.isDynamicEntry && visit(c));
+  return css;
+}
 
 // Inlines the (small) stylesheet into index.html so the first paint doesn't
 // wait on a second request.
@@ -45,7 +65,11 @@ const inlineCss = () => ({
       // as a dependency to preload, and Vite rejects the import if it 404s.
       // `vite preview` hides that by answering every unknown path with
       // index.html, so leave an empty file behind rather than deleting it.
-      file.source = '/* inlined into each page */\n';
+      // Unless a lazy chunk (the home page's dashboard preview) needs the file
+      // too: that one is loaded by link at run time, so it keeps its content.
+      // (The home page already carries its own sheet, so that one is still blanked.)
+      const lazyUsers = lazyCss(bundle).has(file.fileName) && !users.some((p) => p.fileName === 'index.html') ? [file] : [];
+      if (!lazyUsers.length) file.source = '/* inlined into each page */\n';
     }
   },
 });
@@ -58,7 +82,7 @@ const preloadFonts = () => ({
   transformIndexHtml: {
     order: 'post',
     handler(html, ctx) {
-      const wanted = ['space-grotesk-latin-500-normal', 'inter-latin-400-normal', 'inter-latin-500-normal', 'geist-mono-latin-400-normal', 'geist-mono-latin-500-normal'];
+      const wanted = ['space-grotesk-latin-300-normal', 'space-grotesk-latin-500-normal', 'inter-latin-400-normal', 'geist-mono-latin-400-normal'];
       const files = Object.keys(ctx.bundle || {}).filter(
         (f) => f.endsWith('.woff2') && wanted.some((w) => f.includes(w))
       );
@@ -87,6 +111,8 @@ export default defineConfig({
         privacy: fileURLToPath(new URL('./privacy.html', import.meta.url)),
         contact: fileURLToPath(new URL('./contact.html', import.meta.url)),
         demo: fileURLToPath(new URL('./demo.html', import.meta.url)),
+        research: fileURLToPath(new URL('./research.html', import.meta.url)),
+        about: fileURLToPath(new URL('./about.html', import.meta.url)),
         field: fileURLToPath(new URL('./field.html', import.meta.url)),
       },
     },

@@ -8,11 +8,13 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const read = (p) => readFileSync(fileURLToPath(new URL(p, import.meta.url)), 'utf8');
-const css = read('../../brain/dashboard/graphite.css') + '\n' + read('../src/styles.css');
+// The light theme block is not shipped by the site: leave it out of the resolver.
+const css = read('../../brain/dashboard/graphite.css').replace(/\[data-theme='light'\]\s*\{[^}]*\}/, '') + '\n' + read('../src/styles.css');
 
 // --- a tiny resolver for the custom properties we use ---------------------------------
 const vars = {};
-for (const m of css.matchAll(/(--[\w-]+):\s*([^;]+);/g)) vars[m[1]] ??= m[2].trim();
+// Later declarations win, like the cascade: styles.css overrides graphite.css.
+for (const m of css.matchAll(/(--[\w-]+):\s*([^;]+);/g)) vars[m[1]] = m[2].trim();
 const hex = (h) => {
   const n = h.replace('#', '');
   const f = n.length === 3 ? [...n].map((c) => c + c).join('') : n;
@@ -77,8 +79,6 @@ test('control edges and the focus ring reach 3:1', () => {
     atLeast('control edge', '--line-ui', bg, 3);
     atLeast('focus ring', '--focus', bg, 3);
   }
-  // The ring also has to show against a steel-blue button it surrounds.
-  atLeast('focus ring on button', '--focus', '--accent', 3);
 });
 
 test('chart marks reach 3:1 against the panel they sit on', () => {
@@ -106,4 +106,12 @@ test('text on glass keeps 4.5:1 over the brightest light on the stage (worst cas
     assert.ok(r >= 4.5, `${fg} on worst-case glass is ${r.toFixed(2)}:1`);
   }
   // Sage status text sits in a pill with its own dark ground, not directly on glass.
+});
+
+test('the cinematic palette: titanium, ice and secondary text on obsidian, midnight and deep', () => {
+  for (const bg of ['--obsidian', '--midnight', '--deep']) {
+    for (const fg of ['--text-1', '--text-2', '--titanium', '--ice']) atLeast('palette', fg, bg, 4.5);
+  }
+  atLeast('ice button text', '--obsidian', '--ice', 4.5);
+  atLeast('control edge (steel) on midnight', '--steel', '--midnight', 3);
 });

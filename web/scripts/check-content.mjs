@@ -110,20 +110,28 @@ function list(path, { min = 1 } = {}) {
   return value;
 }
 
-const sectionIds = new Set(['top', 'tested', 'math', 'story', 'labels', 'how', 'mount', 'status', 'build', 'roadmap']);
-if (Array.isArray(get('results.charts')) && get('results.charts').length) sectionIds.add('results');
-if (Array.isArray(get('limits.items')) && get('limits.items').length) sectionIds.add('limits');
+// Anchors that exist on each page. Links written as "#id" point at the home
+// page; "./research.html#id" and friends point at those pages.
+const pageIds = {
+  home: ['top', 'process', 'platform', 'research', 'close'],
+  'research.html': ['methodology', 'story', 'results', 'models', 'limits', 'labels', 'hardware', 'math', 'how', 'mount', 'validation', 'tested', 'status', 'roadmap', 'references'],
+  'about.html': ['build'],
+};
 
 function link(path, value = get(path)) {
   if (!text(path, value)) return;
   if (value.startsWith('#')) {
-    if (!sectionIds.has(value.slice(1)))
-      err(`${path} points to "${value}", which isn't a section on the page. Use one of: ${[...sectionIds].map((s) => '#' + s).join(', ')}.`, lineOf(value));
+    if (!pageIds.home.includes(value.slice(1)))
+      err(`${path} points to "${value}", which isn't a section on the home page. Use one of: ${pageIds.home.map((s) => '#' + s).join(', ')}.`, lineOf(value));
   } else if (value.startsWith('http://')) {
     warn(`${path} uses http://. Prefer https:// so browsers don't warn visitors.`, lineOf(value));
-  } else if (/^\.\/[\w-]+\.html$/.test(value)) {
-    if (!existsSync(join(webRoot, value.slice(2))))
+  } else if (/^\.\/([\w-]+\.html)?(#[\w-]+)?$/.test(value)) {
+    const [page, hash] = value.slice(2).split('#');
+    if (page && !existsSync(join(webRoot, page)))
       err(`${path} points to "${value}", but there's no such page in web/.`, lineOf(value));
+    const ids = page ? pageIds[page] : pageIds.home;
+    if (hash && ids && !ids.includes(hash))
+      err(`${path} points to "${value}", but ${page || 'the home page'} has no section "${hash}". Use one of: ${ids.map((s) => '#' + s).join(', ')}.`, lineOf(value));
   } else if (!/^(https:\/\/|mailto:)/.test(value)) {
     err(`${path} should start with https://, mailto:, #, or ./page.html (got "${value}").`, lineOf(value));
   }
@@ -149,22 +157,79 @@ list('nav.links').forEach((l, i) => {
   link(`nav.links.${i}.href`, l?.href);
 });
 
-['eyebrow', 'headline', 'sub', 'caption'].forEach((k) => text(`hero.${k}`));
-text('hero.primary.label');
-link('hero.primary.href');
+['eyebrow', 'headline', 'sub', 'status'].forEach((k) => text(`hero.${k}`));
+text('nav.cta.label');
+link('nav.cta.href');
 text('hero.demo.label');
 link('hero.demo.href');
 text('hero.results.label');
 link('hero.results.href');
-text('hero.source.label');
-link('hero.source.href');
-list('hero.facts').forEach((f, i) => text(`hero.facts.${i}`, f));
-if (get('hero.cost') !== undefined) {
-  text('hero.cost');
-  // The cost claim must keep saying what it leaves out.
-  if (!/before the computer/i.test(get('hero.cost') || ''))
-    err('hero.cost must say the price is "before the computer that runs the model".', lineOf('cost:'));
+text('hero.image.alt');
+text('hero.image.caption');
+publicFile('hero.image.src');
+publicFile('hero.image.small');
+// The hero picture is a CAD render of planned hardware, and must say so.
+if (!/CAD/.test(get('hero.image.caption') || '') || !/NOT BUILT/i.test(get('hero.image.caption') || ''))
+  err('hero.image.caption must say the picture is a CAD render and that the hardware is NOT BUILT.', lineOf('caption:'));
+if (!/RESEARCH PROTOTYPE/.test(get('hero.status') || '') || !/PENDING/.test(get('hero.status') || ''))
+  err('hero.status must say it is a research prototype and that hardware validation is pending.', lineOf('status:'));
+
+// The three home sections after the hero.
+list('process.stages', { min: 3 }).forEach((st, i) => {
+  ['name', 'text', 'status'].forEach((k) => text(`process.stages.${i}.${k}`, st?.[k]));
+  if (!['tested', 'pending'].includes(st?.state)) err(`process.stages.${i}.state must be 'tested' or 'pending'.`, lineOf(st?.name));
+});
+if (get('process.stages.2.state') !== 'pending')
+  err('The last process stage (Validate) must stay "pending" until real hardware validation exists.', lineOf('Validate'));
+text('process.note');
+link('process.link.href');
+text('platform.heading');
+text('platform.banner');
+if (!/^SIMULATED/.test(get('platform.banner') || '') || get('platform.badge') !== 'SIMULATED')
+  err('platform.banner must start with SIMULATED and platform.badge must be exactly SIMULATED.', lineOf('banner:'));
+link('platform.cta.href');
+list('platform.tabs', { min: 4 }).forEach((t, i) => {
+  text(`platform.tabs.${i}.id`, t?.id);
+  text(`platform.tabs.${i}.label`, t?.label);
+});
+text('snapshot.heading');
+text('snapshot.intro');
+if (get('snapshot.disclaimer') !== 'Recorded-video evaluation only. Physical hardware validation pending.')
+  err('snapshot.disclaimer must read exactly "Recorded-video evaluation only. Physical hardware validation pending."', lineOf('disclaimer:'));
+text('snapshot.notComparable');
+link('snapshot.link.href');
+text('close.heading');
+text('close.text');
+text('close.disclosure');
+text('close.copyright');
+// The research snapshot repeats numbers published in `results`, which stay the
+// one source: the page reads them from there, and these must match.
+{
+  const charts = get('results.charts') || [];
+  const val = (kind) => charts.find((ch) => ch?.kind === kind)?.bars?.[0]?.value;
+  for (const [i, f] of (get('snapshot.figures') || []).entries()) {
+    if (f?.kind !== 'drone' && f?.kind !== 'aircraft') continue;
+    if (f.number !== val(f.kind) || f.value !== `${val(f.kind)}%`)
+      err(`snapshot.figures.${i} says ${f.value}, but results has ${val(f.kind)}%. They must match.`, lineOf(f.label));
+  }
 }
+if (get('researchPage')) {
+  ['title', 'description', 'heading', 'intro'].forEach((k) => text(`researchPage.${k}`));
+  list('researchPage.sections').forEach((sec, i) => {
+    text(`researchPage.sections.${i}.id`, sec?.id);
+    if (!pageIds['research.html'].includes(sec?.id)) err(`researchPage.sections.${i}.id "${sec?.id}" is not a section of the research page.`, lineOf(sec?.id));
+  });
+  text('researchPage.hardware.costNote');
+  // The parts cost must keep saying what it leaves out, and that it is not performance.
+  if (!/excludes the computer/i.test(get('researchPage.hardware.costNote') || '') || !/not evidence of performance/i.test(get('researchPage.hardware.costNote') || ''))
+    err('researchPage.hardware.costNote must say the cost excludes the computer and is not evidence of performance.', lineOf('costNote:'));
+  list('researchPage.references.items').forEach((it, i) => link(`researchPage.references.items.${i}.href`, it?.href));
+}
+if (get('about')) {
+  ['title', 'heading', 'contactText'].forEach((k) => text(`about.${k}`));
+  link('about.contactCta.href');
+}
+if (get('footer.legal')) list('footer.legal').forEach((l, i) => link(`footer.legal.${i}.href`, l?.href));
 
 const footage = get('hero.footage');
 if (footage && footage.video) {
@@ -174,7 +239,6 @@ if (footage && footage.video) {
     err('hero.footage.caption is empty. Say what the clip shows before it goes on the page.', lineAfter('footage:', 'caption:'));
 }
 
-text('math.heading');
 text('math.body');
 if (get('math.stats') && !get('math.statsNote'))
   err('math.stats compares prices, so math.statsNote must say it is a price comparison only, not a capability comparison.', lineOf('stats:'));
@@ -206,17 +270,12 @@ for (const path of ['story.device', 'story.note']) {
   if (typeof v !== 'string' || !/\bSAMPLE\b/.test(v)) err(`${path} must contain the word SAMPLE: the story panel is a simulation.`, lineOf('story:'));
 }
 if (get('ticker')) list('ticker').forEach((t, i) => text(`ticker.${i}`, t));
-if (get('hero.stage')) {
-  text('hero.stage.label');
-  text('hero.stage.text');
-}
 if (get('tested')) {
   text('tested.heading');
   list('tested.columns').forEach((col, i) => {
     ['tag', 'title'].forEach((k) => text(`tested.columns.${i}.${k}`, col?.[k]));
     list(`tested.columns.${i}.items`).forEach((it, j) => text(`tested.columns.${i}.items.${j}`, it));
   });
-  if (get('tested.link')) link('tested.link.href');
 }
 text('labels.heading');
 text('labels.note');
@@ -226,14 +285,11 @@ list('labels.items').forEach((it, i) => {
 });
 text('how.note');
 // Sample and preview content must say so.
-for (const path of ['hero.card.label', 'hero.caption', 'how.sensor.label', 'how.radar.label', 'how.radar.caption']) {
+for (const path of ['how.sensor.label', 'how.radar.label', 'how.radar.caption']) {
   const v = get(path);
   if (typeof v === 'string' && !/\bSAMPLE\b/.test(v))
     err(`${path} shows simulated content, so it must contain the word SAMPLE.`, lineOf(v));
 }
-const CARD_STATUSES = ['aircraft', 'drone', 'no-adsb'];
-if (get('hero.card') && !CARD_STATUSES.includes(get('hero.card.status')))
-  err(`hero.card.status is "${get('hero.card.status')}". Use exactly 'aircraft', 'drone' or 'no-adsb'.`, lineAfter('card:', 'status:'));
 // Brand voice: Varn only watches. These words never appear on the page.
 for (const word of ['missile', 'kill', 'strike', 'defeat']) {
   const i = lines.findIndex((l) => !/^\s*\/\//.test(l) && new RegExp(`\\b${word}`, 'i').test(l));

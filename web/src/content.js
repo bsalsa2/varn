@@ -20,10 +20,9 @@ export const content = {
   meta: {
     title: 'Varn | Watch the sky',
     description:
-      'A low-cost visual sensing platform, starting with one passive sky-tracking node. About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
-    // Public URL of the live site (used for social share previews). The
-    // The primary domain. Every build (Netlify and the GitHub Pages mirror)
-    // points canonical links and share images here; set SITE_URL to override.
+      'A research prototype exploring a camera-based approach to observing and logging objects in the sky. Recorded-video evaluation only. Physical hardware validation pending.',
+    // The primary domain. Every build (GitHub Pages and any mirror) points
+    // canonical links and share images here; set SITE_URL to override.
     url: process.env.SITE_URL || 'https://tryvarn.com/',
   },
 
@@ -34,66 +33,128 @@ export const content = {
     goatcounter: 'bsalsa2',
   },
 
+  // Four destinations, no more. "Platform" scrolls to the dashboard section
+  // of the home page; the rest are pages. The last one is the demo button.
   nav: {
     brand: 'VARN',
     links: [
-      { label: 'Overview', href: '#top' },
-      { label: 'How it works', href: '#story' },
-      { label: 'Results', href: '#results' },
-      { label: 'Hardware', href: '#how' },
-      { label: 'Status', href: '#status' },
-      { label: 'Demo', href: './demo.html' },
-      { label: 'Contact', href: './contact.html' },
+      { label: 'Platform', href: '#platform' },
+      { label: 'Research', href: './research.html' },
+      { label: 'About', href: './about.html' },
     ],
+    cta: { label: 'Explore Demo', href: './demo.html' },
   },
 
+  // SECTION 1: the hero. One image, one headline, one sentence, one status.
   hero: {
-    // Shown in [ square brackets ] above the headline.
-    eyebrow: 'A watcher, not a weapon',
+    eyebrow: 'PASSIVE VISUAL AWARENESS / RESEARCH PROTOTYPE',
     headline: 'Watch the sky.',
-    // What exists today, shown right under the headline. Keep it accurate.
-    stage: {
-      label: 'Research prototype',
-      text: 'Software tested on recorded video and in simulation. Physical hardware validation pending.',
+    sub: 'Exploring a camera-based approach to observing and logging objects in the sky.',
+    status: 'RESEARCH PROTOTYPE · HARDWARE VALIDATION PENDING',
+    demo: { label: 'Explore the demo', href: './demo.html' },
+    results: { label: 'View research results', href: './research.html#results' },
+    // The hero image is a CAD render of the PLANNED pan-tilt mount, drawn from
+    // the STL files in /hardware. It must always say so: nothing is built.
+    image: {
+      src: './models/hero-mount-1400.webp',
+      small: './models/hero-mount-700.webp',
+      width: 1400,
+      height: 1871,
+      alt: 'CAD render of the planned VARN pan-tilt mount in brushed titanium and graphite, lit from the side by a cool light against a dark horizon. A base holds the pan servo, a yoke on top carries the camera arm.',
+      caption: 'CAD RENDER · PLANNED HARDWARE · NOT BUILT',
     },
-    sub: 'A prototype for passive visual sensing: a camera and a detection model label what they see as drone or aircraft, and every sighting is logged. The current model is weak at drones.',
-    // Nav button and footer link to the code.
-    primary: { label: 'View the code', href: 'https://github.com/bsalsa2/varn' },
-    // The hero actions: the interactive demo, the measured results, then a
-    // plain link to the source.
-    demo: { label: 'Explore the dashboard demo', href: './demo.html' },
-    results: { label: 'Read the measured results', href: '#results' },
-    source: { label: 'View the source code', href: 'https://github.com/bsalsa2/varn' },
-    // Cost note, shown under the buttons. Keep the exclusions in the sentence.
-    cost: 'Estimated sensing-hardware parts cost: about $113 (camera, servos, mount, power), before the computer that runs the model. Not a validated system.',
-    // The line along the bottom of the hero. Plain facts only.
-    facts: ['Detection only', '~$113 est. sensing parts', 'Tested in simulation and on recorded video', 'Not yet on real hardware'],
-    caption: 'SAMPLE: a placeholder sighting, not a real detection. Real sightings replace it once the hardware is built.',
+    scroll: 'Scroll',
+  },
 
-    // The sighting card beside the lens. Placeholder values only.
-    // status: 'aircraft' (confirmed aircraft), 'drone' (possible drone) or
-    // 'no-adsb' (no ADS-B match). The colour and shape follow automatically.
-    card: {
-      label: 'SAMPLE',
-      status: 'aircraft',
-      time: '14:32:07Z',
-      class: 'aircraft',
-      conf: '0.91',
-      adsb: 'match',
-    },
+  // SECTION 2: the process, in three stages along one line. Each stage says
+  // exactly how far it has been tested. Keep the status words honest.
+  process: {
+    label: 'The process',
+    heading: 'Three stages. One of them still needs hardware.',
+    stages: [
+      {
+        name: 'Observe',
+        text: 'A camera on a pan-tilt mount watches a patch of sky, and a detection model labels what it sees as drone or aircraft.',
+        status: 'Tested on recorded video',
+        state: 'tested',
+      },
+      {
+        name: 'Log',
+        text: 'Each sighting is saved with its time, class, confidence and where the camera was pointing.',
+        status: 'Tested in simulation',
+        state: 'tested',
+      },
+      {
+        name: 'Validate',
+        text: 'Sightings are compared with real flight data and outdoor tests to produce accuracy numbers.',
+        status: 'Pending · needs the physical node',
+        state: 'pending',
+      },
+    ],
+    note: 'Physical hardware validation is pending. Nothing here has run on a built sensor node.',
+    link: { label: 'See all five steps', href: './research.html#story' },
+  },
 
-    // REAL FOOTAGE: leave video empty until real footage exists.
-    // When it does: put a short video file in web/public/media/ and set
-    // video to its path, for example 'media/first-track.mp4'. It replaces the
-    // concept visualization at the top of the page (muted, looping; paused
-    // for visitors who turn off motion).
-    // Before publishing a clip, check it doesn't show your house, street, or
-    // anything that reveals where you live.
-    footage: {
-      video: '',
-      poster: '', // optional still image, for example 'media/first-track.jpg'
-      caption: '', // required once video is set: say what the clip shows
-    },
+  // SECTION 3: the platform. The window is the real dashboard demo, in small.
+  platform: {
+    label: 'The platform',
+    heading: 'The dashboard, in simulation.',
+    sub: 'An interactive demonstration of the VARN dashboard. Every event, count and chart on this page is generated sample data. No camera detected any of it.',
+    badge: 'SIMULATED',
+    banner: 'SIMULATED · Sample data generated in your browser. No physical node is connected.',
+    window: 'VARN dashboard',
+    node: 'Node-01 · Not connected',
+    tabs: [
+      { id: 'overview', label: 'Overview' },
+      { id: 'events', label: 'Events' },
+      { id: 'analytics', label: 'Analytics' },
+      { id: 'system', label: 'System' },
+    ],
+    cta: { label: 'Explore the demo', href: './demo.html' },
+    noscript: 'The dashboard preview needs JavaScript. The full demo does too; the measured results are on the Research page.',
+  },
+
+  // SECTION 4: a restrained snapshot of the published v2 results. The numbers
+  // come from `results` below, so there is only one place to edit them.
+  snapshot: {
+    label: 'The research',
+    heading: 'Measured, and still limited.',
+    intro: 'Model v2 was evaluated on 43 real-world video clips of planes, military jets and drones. The result for drones is weak, and it is shown as it is.',
+    disclaimer: 'Recorded-video evaluation only. Physical hardware validation pending.',
+    figures: [
+      {
+        value: '14.9%',
+        number: 14.9,
+        kind: 'drone',
+        label: 'of drone clips correctly labeled',
+        unit: 'Per clip. Higher is better.',
+      },
+      {
+        value: '7.5%',
+        number: 7.5,
+        kind: 'aircraft',
+        label: 'of aircraft video frames wrongly classified as drones',
+        unit: 'Per frame. Lower is better.',
+      },
+      {
+        value: '43',
+        number: null,
+        kind: 'sample',
+        label: 'real-world clips in the evaluation',
+        unit: 'Planes, military jets and drones.',
+      },
+    ],
+    notComparable: 'The first two figures use different units, per clip and per frame, so they are not directly comparable.',
+    link: { label: 'Read the full research', href: './research.html' },
+    inside: ['Complete metrics and tables', 'Dataset and methodology', 'Model versions and known limits', 'Hardware status and parts cost', 'Planned validation and roadmap', 'References'],
+  },
+
+  // SECTION 5: the close.
+  close: {
+    heading: 'Built in the open. Measured honestly.',
+    text: 'VARN is a research prototype. Every result is published with its limits, and every simulation is labeled as one.',
+    disclosure: 'Research prototype. Software has been tested on recorded video and in simulation. The physical hardware node has not been built or validated. Images marked CAD or SIMULATED are not footage and not live detections.',
+    copyright: 'Copyright 2026 Varn Labs. Source code released under the MIT License.',
   },
 
   // WHAT WE'VE TESTED: the short version, near the top. Three columns:
@@ -130,7 +191,6 @@ export const content = {
         ],
       },
     ],
-    link: { label: 'Full results and limits', href: '#results' },
   },
 
   // The step-by-step explainer. Each stage has its own animated scene in the
@@ -371,6 +431,93 @@ export const content = {
       'Phase 1 is passive by design. It carries no payloads, never jams, and never transmits on aircraft or drone frequencies. It only watches.',
   },
 
+  // RESEARCH PAGE (research.html): everything the home page leaves out.
+  // The measured numbers themselves live in `results`; the status list, limits
+  // and roadmap below are reused here as they are.
+  researchPage: {
+    title: 'Research',
+    description: 'VARN research: test methodology, measured results with their limits, model versions, hardware and parts cost, validation status, roadmap and references.',
+    kicker: 'Research',
+    heading: 'Research and engineering detail',
+    intro: 'Everything the home page leaves out: how the model was tested, what the numbers do and do not show, what the hardware is, and what is still pending. Recorded-video evaluation only. Physical hardware validation pending.',
+    contentsLabel: 'On this page',
+    sections: [
+      { id: 'methodology', label: 'Test methodology' },
+      { id: 'results', label: 'Measured results' },
+      { id: 'models', label: 'Model versions and limits' },
+      { id: 'hardware', label: 'Hardware and parts' },
+      { id: 'validation', label: 'Validation status' },
+      { id: 'roadmap', label: 'Roadmap' },
+      { id: 'references', label: 'References' },
+    ],
+    methodology: {
+      heading: 'Test methodology',
+      paragraphs: [
+        'Model v2 is a custom two-class YOLOv8n detector (classes drone and aircraft). It was trained on a 28,526-image aircraft and drone dataset whose labels were merged into those two classes.',
+        'It was then run on 43 real-world videos of planes, military jets and drones. Aircraft videos are scored per frame: each frame where the model called the aircraft a drone counts as one error. Drone videos are scored per clip: a clip counts as correct when the model labeled the drone correctly.',
+        'This is a test of the model on recorded video. It is not a test of the camera, the mount, the servos or any outdoor setup, none of which has been built.',
+      ],
+      unitsHeading: 'Two metrics, two units',
+      units: [
+        { term: 'Aircraft wrongly called a drone', text: 'Share of aircraft video frames. 798 of 10,657 frames, 7.5%. Lower is better.' },
+        { term: 'Drones labeled correctly', text: 'Share of drone clips, 14.9%. Higher is better. The number of drone clips is not listed in the source.' },
+      ],
+      unitsNote: 'A per-frame error rate and a per-clip hit rate measure different things. Do not read one against the other.',
+    },
+    resultsNote: 'The drone result is weak and stays visible here. Model v3 has no results yet.',
+    models: {
+      heading: 'Model versions and limitations',
+      rows: [
+        { model: 'v2', state: 'Measured', text: 'Two-class YOLOv8n (drone, aircraft). Scored on 43 recorded videos. Weak at drones.' },
+        { model: 'v3', state: 'Testing', text: 'Drone and aircraft classes, 960 px input, resumed from v2. In training. Not yet scored against the same 43 clips, so it has no results to report.' },
+      ],
+      limitsHeading: 'Known limits',
+    },
+    hardware: {
+      heading: 'Hardware and bill of materials',
+      intro: 'The planned node is a webcam on a two-servo pan-tilt mount, driven by a Raspberry Pi Pico WH, with the model running on a laptop first and a Raspberry Pi 4 later. Nothing has been built. The renders and models on this page are CAD.',
+      costHeading: 'Estimated parts cost',
+      costNote: 'A parts estimate from bom.csv in the repository, before shipping. It excludes the computer that runs the model, and the Pico WH and breadboard, which are already owned. It is not evidence of performance: the node is not built and nothing has run on real hardware.',
+      bomHeading: 'Bill of materials',
+      bomNote: 'Costs are rough USD estimates for the whole line, before shipping. The source is bom.csv.',
+      viewsHeading: 'Simulations and CAD',
+    },
+    validation: {
+      heading: 'Validation status',
+      intro: 'What has been tested, what has been measured, and what is pending. Software and recorded-video results do not stand in for hardware validation.',
+      statusHeading: 'Status of each part',
+    },
+    references: {
+      heading: 'Technical references',
+      intro: 'Source documentation in the repository. Everything on this site is drawn from it.',
+      items: [
+        { label: 'README', href: 'https://github.com/bsalsa2/varn/blob/main/README.md', text: 'Status, results, model, bill of materials, wiring and roadmap.' },
+        { label: 'Brain: detection, tracking, logging', href: 'https://github.com/bsalsa2/varn/blob/main/brain/README.md', text: 'The detection and tracking loop, the sighting logger, the dashboard and demo mode.' },
+        { label: 'Training', href: 'https://github.com/bsalsa2/varn/blob/main/training/README.md', text: 'How models are trained and scored, and what the scores mean.' },
+        { label: 'Hardware', href: 'https://github.com/bsalsa2/varn/blob/main/hardware/README.md', text: 'The parametric pan-tilt mount, with STEP and STL files.' },
+        { label: 'Pico firmware', href: 'https://github.com/bsalsa2/varn/blob/main/pico/README.md', text: 'Servo firmware and the command protocol.' },
+        { label: 'Bill of materials', href: 'https://github.com/bsalsa2/varn/blob/main/bom.csv', text: 'Parts, quantities and estimated costs as a CSV.' },
+        { label: 'Source code', href: 'https://github.com/bsalsa2/varn', text: 'The whole repository, including this website.' },
+      ],
+    },
+  },
+
+  // ABOUT PAGE (about.html)
+  about: {
+    title: 'About',
+    description: 'About VARN: who is building it, and what it is and is not.',
+    kicker: 'About',
+    heading: 'Who is building this',
+    scopeHeading: 'What VARN is, and is not',
+    scope: [
+      'A research prototype for passive visual sensing: a camera that watches the sky and a model that labels what it sees.',
+      'Passive by design. It carries no payload, never jams, and never transmits on aircraft or drone frequencies.',
+      'Not a product, and not deployed anywhere. The physical hardware node has not been built or validated.',
+    ],
+    contactText: 'Questions about the project, the hardware or the code are welcome.',
+    contactCta: { label: 'Contact', href: './contact.html' },
+  },
+
   // DASHBOARD DEMO (demo.html): an interactive version of the dashboard.
   // The events, counts and charts are SIMULATED, generated in the visitor's
   // browser (src/demo-data.js). The measured results on the Analytics tab come
@@ -447,11 +594,16 @@ export const content = {
 
   footer: {
     brand: 'VARN LABS',
+    // Platform, Research, About, Contact and the source, in that order.
     links: [
-      { label: 'Varn on GitHub', href: 'https://github.com/bsalsa2/varn' },
-      { label: 'Sister project: Sunnode', href: 'https://github.com/bsalsa2/sunnode' },
-      { label: 'Dashboard demo', href: './demo.html' },
+      { label: 'Platform', href: './#platform' },
+      { label: 'Research', href: './research.html' },
+      { label: 'About', href: './about.html' },
       { label: 'Contact', href: './contact.html' },
+      { label: 'Source code', href: 'https://github.com/bsalsa2/varn' },
+    ],
+    legal: [
+      { label: 'Dashboard demo', href: './demo.html' },
       { label: 'Privacy', href: './privacy.html' },
     ],
     contactLabel: 'Contact',
