@@ -691,7 +691,7 @@ main,
   position: absolute;
   right: 0;
   bottom: 0;
-  height: 82%;
+  height: 74%;
   aspect-ratio: 851 / 731;
   background: url('./assets/hero-jet-front.webp') center / 100% 100% no-repeat;
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 26%), linear-gradient(180deg, transparent 0%, #000 30%, #000 86%, transparent 100%);
