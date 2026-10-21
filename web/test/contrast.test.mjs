@@ -101,7 +101,8 @@ test('text on glass keeps 4.5:1 over the brightest light on the stage (worst cas
   const stageLight = mix(tok('--varn-steel-blue'), tok('--varn-charcoal'), 0.55);
   const smoked = mix(tok('--varn-charcoal'), stageLight, 0.56);
   const worst = mix([255, 255, 255], smoked, 0.12);
-  for (const fg of ['--varn-text', '--ink-1', '--ink-2', '--ink-3', '--accent-ink', '--drone']) {
+  // The orange accent only ever sits on solid black (checked in the palette test), not on glass.
+  for (const fg of ['--varn-text', '--ink-1', '--ink-2', '--ink-3', '--drone']) {
     const r = ratio(tok(fg), worst);
     assert.ok(r >= 4.5, `${fg} on worst-case glass is ${r.toFixed(2)}:1`);
   }

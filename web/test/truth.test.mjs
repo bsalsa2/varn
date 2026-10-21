@@ -17,7 +17,7 @@ const readme = readFileSync(fileURLToPath(new URL('../../README.md', import.meta
 
 test('the hero carries the required copy, both calls to action and the prototype status', () => {
   const t = text(home);
-  assert.match(t, /Watch\s+the sky\./);
+  assert.match(home, /aria-label="Watch the sky\."/);
   assert.match(t, /Exploring a camera-based approach to observing and logging objects in the sky\./);
   assert.match(t, /RESEARCH PROTOTYPE · HARDWARE VALIDATION PENDING/);
   assert.equal(content.hero.demo.href, './demo.html');

@@ -8,7 +8,7 @@ import { initNavMenu } from './nav-menu.js';
 import { initScrollSpy } from './scrollspy.js';
 import { initAnchors } from './anchors.js';
 import { whenNear } from './lazy.js';
-import { initHeader, initProcess } from './home-fx.js';
+import { initHeader, initPoster, initProcess } from './home-fx.js';
 
 initMotion();
 initReveal();
@@ -17,6 +17,7 @@ initScrollSpy();
 initAnchors();
 initHeader();
 initProcess();
+initPoster();
 afterLoad(initGfx);
 
 // Real footage (when content.js has it) plays muted, unless animation is off.
