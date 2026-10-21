@@ -81,10 +81,16 @@ function litWords(statement) {
 // on two lines like the brand board.
 const headline = (h) => {
   const [first, ...rest] = String(h).trim().split(/\s+/);
+  let n = 0;
   return [first, rest.join(' ')]
     .filter(Boolean)
-    .map((line) => `<span class="line">${esc(line)}</span>`)
-    .join(' ');
+    .map(
+      (line) =>
+        `<span class="line" aria-hidden="true">${[...line]
+          .map((ch) => (ch === ' ' ? '<span class="sp"> </span>' : `<span class="ch" style="--n:${n++}">${esc(ch)}</span>`))
+          .join('')}</span>`
+    )
+    .join('');
 };
 
 // ---- Hero ---------------------------------------------------------------------
@@ -434,6 +440,7 @@ function siteFooter(c, { from = '', close = null } = {}) {
         </ul>
       </nav>
     </div>
+    <div class="foot-mega" aria-hidden="true">${wordmark()}</div>
     <div class="footer-fine">
       ${close ? `<p class="footer-line">${esc(close.heading)} ${esc(close.text)}</p>` : ''}
       <p>${esc((close && close.disclosure) || c.close.disclosure)}</p>
@@ -485,32 +492,29 @@ const label = (text) => `<p class="kicker mono"><span class="kicker-label">${esc
 const heroSection = (c) => {
   const { hero } = c;
   const footage = hero.footage && hero.footage.video ? hero.footage : null;
+  const ticker = hero.ticker || [];
+  const run = ticker.map((t) => `<span>${esc(t)}</span>`).join('');
   return `
   <section class="hero" id="top" aria-labelledby="hero-title">
-    <div class="hero-bg" aria-hidden="true">
-      <div class="hero-sky"></div>
-      <div class="hero-photo"></div>
-      <div class="hero-haze"></div>
-    </div>
-    ${
-      footage
-        ? `<figure class="hero-figure glass-1"><video class="hero-video hero-model" muted loop playsinline preload="metadata"${footage.poster ? ` poster="${esc(footage.poster)}"` : ''} aria-label="${esc(footage.caption)}"><source src="${esc(footage.video)}" /></video><figcaption class="hero-tag mono">${esc(footage.caption)}</figcaption></figure>`
-        : ''
-    }
+    <div class="curtain" aria-hidden="true"></div>
     <div class="hero-inner wrap">
+      <p class="hero-meta mono hero-rise" style="--i:0">${esc(hero.meta || '')}</p>
       <div class="hero-copy">
-        <h1 class="hero-title hero-rise" style="--i:1" id="hero-title">${headline(hero.headline)}</h1>
-        <p class="hero-sub hero-rise" style="--i:2">${esc(hero.sub)}</p>
-        <p class="hero-status mono hero-rise" style="--i:3"><span class="hero-status-mark" aria-hidden="true"></span>${esc(hero.status)}</p>
-        <div class="hero-actions hero-rise" style="--i:4">
-          <a class="btn btn--glass btn--lg"${linkAttrs(hero.demo.href)}><span>${esc(hero.demo.label)}</span>${ARROW_UR}</a>
-          <a class="btn btn--quiet btn--lg"${linkAttrs(hero.results.href)}><span>${esc(hero.results.label)}</span>${ARROW_UR}</a>
+        <h1 class="hero-title" id="hero-title" aria-label="${esc(hero.headline)}">${headline(hero.headline)}</h1>
+        <div class="hero-side hero-rise" style="--i:6">
+          <p class="hero-sub">${esc(hero.sub)}</p>
+          <div class="hero-actions">
+            <a class="btn btn--glass btn--lg"${linkAttrs(hero.demo.href)}><span>${esc(hero.demo.label)}</span>${ARROW_UR}</a>
+            <a class="btn btn--quiet btn--lg"${linkAttrs(hero.results.href)}><span>${esc(hero.results.label)}</span>${ARROW_UR}</a>
+          </div>
         </div>
       </div>
     </div>
-    <div class="hero-foot wrap">
-      <a class="scroll-cue mono" href="#process"><span class="scroll-cue-line" aria-hidden="true"></span>${esc(hero.scroll)}</a>
-      ${footage ? motionButton() : ''}
+    ${footage ? `<figure class="hero-figure"><video class="hero-video" muted loop playsinline preload="metadata"${footage.poster ? ` poster="${esc(footage.poster)}"` : ''} aria-label="${esc(footage.caption)}"><source src="${esc(footage.video)}" /></video><figcaption class="hero-tag mono">${esc(footage.caption)}</figcaption></figure>` : ''}
+    <div class="hero-bar hero-rise" style="--i:8">
+      <div class="hero-status"><span class="mono">${esc(hero.statusLabel || 'Status')}</span><p class="hero-status-line">${esc(hero.status)}</p></div>
+      <div class="ticker" aria-hidden="true"><div class="ticker-track"><div class="ticker-run">${run}</div><div class="ticker-run">${run}</div></div></div>
+      <div class="hero-motion">${motionButton()}</div>
     </div>
   </section>`;
 };
@@ -518,10 +522,11 @@ const heroSection = (c) => {
 const processSection = (p) => `
   <section class="process section" id="process" aria-labelledby="process-title">
     <div class="wrap">
-      <header class="section-head">
+      <header class="section-head" data-reveal>
         ${label(p.label)}
         <h2 class="h-section" id="process-title">${esc(p.heading)}</h2>
       </header>
+      <p class="proc-ghost" aria-hidden="true"><span>${p.stages.map((s) => esc(s.name)).join(' \u00b7 ')}</span></p>
       <ol class="proc" id="proc">
         <li class="proc-rail" aria-hidden="true"><span class="proc-rail-fill"></span></li>
         ${p.stages
@@ -563,7 +568,7 @@ const platformSection = (c) => {
   return `
   <section class="platform section" id="platform" aria-labelledby="platform-title" data-spy="platform">
     <div class="wrap">
-      <header class="section-head section-head--split">
+      <header class="section-head section-head--split" data-reveal>
         <div>
           ${label(pl.label)}
           <h2 class="h-section" id="platform-title">${esc(pl.heading)}</h2>
@@ -644,7 +649,7 @@ const snapshotSection = (c) => {
   return `
   <section class="snapshot section" id="research" aria-labelledby="research-title">
     <div class="wrap">
-      <header class="section-head section-head--split">
+      <header class="section-head section-head--split" data-reveal>
         <div>
           ${label(s.label)}
           <h2 class="h-section" id="research-title">${esc(s.heading)}</h2>
