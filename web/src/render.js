@@ -493,7 +493,7 @@ const heroSection = (c) => {
   const { hero } = c;
   const footage = hero.footage && hero.footage.video ? hero.footage : null;
   const ticker = hero.ticker || [];
-  const run = ticker.map((t) => `<span>${esc(t)}</span>`).join('');
+  const facts = ticker.map((t) => `<li>${esc(t)}</li>`).join('');
   return `
   <section class="hero" id="top" aria-labelledby="hero-title">
     <div class="curtain" aria-hidden="true"></div>
@@ -513,8 +513,8 @@ const heroSection = (c) => {
     ${footage ? `<figure class="hero-figure"><video class="hero-video" muted loop playsinline preload="metadata"${footage.poster ? ` poster="${esc(footage.poster)}"` : ''} aria-label="${esc(footage.caption)}"><source src="${esc(footage.video)}" /></video><figcaption class="hero-tag mono">${esc(footage.caption)}</figcaption></figure>` : ''}
     <div class="hero-bar hero-rise" style="--i:8">
       <div class="hero-status"><span class="mono">${esc(hero.statusLabel || 'Status')}</span><p class="hero-status-line">${esc(hero.status)}</p></div>
-      <div class="ticker" aria-hidden="true"><div class="ticker-track"><div class="ticker-run">${run}</div><div class="ticker-run">${run}</div></div></div>
-      <div class="hero-motion">${motionButton()}</div>
+      <ul class="hero-facts">${facts}</ul>
+      ${footage ? `<div class="hero-motion">${motionButton()}</div>` : ''}
     </div>
   </section>`;
 };

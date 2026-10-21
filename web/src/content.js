@@ -53,8 +53,8 @@ export const content = {
     meta: 'Passive visual awareness',
     statusLabel: 'Status',
     statusTitle: 'Research prototype',
-    // Plain facts only, repeated along the ticker strip.
-    ticker: ['Passive visual awareness', 'Recorded-video evaluation only', 'Hardware validation pending', 'Dashboard data is simulated', 'Watch the sky'],
+    // Plain facts only, listed in the status bar.
+    ticker: ['Passive visual awareness', 'Recorded-video evaluation only', 'Dashboard data is simulated'],
     demo: { label: 'Explore the demo', href: './demo.html' },
     results: { label: 'View research results', href: './research.html#results' },
     scroll: 'Scroll',
