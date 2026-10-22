@@ -2997,3 +2997,45 @@ main > .section:first-child {
     height: 14px;
   }
 }
+/* Links that stand on a line of their own get a full-size tap target. */
+.proc-note .u-link,
+.pv-more .u-link,
+.demo-more .u-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+/* Phones and tablets keep the disclosures: the status block, then the facts. */
+@media (max-width: 63.99em) {
+  .hero-facts {
+    display: flex;
+    padding: 16px var(--edge) 18px;
+    border-left: 0;
+    border-top: 2px solid var(--text-1);
+  }
+  .hero-facts li {
+    font-size: 1.0625rem;
+  }
+}
+/* 404: the same quiet page as Contact, with two ways back. */
+.notfound-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 28px;
+}
+/* One header colour in every state (home, scrolled, inner pages, software
+   rendering, reduced transparency): the older glass rules were still winning
+   and left a faint seam between the bar and the page. */
+.site-header,
+.site-header.is-scrolled,
+.site-header.is-solid,
+.low-gfx .site-header.is-scrolled,
+.low-gfx .site-header.is-solid {
+  background: var(--obsidian);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.notfound .section-head {
+  margin-bottom: clamp(28px, 4vw, 48px);
+}

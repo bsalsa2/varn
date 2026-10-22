@@ -293,6 +293,45 @@ def share_image(width, height, headline_lines, caption):
             + "".join(parts) + "</svg>\n")
 
 
+POSTER_BLACK, POSTER_ORANGE = "#0B0B0B", "#FF4B1F"     # the site's poster palette (web/src/styles.css)
+
+
+def poster_share_image(width=1200, height=630):
+    """The website's poster look as a share card: black, bone headline with the orange
+    full stop, hard rule, and the honest status line in the orange bar."""
+    m = 0.055 * width
+    parts = [f'<rect width="{width}" height="{height}" fill="{POSTER_BLACK}"/>']
+    # Lockup, top left (same proportions as share_image)
+    cap_h = 0.02 * width
+    mk = 1.6 * cap_h / MARK_H
+    word_d, word_w, cap = wordmark_path()
+    parts.append(group(polygons_path(MARK), BONE, m, m, mk))
+    parts.append(group(word_d, BONE, m + MARK_W * mk + 1.25 * cap_h, m + (MARK_H * mk - cap_h) / 2, cap_h / cap))
+    # Status bar: hard bone rule over an orange block, status in ink
+    bar_h = 0.145 * height
+    bar_y = height - bar_h
+    parts.append(f'<rect y="{fmt(bar_y - 3)}" width="{width}" height="3" fill="{BONE}"/>')
+    parts.append(f'<rect y="{fmt(bar_y)}" width="{width}" height="{fmt(bar_h)}" fill="{POSTER_ORANGE}"/>')
+    status_cap = 0.036 * height
+    d, _, c = text_path("RESEARCH PROTOTYPE \u00b7 HARDWARE VALIDATION PENDING", FONT, 0.01)
+    parts.append(group(d, POSTER_BLACK, m, bar_y + (bar_h - status_cap) / 2, status_cap / c))
+    # Headline: two lines, uppercase, tight; the full stop is the accent
+    top = m + MARK_H * mk + 0.05 * height
+    avail = bar_y - 3 - 0.06 * height - top
+    head_cap = avail / 2.2
+    y = top
+    for line, last in (("WATCH", False), ("THE SKY", True)):
+        d, right, c = text_path(line, FONT, -0.045)
+        k = head_cap / c
+        parts.append(group(d, BONE, m, y, k))
+        if last:
+            dd, _, _ = text_path(".", FONT, 0)
+            parts.append(group(dd, POSTER_ORANGE, m + right * k + 0.06 * head_cap, y, k))
+        y += head_cap * 1.2
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}">'
+            + "".join(parts) + "</svg>\n")
+
+
 def png(svg_text, width, path):
     render(svg_text, width).save(path, optimize=True)
 
@@ -309,8 +348,7 @@ def build_icons():
     icos = [render(small_icon, n) for n in (16, 32)] + [render(app_icon(48), 48)]
     icos[-1].save(public / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)],
                   append_images=icos[:-1])
-    png(share_image(1200, 630, ["A clear view of", "your airspace."],
-                    "Passive detection \u00b7 drones and aircraft"), 1200, public / "og-image.png")
+    png(poster_share_image(1200, 630), 1200, public / "og-image.png")
     png(share_image(1280, 640, ["Watch the sky."],
                     "Detection only  +  ~$113 in sensing parts  +  not yet on real hardware"),
         1280, REPO / "docs" / "varn_banner.png")
