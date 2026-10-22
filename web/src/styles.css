@@ -2943,10 +2943,11 @@ main > .section:first-child {
 }
 @media (min-width: 64em) {
   .hero {
-    min-height: min(100svh, max(640px, 52vw), 960px);
+    min-height: max(540px, min(100svh, 1000px));
   }
   .hero-inner {
     padding-top: calc(var(--nav-h) + clamp(28px, 6svh, 80px));
+    justify-content: center;
   }
   /* Width left of the intro column (line two, the wider one, passes under it
      because the column ends above it) and height left under the nav. */
