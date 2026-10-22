@@ -2913,16 +2913,21 @@ main > .section:first-child {
     justify-content: flex-start;
   }
 }
-/* ---- Hero alignment ------------------------------------------------------
-   One left edge: the logo, the hero text and the status bar all start where
-   the page content starts, instead of three different offsets. The label that
-   used to float at the top now sits on the headline it belongs to. */
+/* ---- Hero composition ----------------------------------------------------
+   The first screen is built as one piece. Logo, label, headline and the
+   status box share the page content's left edge. On desktop the headline is
+   sized from the space that is actually there (width left beside the intro
+   column, and screen height), the hero ends at the bottom of the first
+   screen, and the status bar is a box between the content edges, not a
+   full-bleed block with its text stranded in the middle. */
 .nav {
   padding-left: max(var(--gutter), calc((100% - var(--w-page)) / 2 + var(--gutter)));
 }
 .hero {
   container-type: inline-size;
   --edge: max(var(--gutter), calc((100cqw - var(--w-page)) / 2 + var(--gutter)));
+  --copy: calc(min(100cqw, var(--w-page)) - 2 * var(--gutter));
+  --side: min(400px, 0.34 * var(--copy));
 }
 .hero-inner {
   flex-direction: column;
@@ -2937,33 +2942,57 @@ main > .section:first-child {
   padding-left: var(--edge);
 }
 @media (min-width: 64em) {
-  .hero-bar {
-    grid-template-columns: minmax(calc(var(--edge) + 380px), 0.9fr) minmax(0, 2fr);
-  }
-}
-/* The headline may not run under the intro column: from 64em the size is
-   capped so "WATCH" always leaves the column (and a gap) to its right. */
-@media (min-width: 64em) {
-  .hero-title {
-    --copy: calc(min(100cqw, var(--w-page)) - 2 * var(--gutter));
-    font-size: min(var(--fs-hero), calc((var(--copy) - min(360px, 0.34 * var(--copy)) - 40px) / 3.15));
-  }
-}
-/* Below the 17rem tier the intro column is taller than the first line, so the
-   second line ("THE SKY.", the wider one) must clear it as well. */
-@media (min-width: 64em) and (max-width: 119.99em) {
-  .hero-title {
-    font-size: min(var(--fs-hero), calc((var(--copy) - min(360px, 0.34 * var(--copy)) - 40px) / 3.75));
-  }
-}
-/* Desktop hero: as tall as its content plus a measured top margin, not the
-   whole screen with the text pinned to the bottom. That left a black void
-   above the headline, and hid the next section entirely. */
-@media (min-width: 64em) {
   .hero {
-    min-height: min(100svh, 720px);
+    min-height: min(100svh, max(640px, 52vw), 960px);
   }
   .hero-inner {
-    padding-top: calc(var(--nav-h) + clamp(48px, 8svh, 104px));
+    padding-top: calc(var(--nav-h) + clamp(28px, 6svh, 80px));
+  }
+  /* Width left of the intro column (line two, the wider one, passes under it
+     because the column ends above it) and height left under the nav. */
+  .hero-title {
+    font-size: max(7.5rem, min(calc((var(--copy) - var(--side) - 40px) / 3.15), calc((94svh - 290px) / 1.8), 20rem));
+  }
+  /* The intro column starts level with the label, so it ends well above line two. */
+  .hero-side {
+    top: -3.1rem;
+    width: var(--side);
+  }
+  .hero-sub {
+    font-size: clamp(1.15rem, 1.4vw, 1.5rem);
+  }
+  .hero-meta {
+    font-size: 0.875rem;
+  }
+  .hero-bar {
+    padding-inline: var(--edge);
+    grid-template-columns: minmax(380px, 0.9fr) minmax(0, 2fr);
+  }
+  .hero-status {
+    padding-left: 34px;
+  }
+  .hero-facts {
+    border-right: 2px solid var(--text-1);
+  }
+  .hero-facts li {
+    font-size: clamp(1rem, 1.3vw, 1.4rem);
+  }
+  .hero-actions .btn {
+    font-size: 1rem;
+  }
+  .hero-actions .btn--glass {
+    min-height: 62px;
+    padding-inline: 32px;
+  }
+  .nav-link,
+  .nav-cta-li .btn {
+    font-size: 1rem;
+  }
+  .nav .brand .mark {
+    width: 38px;
+    height: auto;
+  }
+  .nav .wordmark {
+    height: 14px;
   }
 }
