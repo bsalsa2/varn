@@ -107,7 +107,7 @@
   --gutter: clamp(20px, 5vw, 72px);
   --section-y: clamp(80px, 9.5vw, 144px);
   --nav-h: 60px;
-  --w-page: 1320px;
+  --w-page: 1520px;
   --w-mid: 1040px;
   --w-narrow: 800px;
   --measure: 62ch;
@@ -2947,5 +2947,23 @@ main > .section:first-child {
   .hero-title {
     --copy: calc(min(100cqw, var(--w-page)) - 2 * var(--gutter));
     font-size: min(var(--fs-hero), calc((var(--copy) - min(360px, 0.34 * var(--copy)) - 40px) / 3.15));
+  }
+}
+/* Below the 17rem tier the intro column is taller than the first line, so the
+   second line ("THE SKY.", the wider one) must clear it as well. */
+@media (min-width: 64em) and (max-width: 119.99em) {
+  .hero-title {
+    font-size: min(var(--fs-hero), calc((var(--copy) - min(360px, 0.34 * var(--copy)) - 40px) / 3.75));
+  }
+}
+/* Desktop hero: as tall as its content plus a measured top margin, not the
+   whole screen with the text pinned to the bottom. That left a black void
+   above the headline, and hid the next section entirely. */
+@media (min-width: 64em) {
+  .hero {
+    min-height: min(100svh, 720px);
+  }
+  .hero-inner {
+    padding-top: calc(var(--nav-h) + clamp(48px, 8svh, 104px));
   }
 }
