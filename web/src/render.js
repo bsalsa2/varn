@@ -32,6 +32,20 @@ const mark = (size, cls = 'mark') =>
 const wordmark = () =>
   `<svg class="wordmark" viewBox="${WORDMARK_VIEWBOX}" aria-hidden="true"><path d="${WORDMARK_PATH}"/></svg>`;
 
+// The footer's giant VARN: the same four letters, kerned tight. The brand
+// wordmark is letter-spaced for small sizes; stretched to the full page width
+// the gaps turn into holes. Each letter is shifted left along its own edge
+// (V and A run parallel, so they sit 100 units apart all the way down).
+const MEGA_SHIFT = [0, -763, -1378, -2017];
+const wordmarkTight = () => {
+  const letters = [[], [], [], []];
+  for (const part of WORDMARK_PATH.split(/(?=M)/)) {
+    letters[[1200, 2400, 3400].filter((x) => parseFloat(part.slice(1)) >= x).length].push(part);
+  }
+  const paths = letters.map((d, i) => `<path transform="translate(${MEGA_SHIFT[i]} 0)" d="${d.join('')}"/>`).join('');
+  return `<svg viewBox="0 0 2299 700" aria-hidden="true">${paths}</svg>`;
+};
+
 const ARROW_UR = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11L11 5M6 5h5v5" /></svg>';
 const ARROW_DN = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4" /></svg>';
 
@@ -440,7 +454,7 @@ function siteFooter(c, { from = '', close = null } = {}) {
         </ul>
       </nav>
     </div>
-    <div class="foot-mega" aria-hidden="true">${wordmark()}</div>
+    <div class="foot-mega" aria-hidden="true">${wordmarkTight()}</div>
     <div class="footer-fine">
       ${close ? `<p class="footer-line">${esc(close.heading)} ${esc(close.text)}</p>` : ''}
       <p>${esc((close && close.disclosure) || c.close.disclosure)}</p>
