@@ -560,6 +560,14 @@ export const content = {
   },
 
   // Contact form, shown above the sister-project card.
+  notFound: {
+    kicker: 'Error 404',
+    title: 'Page not found',
+    heading: 'Not found.',
+    text: "That page doesn't exist, or it has moved. Everything on this site can be reached from the home page.",
+    home: { label: 'Back to the home page', href: './' },
+    research: { label: 'Read the research', href: './research.html' },
+  },
   contact: {
     kicker: 'Contact',
     title: 'Contact',

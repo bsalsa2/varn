@@ -380,6 +380,10 @@ if (get('sister')) {
   link('sister.href');
 }
 
+if (get('notFound')) {
+  ['kicker', 'title', 'heading', 'text'].forEach((key) => text(`notFound.${key}`));
+  ['home', 'research'].forEach((key) => { text(`notFound.${key}.label`); link(`notFound.${key}.href`); });
+}
 if (get('contact')) {
   ['kicker', 'title', 'description', 'heading', 'intro', 'nameLabel', 'emailLabel', 'messageLabel', 'submitLabel', 'sendingLabel', 'successText', 'mailtoText', 'errorText'].forEach((k) => text(`contact.${k}`));
   const ep = get('contact.endpoint');

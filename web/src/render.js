@@ -244,10 +244,10 @@ export const resultsSection = (r, next) => {
       <div class="rc-grid">${r.charts.map(resultChart).join('')}
         ${
           caveats.length
-            ? `<aside class="rc-caveats" aria-labelledby="rc-caveats-title">
+            ? `<div class="rc-caveats" role="note" aria-labelledby="rc-caveats-title">
           <h3 class="rc-caveats-title mono" id="rc-caveats-title">What this test does not show</h3>
           <ul>${caveats.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
-        </aside>`
+        </div>`
             : ''
         }
       </div>
@@ -490,7 +490,7 @@ export function renderHead(c) {
     <meta property="og:image" content="${esc(image)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Varn: A clear view of your airspace. Passive detection, drones and aircraft." />
+    <meta property="og:image:alt" content="Varn: Watch the sky. A research prototype; hardware validation pending." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${esc(title)}" />
     <meta name="twitter:description" content="${esc(description)}" />
@@ -936,6 +936,38 @@ ${siteNav(c, { home: false, current: 'research.html' })}
 ${siteFooter(c, { from: 'research' })}`;
 }
 
+// ---- Not-found page (404.html) -----------------------------------------------
+export function renderNotFoundHead(c) {
+  return `${counter(c)}
+    <title>${esc(c.notFound.title)} | Varn</title>
+    <meta name="description" content="${esc(c.notFound.text)}" />
+    <meta name="robots" content="noindex" />`;
+}
+export function renderNotFoundBody(c) {
+  const n = c.notFound;
+  return `
+<a class="skip-link" href="#main">Skip to content</a>
+${stage('stage-fixed')}
+${siteNav(c, { home: false })}
+
+<main id="main" class="contact-page" tabindex="-1">
+  <section class="notfound section" aria-labelledby="notfound-title">
+    <div class="wrap wrap--mid">
+      <header class="section-head">
+        ${label(n.kicker)}
+        <h1 class="h-section" id="notfound-title">${esc(n.heading)}</h1>
+        <p class="lede">${esc(n.text)}</p>
+      </header>
+      <div class="notfound-actions">
+        <a class="btn btn--glass btn--lg"${linkAttrs(n.home.href)}><span>${esc(n.home.label)}</span>${ARROW_UR}</a>
+        <a class="btn btn--quiet btn--lg"${linkAttrs(n.research.href)}><span>${esc(n.research.label)}</span>${ARROW_UR}</a>
+      </div>
+    </div>
+  </section>
+</main>
+${siteFooter(c)}`;
+}
+
 // ---- About page (about.html) -----------------------------------------------
 export function renderAboutHead(c) {
   const a = c.about;
@@ -1228,7 +1260,7 @@ ${siteNav(c, { home: false, current: 'demo.html' })}
             <div class="rc-grid">${charts.map(resultChart).join('')}
               ${
                 caveats.length
-                  ? `<aside class="rc-caveats" aria-labelledby="demo-caveats-title"><h3 class="rc-caveats-title mono" id="demo-caveats-title">What this test does not show</h3><ul>${caveats.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></aside>`
+                  ? `<div class="rc-caveats" role="note" aria-labelledby="demo-caveats-title"><h3 class="rc-caveats-title mono" id="demo-caveats-title">What this test does not show</h3><ul>${caveats.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>`
                   : ''
               }
             </div>

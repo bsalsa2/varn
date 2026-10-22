@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { content } from '../src/content.js';
-import { renderAboutBody, renderHead, renderBody, renderDemoBody, renderPrivacyBody, renderResearchBody } from '../src/render.js';
+import { renderAboutBody, renderHead, renderBody, renderDemoBody, renderNotFoundBody, renderNotFoundHead, renderPrivacyBody, renderResearchBody } from '../src/render.js';
 
 const home = renderBody(content);
 const research = renderResearchBody(content);
@@ -131,4 +131,23 @@ test('the privacy page matches how the site is actually run', () => {
 test('the README describes the same classes as the site', () => {
   assert.doesNotMatch(readme, /aircraft and birds/i);
   assert.match(readme, /drones and aircraft/i);
+});
+
+test('the 404 page points home, stays out of search, and its shell resolves links from the site root', () => {
+  const body = renderNotFoundBody(content);
+  assert.match(text(body), /Not found\./);
+  assert.match(body, /class="notfound-actions[\s\S]*href=".\/"[\s\S]*research\.html/);
+  assert.match(renderNotFoundHead(content), /<meta name="robots" content="noindex" \/>/);
+  const shell = readFileSync(fileURLToPath(new URL('../404.html', import.meta.url)), 'utf8');
+  assert.match(shell, /<base href="\/" \/>/);
+});
+
+test('link previews describe the prototype, not the old tagline', () => {
+  const head = renderHead(content);
+  assert.match(head, /og:image:alt" content="Varn: Watch the sky\./);
+  assert.doesNotMatch(head, /clear view of your airspace|Passive detection/i);
+  for (const page of ['index', 'about', 'contact', 'demo', 'research', 'privacy']) {
+    const shell = readFileSync(fileURLToPath(new URL(`../${page}.html`, import.meta.url)), 'utf8');
+    assert.match(shell, /theme-color" content="#0b0b0b"/, `${page}.html theme-color`);
+  }
 });
