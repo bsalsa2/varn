@@ -54,7 +54,7 @@ export const content = {
     statusLabel: 'Status',
     statusTitle: 'Research prototype',
     // Plain facts only, listed in the status bar.
-    ticker: ['Passive visual awareness', 'Recorded-video evaluation only', 'Dashboard data is simulated'],
+    ticker: ['Recorded-video evaluation only', 'Dashboard data is simulated', 'Passive \u00b7 receives light only'],
     demo: { label: 'Explore the demo', href: './demo.html' },
     results: { label: 'View research results', href: './research.html#results' },
     scroll: 'Scroll',

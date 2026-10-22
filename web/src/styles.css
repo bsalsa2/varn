@@ -2913,3 +2913,39 @@ main > .section:first-child {
     justify-content: flex-start;
   }
 }
+/* ---- Hero alignment ------------------------------------------------------
+   One left edge: the logo, the hero text and the status bar all start where
+   the page content starts, instead of three different offsets. The label that
+   used to float at the top now sits on the headline it belongs to. */
+.nav {
+  padding-left: max(var(--gutter), calc((100% - var(--w-page)) / 2 + var(--gutter)));
+}
+.hero {
+  container-type: inline-size;
+  --edge: max(var(--gutter), calc((100cqw - var(--w-page)) / 2 + var(--gutter)));
+}
+.hero-inner {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+}
+.hero-meta {
+  position: static;
+  margin: 0 0 28px;
+}
+.hero-status {
+  padding-left: var(--edge);
+}
+@media (min-width: 64em) {
+  .hero-bar {
+    grid-template-columns: minmax(calc(var(--edge) + 380px), 0.9fr) minmax(0, 2fr);
+  }
+}
+/* The headline may not run under the intro column: from 64em the size is
+   capped so "WATCH" always leaves the column (and a gap) to its right. */
+@media (min-width: 64em) {
+  .hero-title {
+    --copy: calc(min(100cqw, var(--w-page)) - 2 * var(--gutter));
+    font-size: min(var(--fs-hero), calc((var(--copy) - min(360px, 0.34 * var(--copy)) - 40px) / 3.15));
+  }
+}
