@@ -1953,10 +1953,11 @@ h2.kicker {
 .legal-title {
   font-family: var(--f-display);
   font-weight: 500;
-  font-size: var(--fs-h1);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: var(--white);
+  font-size: clamp(2.8rem, 7.5vw, 7rem);
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  color: var(--text-1);
 }
 .legal-intro {
   max-width: var(--measure);
@@ -2783,5 +2784,113 @@ h2.kicker {
 @media (max-width: 39.99em) {
   .nav {
     padding: 0 10px 0 20px;
+  }
+}
+
+/* ==== Inner pages: poster headings, shared by Research and About ==== */
+.page-title {
+  max-width: 14ch;
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: clamp(3rem, 9vw, 8.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+  text-transform: uppercase;
+  color: var(--text-1);
+  text-wrap: balance;
+}
+.h-sub {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: var(--fs-h3);
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+}
+/* Inner pages sit on flat black, and their first section starts straight under
+   the bar: no grey backdrop band, no second rule below the nav. */
+.stage {
+  background: var(--obsidian);
+}
+.contact-page {
+  padding-top: var(--nav-h);
+}
+main > .section:first-child {
+  border-top: 0;
+}
+/* The page you are on is bone, so the orange cell stays the call to action. */
+.nav-link[aria-current] {
+  background-image: linear-gradient(var(--text-1), var(--text-1));
+}
+/* Phone menu: full-width stack of hard cells under the bar. The desktop bar
+   gives the list and its items height:100%, which would squash this panel. */
+@media (max-width: 39.99em) {
+  .nav-links {
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: var(--obsidian);
+    box-shadow: none;
+  }
+  .nav-links > li {
+    height: auto;
+    display: block;
+    border-left: 0;
+    border-bottom: 2px solid var(--text-1);
+  }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    height: auto;
+    min-height: 64px;
+    padding: 0 20px;
+    border-bottom: 0;
+    font-size: 1.25rem;
+  }
+  .nav-cta-li {
+    margin: 0;
+  }
+  .nav-cta-li .btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    height: auto;
+    min-height: 64px;
+    padding: 0 20px;
+    font-size: 1.25rem;
+  }
+}
+/* Keyboard focus: a bone ring on black; ink on the orange and bone cells,
+   where an orange ring would disappear. */
+:root {
+  --focus: var(--text-1);
+}
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.nav-link:focus-visible,
+.nav-cta-li .btn:focus-visible {
+  outline-offset: -6px;
+}
+.nav-link[aria-current]:focus-visible,
+.nav-cta-li .btn:focus-visible {
+  outline-color: #0b0b0b;
+}
+/* Small tablets: the five cells need to fit between 40em and 56em. */
+@media (min-width: 40em) and (max-width: 56em) {
+  .nav {
+    padding-left: 24px;
+  }
+  .nav-link {
+    padding: 0 16px;
+  }
+  .nav-cta-li .btn {
+    padding: 0 18px;
   }
 }

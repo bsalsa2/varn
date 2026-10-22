@@ -20,12 +20,13 @@
   gap: 12px;
 }
 .demo-title {
-  max-width: 24ch;
+  max-width: 16ch;
   font-family: var(--f-display);
   font-weight: 500;
-  font-size: var(--fs-h1);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-size: clamp(2.8rem, 7.5vw, 7rem);
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
   color: var(--varn-text);
 }
 .demo-noscript {
