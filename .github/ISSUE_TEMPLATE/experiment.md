@@ -12,6 +12,14 @@ labels: experiment
 
 **Environment** (simulation, recorded video, or real hardware)
 
+**Reproducibility record**
+
+- Dataset name and version (or commit/hash):
+- Model and version:
+- Configuration (file path or commit):
+- Evaluation metrics:
+- Random seeds (or "not applicable"):
+
 **Results** (counts and numbers, with the source files in the repo; report failures too)
 
 **Limitations** (what this result does not show)
