@@ -8,6 +8,8 @@ Our long-term ambition is to build a family of autonomous products grounded in m
 
 **Website:** [tryvarn.com](https://tryvarn.com)
 
+**Strategy:** [Read the VARN Master Plan](docs/MASTER_PLAN.md)
+
 ---
 
 ## Our Mission
@@ -56,7 +58,7 @@ Current areas of interest include:
 
 ## Repository Structure
 
-- `docs/` — Technical documentation
+- [`docs/`](docs/) — Technical documentation, including the [Master Plan](docs/MASTER_PLAN.md)
 - `research/` — Research notes and experiment reports
 - `experiments/` — Reproducible experiments
 - `simulations/` — Controlled virtual test environments
