@@ -1,242 +1,257 @@
-# VARN Master Plan
+# VARN — Master Plan
 
-> **Document purpose:** The durable strategic reference for VARN: why it exists, what it is working toward, how it chooses what to build, and how progress is measured.
->
-> **Status:** Living document — strategy and hypotheses may change as evidence improves.
->
-> **Last reviewed:** 2026-10-26
-
----
+> **Purpose:** The strategic source of truth for VARN's vision, product philosophy, priorities, and milestones.  
+> **Status:** Living document. Distinguish ambition from implemented, tested, measured, and validated work.  
+> **Last updated:** 2026-10-26
 
 ## 1. Executive Summary
 
-VARN is an independent engineering initiative working toward a product-driven autonomous-systems company. The long-term ambition is to develop, own, and bring proprietary systems to market—not merely provide contract engineering or assemble other companies' products.
+**VARN is an ambitious, defense-first autonomous-systems product company.** Its long-term ambition is to develop breakthrough intelligence, turn that technology into exceptional complete products, and achieve capabilities that are difficult to deliver today.
 
-VARN is currently at an early research and prototype stage. Its immediate job is to build technical credibility through focused experiments, reproducible evaluation, clear documentation, and honest demonstrations.
+VARN is a **product company, not a contractor-first business**. Its purpose is to invent, own, develop, improve, and sell proprietary products. Customer contracts and partnerships may support that goal, but custom work for its own sake is not the business model.
 
-**Core principle:** Keep the long-term ambition broad, but make the next milestone narrow, measurable, and achievable.
+VARN intends to combine:
+- **Breakthrough technology:** Build proprietary capabilities that are difficult to reproduce.
+- **Exceptional products:** Turn those capabilities into complete, dependable systems that solve real problems.
+- **Vertical integration:** Own the critical software, intelligence, sensing, hardware, and system-level decisions where they create a genuine advantage.
 
-## 2. Vision
+National defense is the primary market. Civilian, industrial, and infrastructure markets may become relevant where the technology and customer need transfer naturally.
 
-Build a durable technology company that develops useful, reliable autonomous products for real-world problems.
+VARN is currently an early-stage engineering initiative exploring computer vision and detection. The immediate priority is to make the training workflow understandable, repeatable, and measurable while building company foundations in parallel.
 
-Over time, VARN may grow from a focused initial product into a family of systems that share selected capabilities, engineering standards, and a commitment to measurable performance.
+**Operating principle: Think on a 15-year horizon. Engineer for the next milestone. Prove progress with evidence.**
 
-The vision is an ambition, not a claim about current capabilities.
+## 2. Vision and Mission
 
-## 3. Mission
+### Vision
+Build a major autonomous-systems product company known for difficult engineering, proprietary technology, and complete products that deliver meaningful capabilities.
 
-Identify important problems, develop proprietary technical solutions, and validate them through disciplined engineering and evidence.
+### Mission
+Develop advanced autonomous technology and turn it into dependable products that address important problems, initially in national defense.
 
-VARN will favor products that provide clear practical value, can be tested against meaningful criteria, and can be maintained and improved over time.
+VARN believes capable autonomous systems can help people perform dangerous or complex work with less unnecessary exposure to risk. The value of a system must be demonstrated through testing, reliability, appropriate oversight, and responsible use—not assumed from the fact that it is autonomous.
 
-## 4. What VARN Is Building Toward
+The ambition is intentionally larger than the first project. Today's work is a starting point, not the ceiling.
 
-### Product-company model
+## 3. What VARN Is—and Is Not
 
-VARN's intended direction is to own and develop its products and core intellectual property. Services, partnerships, and outside components may be useful, but they should support the product strategy rather than become the entire business.
+### A defense product company
+VARN intends to own its product vision and core intellectual property, develop complete products, and improve them over time. It should build a product roadmap rather than rely primarily on custom engineering services.
 
-### Long-term scope
+### Not contractor-first
+VARN may sell to government customers, participate in procurement, work with partners, and fulfill contracts. These are ways to bring products to customers, not the company's identity. Work should be evaluated on whether it builds reusable capability, product value, or strategically useful customer understanding.
 
-The long-term scope is autonomous systems broadly. The first successful product does not need to define the company's entire future. New product areas should be earned through demonstrated capability, customer evidence, and available resources.
+### Vertically integrated where it matters
+VARN does not need to make every component or reinvent commodity technology. It should own the critical capabilities and system decisions that create its differentiation. Partnerships and external components are useful when they strengthen the product without giving away its core advantage.
 
-### Initial technical foundation
+### Defense-first, not necessarily defense-only
+Defense is the primary strategic market. Some technology may also serve industrial, infrastructure, or civilian needs. Expansion should follow evidence and customer demand rather than dilute focus prematurely.
 
-Current areas of exploration include:
+## 4. Technological Thesis
 
-- Computer vision and perception
-- Simulation and controlled testing
-- Data processing and sensor integration
-- Reliability, evaluation, and failure analysis
-- Embedded systems and product engineering
+VARN's ambition has three inseparable parts:
 
-These are research interests, not a commitment to build every capability at once.
+1. **Intelligence:** Develop systems that interpret sensor data reliably and operate within clearly understood limits.
+2. **Complete products:** Integrate software, sensing, hardware, interfaces, and testing into coherent systems.
+3. **New capabilities:** Pursue difficult problems and develop capabilities that current solutions cannot adequately deliver.
 
-## 5. Current State
+VARN's competitive priorities are:
+1. Build what others struggle to build.
+2. Solve real customer problems.
+3. Pursue ambitious opportunities early, while testing assumptions.
+4. Challenge established approaches when doing so improves the outcome.
 
-VARN is an early-stage engineering project. The public project describes work around camera-based observation and computer vision, including experimental detection and tracking software, a dashboard, event logging, and a developing research/evaluation workflow.
+VARN wants to prove skeptics wrong through engineering evidence, not rhetoric. Technical difficulty is a source of motivation, but complexity alone is not value.
 
-The current state must be described precisely:
+## 5. Product Strategy
 
-- **Implemented:** Features that exist in the code or project and can be demonstrated.
-- **Tested:** Features exercised through a documented test.
-- **Measured:** Features evaluated with a defined dataset, method, and reported metrics.
-- **Planned:** Ideas or features not yet implemented.
-- **Unvalidated:** Features that exist but have not yet been adequately tested.
+VARN aims to be a product company, a technology company, and a full-stack systems company at once. These ambitions reinforce one another: proprietary technology creates an advantage, product engineering turns it into customer value, and system-level ownership makes the result coherent.
 
-Do not describe planned hardware, simulations, or software as real-world validated capabilities unless the relevant tests have actually been completed.
+Evaluate product opportunities by:
+- Importance of the customer problem.
+- Potential for a distinctive technical advantage.
+- Feasibility of demonstrating value with available resources.
+- Reliability, safety, security, and maintainability requirements.
+- Potential for a repeatable product rather than one-off custom work.
+- Contribution to VARN's long-term capabilities.
+- Customer access, cost, and time to market.
 
-## 6. Strategic Priorities
+Do not choose a product simply because it looks futuristic or resembles a successful company's product.
 
-### Priority 1 — Establish a reliable technical baseline
+## 6. Current State
 
-Create one clear, reproducible entry point for the current model workflow. Document the dataset, setup, training procedure, evaluation method, and outputs. Preserve useful existing work while consolidating it carefully.
+VARN is at an early research and prototype stage. Current work explores camera-based observation and computer vision, including experimental detection and tracking software, a dashboard, event logging, and a developing evaluation workflow. Current model-training work includes learning to distinguish visually similar classes such as drones, airplanes, and birds.
 
-**Success looks like:** Another person can understand the workflow, run it with the required files and resources, and interpret the results without guessing.
+The immediate challenge is organizing the training workflow so experiments can be repeated and improved systematically.
 
-### Priority 2 — Measure before optimizing
+Use these terms precisely:
+- **Implemented:** Exists in code or a project artifact.
+- **Tested:** Exercised under a stated procedure.
+- **Measured:** Evaluated using a defined method and reported results.
+- **Planned:** Not yet implemented.
+- **Unvalidated:** Exists but has not been adequately tested.
 
-Define a fixed evaluation method and keep training data separate from held-out evaluation data. Record relevant metrics, test conditions, examples of failures, and changes between experiments.
+Do not claim model accuracy, real-world performance, hardware readiness, customer validation, or product readiness without evidence. Training performance alone does not establish generalization.
 
-**Success looks like:** Each claimed improvement is supported by comparable results rather than a visual impression or a single favorable example.
+## 7. First-Year Objective
 
-### Priority 3 — Make the project understandable
+**Proposed horizon: October 2026–October 2027.** This is a planning target, not a guarantee.
 
-Keep the repository organized, explain the purpose of each major file, record experiment decisions, and distinguish verified facts from assumptions.
+VARN will develop three mutually reinforcing foundations: technical evidence, an integrated prototype, and a credible early-stage company. Technical progress is the foundation; company-building proceeds in parallel without replacing engineering work.
 
-**Success looks like:** A technically curious reader can tell what VARN has built, what evidence exists, what remains uncertain, and what happens next.
+### Track A — Technical evidence
+- Review the existing training notebooks before combining them.
+- Build one understandable main workflow while preserving useful originals.
+- Make inputs, configuration, dependencies, and outputs explicit.
+- Establish a baseline and consistent evaluation procedure.
+- Keep training data separate from held-out evaluation data.
+- Track relevant per-class metrics and representative failure cases.
+- Run controlled experiments and record what changed.
+- Document dataset provenance, limitations, and results.
 
-### Priority 4 — Learn about real problems
+**Target:** A repeatable workflow and credible report showing what the current model can and cannot do.
 
-Explore potential users and use cases before committing to a product direction. Ask what problem is being solved, how it is handled today, what the consequences are, and what evidence would make a new solution useful.
+### Track B — Integrated prototype
+- Begin with a controlled software demonstration using recorded imagery or a sensor feed.
+- Define what the prototype is meant to demonstrate before building it.
+- Test data input, perception outputs, logging, and interface behavior.
+- Consider physical hardware only when the software baseline, resources, and safety requirements support it.
+- Treat results as valid only for the conditions actually tested.
 
-Initial exploration should favor safe, non-operational applications such as infrastructure inspection, environmental observation, and other practical sensing or monitoring problems.
+**Target:** A coherent demonstration with understood behavior and limitations.
 
-**Success looks like:** A clearly defined problem supported by real user evidence—not just an interesting technology looking for a use.
+### Track C — Company foundations
+- Define a specific product hypothesis and the problem it addresses.
+- Study how successful product-led technology companies developed early products, demonstrated capability, found customers, and funded their work.
+- Seek feedback from experienced technical and entrepreneurial mentors.
+- Maintain a professional public portfolio that distinguishes completed work from future ambition.
+- Explore appropriate competitions, grants, research programs, accelerators, and eventual investor opportunities.
+- Check eligibility and legal requirements individually; involve a trusted adult where legal or financial commitments are involved.
 
-### Priority 5 — Prove a narrow product capability
+**Target:** A credible early-stage company story supported by technical evidence, feedback, and a clear next milestone.
 
-Choose a small, testable prototype that addresses the selected problem. Set success criteria in advance, compare against a reasonable baseline, document limitations, and demonstrate the result.
+External recognition from grants, accelerators, or investors is an ambition, not a guaranteed result or substitute for progress.
 
-**Success looks like:** A repeatable demonstration with evidence of utility and a credible explanation of its limits.
+## 8. Market Entry
 
-### Priority 6 — Decide what deserves to scale
+VARN does not yet need to commit to a first commercial product. The initial choice should follow research into customer problems, feasibility, differentiation, and available resources.
 
-Only after technical and problem validation should VARN decide whether to invest in broader hardware, more complex systems, additional product lines, or a commercial launch.
+Questions to investigate:
+- Which important problems are poorly served by existing products?
+- How are they handled today, and what is missing?
+- What would count as a measurable improvement?
+- Who evaluates, purchases, operates, and maintains a solution?
+- What testing, security, procurement, and support requirements apply?
+- Can a controlled demonstration test the central product hypothesis?
 
-**Success looks like:** The next investment follows from evidence, user needs, feasibility, safety, and available resources.
+Learn from companies such as Anduril and Mach Industries without copying their product choices or assuming their circumstances can be replicated. Study how they moved from technical work to defined products, evidence, customer access, and a sustainable business.
 
-## 7. Decision Framework
+## 9. Engineering Standards
 
-Before starting a major feature or experiment, answer:
+For significant experiments, record:
+- Question or hypothesis.
+- Dataset or input source and permissions.
+- Code, model, configuration, and dependency versions.
+- Evaluation method and conditions.
+- Results, including negative results and failure cases.
+- Known limitations and possible sources of bias.
+- Next decision and its rationale.
 
-1. **Problem:** What specific problem or uncertainty does this address?
-2. **User value:** Who benefits, and how?
-3. **Evidence:** What do we know, and what are we assuming?
-4. **Test:** How will success or failure be measured?
-5. **Scope:** What is the smallest useful version?
-6. **Cost:** What time, compute, data, and money will it require?
-7. **Risk:** Could it create privacy, safety, security, or reliability concerns?
-8. **Decision:** What result would justify continuing, changing direction, or stopping?
+Keep experiments comparable. Avoid changing many major variables at once when that makes results hard to interpret. Protect credentials, private data, and sensitive information. Do not publish unsupported claims.
 
-Prefer work that reduces an important uncertainty or creates a demonstrable capability. Avoid adding features merely because they look impressive.
+## 10. Decision Framework
 
-## 8. Product and Business Principles
+Before a major project or feature, answer:
+1. What problem or uncertainty does this address?
+2. Who benefits, and why would they care?
+3. What is known versus assumed?
+4. What is the smallest useful experiment?
+5. How will success and failure be measured?
+6. What will it cost in time, compute, data, money, and attention?
+7. What safety, privacy, security, or reliability risks exist?
+8. Does it build reusable capability or product advantage?
+9. What result would justify continuing, changing direction, or stopping?
 
-- **Solve a real problem:** Customer value comes before feature count.
-- **Own meaningful differentiation:** Build capabilities or product experiences that are difficult to replace with a generic integration.
-- **Evidence over claims:** Public statements should match the work actually completed.
-- **Reliability over spectacle:** A repeatable result is more valuable than a flashy but fragile demo.
-- **Start narrow, expand deliberately:** Do one useful thing well before pursuing a broad product family.
-- **Keep options open:** Do not lock the company into a market or architecture before evidence supports it.
-- **Build sustainably:** Account for cost, maintenance, usability, support, and deployment—not only the first prototype.
-- **Protect trust:** Handle data responsibly and explain limitations clearly.
+Prefer work that reduces an important uncertainty or creates a demonstrable capability. Avoid features added solely for appearance.
 
-## 9. Engineering and Research Standards
+## 11. What VARN Must Never Become
 
-Every significant experiment should record:
+- A generic contractor with no meaningful proprietary advantage.
+- A custom engineering shop whose work rarely compounds into products.
+- A reseller or integrator whose core capability belongs entirely to others.
+- A company that substitutes branding or hype for proven engineering.
+- A company that claims more than its evidence supports.
+- A company that pursues complexity for its own sake.
 
-- Question or hypothesis
-- Dataset or input source and relevant permissions
-- Model, code version, and configuration
-- Train/validation/test separation where applicable
-- Evaluation method and metrics
-- Results, including negative results and failure cases
-- Known limitations and possible sources of bias
-- Next decision and reason
+Partners, contractors, external components, and customer contracts can be useful when they support the product strategy rather than replace it.
 
-Keep experiments comparable. Change one major variable at a time when practical. Do not present training-set performance as evidence of generalization. Keep secrets, credentials, and private data out of the repository.
+## 12. Roadmap and Decision Gates
 
-## 10. Roadmap
+### Phase 1 — Make current work reproducible
+Review and consolidate the training workflow; establish a documented baseline.  
+**Exit condition:** The workflow is understandable and measured results can be reproduced.
 
-This roadmap is ordered by dependencies, not fixed calendar dates.
-
-### Phase A — Organize and establish a baseline
-- Review the existing notebooks and code before deleting or replacing anything.
-- Consolidate the useful model workflow into one main notebook.
-- Make setup, inputs, outputs, and required files explicit.
-- Define a held-out evaluation procedure and save a baseline report.
-
-**Exit condition:** The current workflow is understandable and its measured performance can be reproduced.
-
-### Phase B — Improve through controlled experiments
-- Identify the largest documented failure modes.
-- Select one improvement hypothesis at a time.
-- Compare each experiment with the baseline.
-- Keep a concise experiment log and update the limitations.
-
+### Phase 2 — Improve through controlled experiments
+Identify major failure modes and test one improvement hypothesis at a time.  
 **Exit condition:** VARN can explain which changes help, which do not, and how strong the evidence is.
 
-### Phase C — Validate a problem
-- Explore potential non-operational, real-world use cases.
-- Talk with appropriate potential users with suitable adult guidance where needed.
-- Compare existing approaches and define the unmet need.
-- Write a short problem statement and measurable product requirements.
+### Phase 3 — Define a product problem
+Research users, alternatives, unmet needs, and measurable product requirements.  
+**Exit condition:** A specific problem and a credible reason to pursue it are documented.
 
-**Exit condition:** There is a specific problem and a reason to believe solving it would matter.
+### Phase 4 — Demonstrate an integrated prototype
+Build a controlled prototype that tests the product hypothesis and records limitations.  
+**Exit condition:** A repeatable demonstration provides evidence for or against the idea.
 
-### Phase D — Build and test a focused prototype
-- Define a minimal prototype and acceptance criteria.
-- Build only what is needed to test the core value.
-- Test in controlled, appropriate conditions.
-- Document performance, limitations, and user feedback.
+### Phase 5 — Validate the company opportunity
+Review technical results, user feedback, feasibility, differentiation, and possible routes to customers.  
+**Exit condition:** Evidence justifies the next investment.
 
-**Exit condition:** A repeatable demonstration provides evidence for or against the product hypothesis.
+### Phase 6 — Productize and expand
+Address maintainability, support, security, testing, sourcing or manufacturing, and commercial requirements.  
+**Exit condition:** Expansion is justified by evidence, resources, and responsible planning.
 
-### Phase E — Make a product decision
-- Review technical results, user evidence, costs, safety, and feasibility.
-- Decide whether to continue, pivot, narrow the scope, or stop.
-- If justified, plan productization, maintainability, support, and a responsible path to market.
+Progress through evidence, not elapsed time. If an experiment disproves an assumption, update the plan.
 
-**Exit condition:** The next stage is justified by evidence, not momentum alone.
+## 13. Immediate Next Milestone
 
-### Phase F — Expand carefully
-- Reuse only the capabilities that genuinely transfer.
-- Develop additional products when there is a validated reason.
-- Establish stronger testing, security, documentation, and operational practices as complexity grows.
+**Make the current computer-vision training workflow repeatable and measurable.**
 
-**Exit condition:** Expansion improves the company without weakening reliability or focus.
+- [ ] Review each existing notebook and identify its purpose.
+- [ ] Preserve originals until the consolidated workflow is verified.
+- [ ] Build one clear main notebook without blindly copying conflicting code.
+- [ ] Make inputs, paths, configuration, and outputs understandable.
+- [ ] Establish a baseline with held-out evaluation data.
+- [ ] Record metrics, errors, and limitations.
+- [ ] Use the evidence to choose the next experiment.
+- [ ] Keep public descriptions aligned with what is actually implemented and tested.
 
-## 11. Current Next Milestone
+## 14. Founder and Company-Building Principles
 
-**Milestone:** Create one maintainable main model notebook and establish a reproducible baseline.
+VARN starts with limited resources and an ambitious destination. The response is not to shrink the vision, but to focus the work.
 
-Checklist:
-
-- [ ] Review all existing notebooks and identify their purpose.
-- [ ] Preserve originals until the consolidated workflow is checked.
-- [ ] Consolidate reusable steps without blindly copying duplicate or conflicting code.
-- [ ] Make data paths and required files configurable.
-- [ ] Separate training from held-out evaluation.
-- [ ] Record metrics, example outputs, and failure cases.
-- [ ] Document what has and has not been validated.
-- [ ] Update this plan when the evidence changes the next priority.
-
-This is the immediate priority; broader product expansion comes later.
-
-## 12. Operating Rules
-
-- Do not claim a feature works without a relevant demonstration or test.
-- Do not claim real-world performance based only on simulation or training results.
-- Do not publish private data, secrets, credentials, or information without permission.
-- Do not delete or replace important project assets before reviewing and preserving them.
-- Keep early experiments small enough to understand and reproduce.
+- Learn fundamentals rather than depending on tools that are difficult to understand.
+- Build evidence and a portfolio before relying on credentials or external validation.
+- Seek mentors and constructive criticism.
+- Spend carefully and prefer experiments that teach something valuable.
+- Protect time for engineering while developing business and market knowledge in parallel.
 - Seek appropriate adult guidance for legal, financial, physical testing, and other consequential decisions.
-- Keep prototypes and research within safe, lawful, and responsible boundaries.
 
-## 13. Decision Log
+## 15. Decision Log
 
-Record major strategic decisions here using this format:
+| Date | Decision | Reason |
+|---|---|---|
+| 2026-10-26 | VARN is a defense product company, not contractor-first. | The company should own proprietary products and a durable product roadmap. |
+| 2026-10-26 | Long-term ambition combines breakthrough technology, complete products, and vertical integration. | VARN wants to turn proprietary capabilities into exceptional systems. |
+| 2026-10-26 | Defense is the primary market, with possible civilian and industrial expansion. | Focus first while preserving options for transferable technology. |
+| 2026-10-26 | Technical progress is the foundation; company-building proceeds in parallel. | Strong evidence supports products, relationships, recognition, and funding. |
+| 2026-10-26 | The immediate milestone is a reproducible training and evaluation workflow. | A reliable baseline is necessary for meaningful improvement. |
 
-| Date | Decision | Evidence or reasoning | Revisit when |
-|---|---|---|---|
-| 2026-10-26 | Make reproducible technical evidence the next milestone before broad expansion. | The current project needs a clear baseline to distinguish demonstrated capability from aspiration. | A reproducible baseline is complete or new evidence changes priorities. |
+## 16. Review Cadence
 
-## 14. Review Cadence
-
-Review this document when a milestone is completed, a major assumption changes, or meaningful customer or technical evidence appears. Update the current state and next milestone; do not rewrite the long-term vision just because an experiment succeeds or fails.
+Review this plan after significant technical milestones, meaningful customer feedback, changes in resources, or evidence that changes an assumption. Update current status and next steps without confusing a temporary result with the long-term vision.
 
 ---
 
 **VARN — Autonomous Systems**  
-*Build carefully. Measure honestly. Expand when the evidence earns it.*
+*Build what others struggle to build. Prove it works. Turn it into products.*
