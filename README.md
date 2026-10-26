@@ -1,82 +1,85 @@
 # VARN
 
-## Autonomous Systems
+**Autonomous Systems**  
+*Build what others struggle to build. Prove it works. Turn it into products.*
 
-VARN is an independent engineering initiative focused on developing proprietary autonomous systems through applied research, simulation, and rigorous product engineering.
-
-Our long-term ambition is to build a family of autonomous products grounded in measurable performance, reliability, and real-world utility.
-
-**Website:** [tryvarn.com](https://tryvarn.com)
-
-**Strategy:** [Read the VARN Master Plan](docs/MASTER_PLAN.md)
+[Website](https://tryvarn.com) · [Master Plan](docs/MASTER_PLAN.md)
 
 ---
 
-## Our Mission
+## The ambition
 
-Develop autonomous systems that solve clearly defined problems through thoughtful engineering, rigorous testing, and continuous improvement.
+**VARN is being built toward a defense-first autonomous-systems product company.**
 
-VARN aims to become a product-driven technology company that develops, owns, and brings its own systems to market.
+The long-term ambition is to develop breakthrough intelligence, turn it into exceptional complete products, and create capabilities that are difficult to deliver today.
 
-## Engineering Principles
+VARN is a **product company, not a contractor-first business**. The goal is to invent, own, develop, and sell proprietary products. Customer contracts and partnerships can help bring products to market, but they are not the purpose of the company.
 
-- **Product ownership:** Develop proprietary products and core intellectual property.
-- **Evidence over claims:** Measure performance and publish meaningful results.
-- **Simulation first:** Validate assumptions in controlled virtual environments before considering physical implementation.
-- **Reliability:** Test failure cases, document limitations, and prioritize repeatable results.
-- **Modular engineering:** Build reusable capabilities without assuming every product must use the same software stack.
-- **Transparency:** Clearly distinguish implemented features, simulations, experimental results, and future plans.
+VARN aims to combine:
 
-## Current Project
+- **Breakthrough technology:** Develop proprietary capabilities that are difficult to reproduce.
+- **Complete products:** Turn those capabilities into dependable systems that solve important problems.
+- **Vertical integration:** Own critical software, intelligence, sensing, hardware, and system-level decisions where they create a genuine advantage.
 
-VARN's current project explores camera-based observation and computer vision.
+National defense is the primary intended market. Civilian, industrial, and infrastructure applications may follow where the technology and customer need justify them.
 
-The project includes experimental detection and tracking software, a dashboard, event logging, and an evolving research and evaluation workflow.
+## The belief behind VARN
 
-Current capabilities and limitations are documented in the project code and research reports. Planned hardware and unvalidated features are not represented as completed systems.
+We believe increasingly capable autonomous systems can help people perform dangerous and complex work with less unnecessary exposure to risk. Making that useful requires much more than a compelling demo: it requires rigorous testing, reliability, appropriate oversight, and honest evidence about limitations.
 
-## Research Areas
+VARN aims to build what others struggle to build, solve real problems, and turn difficult engineering into products people can depend on.
 
-Research priorities will evolve as experiments reveal promising technical opportunities.
+## What we're working on now
 
-Current areas of interest include:
+VARN is at an early research and prototype stage. Current work explores **camera-based observation and computer vision**, including experimental detection and tracking software, a dashboard, event logging, and a developing model-training and evaluation workflow.
 
-- Computer vision and perception
-- Autonomous-system simulation
-- Systems testing and reliability
-- Sensor integration and data processing
-- Embedded systems and product engineering
+The immediate technical priority is to make training understandable, repeatable, and measurable—then use evaluation evidence to decide what to improve next.
 
-## Development Roadmap
+### Current focus
 
-1. Establish reproducible research and evaluation methods.
-2. Improve the reliability and documentation of existing experiments.
-3. Develop controlled simulation and testing capabilities.
-4. Identify and validate a differentiated product opportunity.
-5. Develop a working prototype and evaluate its practical utility.
-6. Expand into a family of proprietary autonomous products as capabilities and resources mature.
+1. Organize the existing training workflow into one clear main notebook.
+2. Establish a reproducible baseline and evaluate it on held-out data.
+3. Record metrics, failure cases, and known limitations.
+4. Improve the model through controlled experiments.
+5. Develop a controlled software demonstration and, when justified, explore safe hardware integration.
 
-## Repository Structure
+## Engineering principles
 
-- [`docs/`](docs/) — Technical documentation, including the [Master Plan](docs/MASTER_PLAN.md)
-- `research/` — Research notes and experiment reports
-- `experiments/` — Reproducible experiments
-- `simulations/` — Controlled virtual test environments
-- `src/` — Source code
-- `tests/` — Automated tests
+- **Product ownership:** Build proprietary capabilities and products, not only custom work for others.
+- **Evidence over hype:** Claims should match what has actually been implemented, tested, and measured.
+- **Difficult problems:** Pursue technically challenging work when it can create meaningful value.
+- **Reliability:** Evaluate failure cases and limitations, not just successful examples.
+- **Focused execution:** Make the next milestone narrow and measurable while keeping the long-term ambition broad.
+- **Responsible engineering:** Treat safety, privacy, security, and appropriate oversight as real requirements.
 
-Directories will be added as the project develops.
+## Roadmap
 
-## Project Status
+1. **Establish a baseline:** Make the current computer-vision workflow reproducible.
+2. **Improve systematically:** Run controlled experiments and document results.
+3. **Identify a product problem:** Research real needs and existing alternatives before committing to a product.
+4. **Demonstrate a capability:** Build a controlled prototype with clear acceptance criteria.
+5. **Build the company:** Seek informed feedback, develop a credible portfolio, and explore appropriate programs and funding.
+6. **Expand through evidence:** Grow into more complete products and additional product areas when the results justify it.
 
-VARN is an early-stage engineering initiative. Research, prototypes, and simulations are works in progress.
+The roadmap is a direction, not a claim that future capabilities already exist.
 
-Published results describe only the specific experiments performed. Simulation results do not establish real-world performance, and proposed products are not represented as completed or validated systems.
+## Project status and research standards
 
-## Contact
+VARN is an early-stage engineering initiative. Components must be described according to their actual implementation and testing status.
 
-For project information and updates, visit [tryvarn.com](https://tryvarn.com).
+- **Implemented** does not automatically mean tested.
+- **Tested** does not automatically mean broadly validated.
+- **Training results** do not by themselves prove performance on unseen data or in the real world.
+- **Planned hardware or features** are not completed products.
+
+Experiments should document inputs, configurations, evaluation methods, results, failure cases, and limitations. The goal is reproducible progress and precise public claims.
+
+## Explore
+
+- **Website:** [tryvarn.com](https://tryvarn.com)
+- **Strategy and long-term direction:** [VARN Master Plan](docs/MASTER_PLAN.md)
 
 ---
 
-**VARN — Autonomous Systems**
+**VARN**  
+*Think long-term. Engineer the next milestone. Prove the difference.*
