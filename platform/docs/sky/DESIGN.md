@@ -10,3 +10,13 @@
 8. Data model: one track interface (`t0, t1, sample(t)`) for both modes; every number on screen derives from it at the current time.
 9. Motion: one rAF loop drawing a single canvas; React re-renders at ~10 Hz for readouts. Pauses when hidden; drops refraction, grain and trail density if frames exceed 20 ms for 2 s.
 10. Fallbacks: no backdrop-filter → frosted solid; reduced motion / transparency / more contrast → solid panels, no springs, no specular.
+
+## REAL data format
+
+`platform/public/data/sightings.json` (not committed): an array, or `{ "sightings": [...] }`, of rows
+`{ id, time (ISO or epoch s), azimuth, elevation, label, match_status, match_reason?, callsign? }`.
+Only those fields are read. Never commit real coordinates or footage.
+
+## URL params (for screenshots and tests)
+
+`#sky` plus `?seed=1729&t=150&paused&select=S-002&view=plan&mode=real&fps`.

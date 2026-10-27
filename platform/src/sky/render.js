@@ -15,8 +15,8 @@ const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${
 export function layoutFor(w, h) {
   const mobile = w < 760;
   if (mobile) { const r = Math.min(w * 0.4, h * 0.21); return { cx: w / 2, cy: 160 + r, r, mobile }; }
-  const r = Math.min(h * 0.43, (w - 120) * 0.4);
-  return { cx: w * 0.56, cy: h * 0.48, r, mobile };
+  const r = Math.min(h * 0.4, (w - 120) * 0.4);
+  return { cx: w / 2, cy: h * 0.49, r, mobile };
 }
 
 export function glyph(ctx, shape, x, y, s, color, lw = 1.6) {
@@ -47,7 +47,7 @@ function background(ctx, w, h, cx, cy, r) {
   ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
 }
 
-function watermark(ctx, w, h) {
+function watermark(ctx, w, h, L) {
   ctx.save();
   ctx.font = '600 13px "Space Grotesk", Inter, sans-serif';
   ctx.fillStyle = rgba(C.bone, 0.05);
@@ -55,8 +55,9 @@ function watermark(ctx, w, h) {
   for (let y = -h; y < h; y += 120) for (let x = -w; x < w; x += 360) ctx.fillText('SIMULATION · NOT REAL DETECTIONS', x + ((y / 120) % 2) * 180, y);
   ctx.restore();
   ctx.font = '600 12px "Space Grotesk", Inter, sans-serif';
-  ctx.fillStyle = rgba(C.bone, 0.7); ctx.textAlign = 'right';
-  ctx.fillText('SIMULATION: not real detections', w - 16, h - 12);
+  ctx.fillStyle = rgba(C.bone, 0.7); ctx.textAlign = L.mobile ? 'center' : 'right';
+  if (L.mobile) ctx.fillText('SIMULATION: not real detections', w / 2, L.cy + L.r + 40);
+  else ctx.fillText('SIMULATION: not real detections', w - 16, h - 12);
   ctx.textAlign = 'left';
 }
 
@@ -72,7 +73,7 @@ export function drawFrame(ctx, f) {
   const L = layoutFor(w, h);
   const hits = [];
   if (view === 'plan') drawPlan(ctx, f, L, hits); else drawDome(ctx, f, L, hits);
-  if (f.mode === 'sim') watermark(ctx, w, h);
+  if (f.mode === 'sim') watermark(ctx, w, h, L);
   return { hits, layout: L };
 }
 
@@ -120,9 +121,14 @@ function drawDome(ctx, f, L, hits) {
     ctx.strokeStyle = rgba(C.sage, 0.95); ctx.lineWidth = 1.4;
     ctx.beginPath(); ctx.arc(bx, by, 6, 0, Math.PI * 2); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(bx, by); ctx.setLineDash([2, 4]); ctx.strokeStyle = rgba(C.sage, 0.5); ctx.stroke(); ctx.setLineDash([]);
-    ctx.font = '600 12px Inter, sans-serif'; ctx.fillStyle = C.bone; ctx.fillText('NODE VIEW', bx + 10, by - 6);
+    // label at the middle of the zenith→boresight line, set off to one side so it never sits on a track
+    const mx = (cx + bx) / 2, my = (cy + by) / 2, len = Math.hypot(bx - cx, by - cy) || 1;
+    const ox = -(by - cy) / len * 14, oy = (bx - cx) / len * 14;
+    ctx.textAlign = 'center';
+    ctx.font = '600 12px Inter, sans-serif'; ctx.fillStyle = C.bone; ctx.fillText('NODE VIEW', mx + ox, my + oy - 2);
     ctx.font = '500 12px Inter, sans-serif'; ctx.fillStyle = rgba(C.fog, 0.95);
-    ctx.fillText(`${scene.node.boresightAz}° / ${scene.node.boresightEl}° · ${scene.node.fov}° FOV`, bx + 10, by + 9);
+    ctx.fillText(`${scene.node.boresightAz}° / ${scene.node.boresightEl}° · ${scene.node.fov}°`, mx + ox, my + oy + 13);
+    ctx.textAlign = 'left';
   }
   // tracks
   const len = quality === 'low' ? 30 : 50, step = quality === 'low' ? 2 : 0.5;

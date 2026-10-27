@@ -1,25 +1,7 @@
 // Liquid glass: backdrop blur + saturation, edge refraction via an SVG feDisplacementMap (Chromium),
 // inner light edge, pointer-following specular, grain, depth shadow. Degrades to frosted or solid panels.
 import React, { forwardRef, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-
-let mapUrl = null;
-// Displacement map: neutral grey in the middle, an outward-pointing vector field in a band at the edges.
-function edgeMap() {
-  if (mapUrl || typeof document === 'undefined') return mapUrl;
-  const N = 128, cv = document.createElement('canvas'); cv.width = cv.height = N;
-  const g = cv.getContext('2d'), img = g.createImageData(N, N);
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-    const u = (x + 0.5) / N, v = (y + 0.5) / N;
-    const dx = u < 0.5 ? u : 1 - u, dy = v < 0.5 ? v : 1 - v;
-    const band = (d) => { const k = Math.max(0, 1 - d / 0.16); return k * k * (3 - 2 * k); };
-    const nx = (u < 0.5 ? -1 : 1) * band(dx), ny = (v < 0.5 ? -1 : 1) * band(dy);
-    const i = (y * N + x) * 4;
-    img.data[i] = 128 + nx * 127; img.data[i + 1] = 128 + ny * 127; img.data[i + 2] = 128; img.data[i + 3] = 255;
-  }
-  g.putImageData(img, 0, 0);
-  mapUrl = cv.toDataURL();
-  return mapUrl;
-}
+import { createPortal } from 'react-dom';
 
 export function refractionSupported() {
   if (typeof window === 'undefined' || !window.CSS?.supports) return false;
@@ -27,13 +9,13 @@ export function refractionSupported() {
   return CSS.supports('backdrop-filter', 'url(#x) blur(2px)') && /Chrome|Chromium|Edg\//.test(ua) && !/Firefox/.test(ua);
 }
 
-export const Glass = forwardRef(function Glass({ as: Tag = 'div', refract = false, strength = 34, className = '', style, children, ...rest }, outerRef) {
+export const Glass = forwardRef(function Glass({ as: Tag = 'div', refract = false, strength = 70, className = '', style, children, ...rest }, outerRef) {
   const ref = useRef(null);
-  const id = 'lg' + useId().replace(/[^a-zA-Z0-9]/g, '');
+  const baseId = 'lg' + useId().replace(/[^a-zA-Z0-9]/g, '');
   const [size, setSize] = useState({ w: 0, h: 0 });
   useLayoutEffect(() => {
     const el = ref.current; if (!el) return;
-    const ro = new ResizeObserver(([e]) => { const b = e.borderBoxSize?.[0]; setSize({ w: Math.round(b ? b.inlineSize : el.offsetWidth), h: Math.round(b ? b.blockSize : el.offsetHeight) }); });
+    const ro = new ResizeObserver(([e]) => { const b = e.borderBoxSize?.[0]; const q = (v) => Math.ceil(v / 8) * 8; setSize({ w: q(b ? b.inlineSize : el.offsetWidth), h: q(b ? b.blockSize : el.offsetHeight) }); });
     ro.observe(el); return () => ro.disconnect();
   }, []);
   useEffect(() => { if (typeof outerRef === 'function') outerRef(ref.current); else if (outerRef) outerRef.current = ref.current; });
@@ -45,15 +27,25 @@ export const Glass = forwardRef(function Glass({ as: Tag = 'div', refract = fals
   };
   const onPointerLeave = () => ref.current.style.setProperty('--spec', '0');
   const on = refract && size.w > 0;
-  const bf = on ? `url(#${id}) blur(12px) saturate(165%) brightness(1.04)` : undefined;
+  const band = Math.min(26, Math.round(Math.min(size.w, size.h) * 0.18));
+  // Chromium caches a resolved backdrop filter; a size-keyed id forces it to pick up the resized map.
+  const id = `${baseId}-${size.w}x${size.h}`;
+  const bf = on ? `url(#${id}) blur(3px) saturate(170%) brightness(1.08)` : undefined;
   return <Tag ref={ref} className={`glass ${on ? 'is-refracting' : ''} ${className}`} style={{ ...style, ...(bf ? { backdropFilter: bf } : null) }}
     onPointerMove={onPointerMove} onPointerLeave={onPointerLeave} {...rest}>
-    {on && <svg className="glass-defs" width="0" height="0" aria-hidden="true" focusable="false">
+    {on && createPortal(<svg className="glass-defs" width="0" height="0" aria-hidden="true" focusable="false">
       <filter id={id} x="0" y="0" width={size.w} height={size.h} filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-        <feImage href={edgeMap()} x="0" y="0" width={size.w} height={size.h} preserveAspectRatio="none" result="map" />
+        {/* Edge field built in-filter (no image to load): neutral grey, outward vectors in a band at each edge, blurred to a smooth falloff. */}
+        <feFlood floodColor="rgb(128,128,128)" result="base" />
+        <feFlood x="0" y="0" width={band} height={size.h} floodColor="rgb(0,128,128)" result="l" />
+        <feFlood x={size.w - band} y="0" width={band} height={size.h} floodColor="rgb(255,128,128)" result="r" />
+        <feFlood x="0" y="0" width={size.w} height={band} floodColor="rgb(128,0,128)" result="t" />
+        <feFlood x="0" y={size.h - band} width={size.w} height={band} floodColor="rgb(128,255,128)" result="b" />
+        <feMerge result="edges"><feMergeNode in="base" /><feMergeNode in="l" /><feMergeNode in="r" /><feMergeNode in="t" /><feMergeNode in="b" /></feMerge>
+        <feGaussianBlur in="edges" stdDeviation={band / 2.2} edgeMode="duplicate" result="map" />
         <feDisplacementMap in="SourceGraphic" in2="map" scale={strength} xChannelSelector="R" yChannelSelector="G" />
       </filter>
-    </svg>}
+    </svg>, document.body)}
     <span className="glass-spec" aria-hidden="true" />
     <span className="glass-grain" aria-hidden="true" />
     {children}

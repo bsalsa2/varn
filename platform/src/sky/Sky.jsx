@@ -77,6 +77,8 @@ export default function Sky() {
   const [palette, setPalette] = useState(false);
   const [quality, setQuality] = useState('high');
   const [toast, setToast] = useState('');
+  const [focusSearch, setFocusSearch] = useState(false);
+  useEffect(() => { if (focusSearch && searchRef.current) { searchRef.current.focus(); setFocusSearch(false); } });
   const [prefs] = useState(() => ({ reducedMotion: media('(prefers-reduced-motion: reduce)'), solid: media('(prefers-reduced-transparency: reduce)') || media('(prefers-contrast: more)') }));
   const canRefract = useMemo(() => refractionSupported() && !prefs.reducedMotion && !prefs.solid, [prefs]);
   const refract = canRefract && quality === 'high';
@@ -100,7 +102,7 @@ export default function Sky() {
   // Animation loop: rAF only, paused when hidden, adaptive quality.
   useEffect(() => {
     const cv = canvasRef.current, ctx = cv.getContext('2d');
-    let raf = 0, last = performance.now(), slowSince = 0, lastReadout = 0, frames = 0, fpsT = last;
+    let raf = 0, last = performance.now(), slowSince = 0, ema = 16, lastReadout = 0, frames = 0, fpsT = last;
     const perf = (window.__varnSky = { fps: 0, quality: 'high', frameMs: 0, frames: 0 });
     const resize = () => { const d = Math.min(2, devicePixelRatio || 1); cv.width = innerWidth * d; cv.height = innerHeight * d; };
     resize(); addEventListener('resize', resize);
@@ -111,12 +113,13 @@ export default function Sky() {
         tRef.current += (dt / 1000) * L.speed;
         if (tRef.current > sc.duration) tRef.current = 0;
       }
-      if (dt > 20 && dt < 250) { slowSince ||= now; if (now - slowSince > 2000 && L.quality === 'high') { setQuality('low'); perf.quality = 'low'; } } else slowSince = 0;
+      if (dt < 250) ema = ema * 0.9 + dt * 0.1;
+      if (ema > 20) { slowSince ||= now; if (now - slowSince > 2000 && L.quality === 'high') { setQuality('low'); perf.quality = 'low'; } } else slowSince = 0;
       const d = cv.width / innerWidth; ctx.setTransform(d, 0, 0, d, 0, 0);
       const visible = sc ? stateAt(sc, tRef.current) : [];
       const out = drawFrame(ctx, { w: innerWidth, h: innerHeight, dpr: d, scene: sc, t: tRef.current, visible, selectedId: L.selectedId, hoverId: L.hoverId, quality: L.quality, mode: L.mode, view: L.view, now, reducedMotion: L.prefs.reducedMotion });
       hitsRef.current = out.hits;
-      frames++; perf.frames++; perf.frameMs = dt;
+      frames++; perf.frames++; perf.frameMs = +ema.toFixed(2);
       if (now - fpsT > 1000) { perf.fps = Math.round((frames * 1000) / (now - fpsT)); frames = 0; fpsT = now; }
       if (now - lastReadout > 100) { lastReadout = now; setTick((x) => x + 1); }
       raf = requestAnimationFrame(frame);
@@ -160,7 +163,7 @@ export default function Sky() {
   // keyboard
   useEffect(() => {
     const onKey = (e) => {
-      const typing = /INPUT|TEXTAREA/.test(document.activeElement?.tagName);
+      const ae = document.activeElement, typing = ae?.tagName === 'TEXTAREA' || (ae?.tagName === 'INPUT' && ae.type !== 'range');
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPalette((p) => !p); return; }
       if (e.key === 'Escape') { if (palette) setPalette(false); else if (typing) document.activeElement.blur(); else setSelectedId(null); return; }
       if (typing || palette) return;
@@ -169,7 +172,7 @@ export default function Sky() {
       else if (e.key === 'k' || e.key === 'ArrowUp') { e.preventDefault(); if (selTrack && n) { const i = list.findIndex((v) => v.track.id === selectedId); setSelectedId(list[(Math.max(i, 0) - 1 + n) % n].track.id); } else setCursor((c) => Math.max(0, c - 1)); }
       else if (e.key === 'Enter' && cursorId && !selTrack) setSelectedId(cursorId);
       else if (e.key === ' ') { e.preventDefault(); setPlaying((p) => !p); }
-      else if (e.key === '/') { e.preventDefault(); setSelectedId(null); setTimeout(() => searchRef.current?.focus(), 0); }
+      else if (e.key === '/') { e.preventDefault(); if (searchRef.current) searchRef.current.focus(); else { setSelectedId(null); setFocusSearch(true); } }
       else if (e.key === 'ArrowRight' || e.key === '.') step(1);
       else if (e.key === 'ArrowLeft' || e.key === ',') step(-1);
       else if (e.key === 'v') setView((v) => (v === 'dome' ? 'plan' : 'dome'));
@@ -202,7 +205,7 @@ export default function Sky() {
   const modeTag = mode === 'sim' ? 'SIM' : 'REAL';
   const matchedNow = counts.matched;
 
-  return <div className="sky" data-quality={quality} data-mode={mode}>
+  return <main className="sky" data-quality={quality} data-mode={mode} aria-label="VARN Sky">
     {mode === 'sim' && <div className="sim-strap" role="status">SIMULATION: not real detections</div>}
     <canvas ref={canvasRef} className="stage" onPointerMove={onCanvasMove} onPointerLeave={() => setHoverId(null)} onClick={onCanvasClick}
       role="img" aria-label={`${view === 'dome' ? 'All-sky dome' : 'Plan view'}, ${modeTag}: ${counts.total} objects in view, ${matchedNow} matched to ADS-B.`} />
@@ -216,7 +219,7 @@ export default function Sky() {
         </div>
       </div>
       <p className="headline" aria-live="polite">
-        {empty ? <>No real sightings loaded</> : <><b className="num">{counts.total}</b> in view · <b className="num">{matchedNow}</b> matched to ADS-B{counts.drone ? <> · <b className="num" style={{ color: 'var(--amber)' }}>{counts.drone}</b> drone cand.</> : null}</>}
+        {empty ? <>No real sightings loaded</> : <><b className="num">{counts.total}</b> in view · <b className="num">{matchedNow}</b> ADS-B matched{counts.drone ? <> · <b className="num" style={{ color: 'var(--amber)' }}>{counts.drone}</b> drone candidate</> : null}</>}
       </p>
       <div className="subline">{scene?.node ? <>Node looking {scene.node.boresightAz}° az / {scene.node.boresightEl}° el · {scene.node.fov}° FOV · {modeTag}</> : <>{modeTag} · node pointing not in file</>}</div>
       <div className="legend">
@@ -264,7 +267,7 @@ export default function Sky() {
 
     {palette && <Palette refract={refract} commands={commands} onClose={() => setPalette(false)} />}
     {params.has('fps') && <div className="perf num" aria-hidden="true">{window.__varnSky?.fps ?? 0} fps · {quality}</div>}
-  </div>;
+  </main>;
 }
 
 function MorphPanel({ detail, refract, reduced, children }) {
@@ -348,14 +351,14 @@ function Palette({ commands, onClose, refract }) {
   return <>
     <div className="scrim-back" onClick={onClose} />
     <Glass className="palette" refract={refract} role="dialog" aria-label="Command palette">
-      <input autoFocus value={q} onChange={(e) => { setQ(e.target.value); setI(0); }} placeholder="Type a command or track id…" aria-label="Command"
+      <input autoFocus value={q} onChange={(e) => { setQ(e.target.value); setI(0); }} placeholder="Type a command or track id…" aria-label="Command" role="combobox" aria-expanded="true" aria-controls="sky-cmds" aria-activedescendant={items[i] ? `cmd-${i}` : undefined}
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown') { e.preventDefault(); setI((x) => Math.min(items.length - 1, x + 1)); }
           else if (e.key === 'ArrowUp') { e.preventDefault(); setI((x) => Math.max(0, x - 1)); }
           else if (e.key === 'Enter') run(items[i]);
         }} />
-      <ul role="listbox">
-        {items.map((c, k) => <li key={c.name} role="option" aria-selected={k === i} onMouseEnter={() => setI(k)} onClick={() => run(c)}><span>{c.name}</span><span>{c.hint}</span></li>)}
+      <ul id="sky-cmds" role="listbox" aria-label="Commands" tabIndex={0}>
+        {items.map((c, k) => <li key={c.name} id={`cmd-${k}`} role="option" aria-selected={k === i} onMouseEnter={() => setI(k)} onClick={() => run(c)}><span>{c.name}</span><span>{c.hint}</span></li>)}
         {!items.length && <li><span>No commands match</span><span /></li>}
       </ul>
     </Glass>
