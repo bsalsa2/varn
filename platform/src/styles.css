@@ -94,3 +94,24 @@
 .brand-lockup{padding-bottom:13px}
 .sidebar-bottom{padding-top:16px}
 @media(max-width:650px){.sidebar-caption{padding-bottom:18px}.topbar{height:52px}}
+
+/* Results: tables and rows, values only from platform/evidence. */
+.results-page .results-block{margin-top:34px}
+.results-detail{font-size:11px;line-height:1.7;color:#8f9991;margin:12px 0}
+.results-table{width:100%;border-collapse:collapse;font-size:12px}
+.results-table th{font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#818a82;text-align:left;font-weight:400;padding:8px 10px 8px 0;border-bottom:1px solid #343a36}
+.results-table td{padding:13px 10px 13px 0;border-bottom:1px solid #262b28;color:#d9ddd5;vertical-align:middle}
+.results-table .num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;padding-right:14px}
+.results-table .bar-cell{width:22%}
+.results-table.compact td,.results-table.compact th{font-size:11px}
+.results-sub{margin-top:18px}
+.src{font:10px var(--mono);color:#747e77;word-break:break-word}
+.score-bar{display:block;height:3px;background:#2a302c}
+.score-bar i{display:block;height:100%;background:#b7a17b}
+.run-list{display:flex;flex-direction:column}
+.run-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr);gap:20px;padding:16px 0;border-bottom:1px solid #262b28;font-size:12px;color:#c9cfc7}
+.run-main,.run-verdict{display:flex;flex-direction:column;gap:5px}
+.run-main strong{color:#e0e4dd;font-weight:560}
+.run-main small,.run-verdict small{font-size:10.5px;color:#8f9991;line-height:1.6}
+.caveat-list{margin:14px 0 0;padding-left:18px;font-size:12px;line-height:1.8;color:#b3bab3}
+@media(max-width:720px){.results-table{display:block;overflow-x:auto}.results-table .bar-cell{display:none}.run-row{grid-template-columns:1fr}}
