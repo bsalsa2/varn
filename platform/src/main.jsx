@@ -37,49 +37,52 @@ function EmptyState({ icon: Icon = Boxes, title, body, action }) {
 }
 
 function Overview({ apiState, onCheckApi, apiChecking, onNavigate }) {
-  return <>
-    <section className="hero-panel">
-      <div className="hero-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> RESEARCH WORKSPACE</div>
-        <h1>Build with evidence.<br/><span>Know what works.</span></h1>
-        <p className="hero-description">A working home for VARN models, datasets, evaluations, and the systems that connect them. Empty means unconfigured—not successful.</p>
-        <div className="hero-actions">
-          <button className="button primary" onClick={() => onNavigate('models')}>Explore models <ArrowUpRight size={15}/></button>
-          <button className="button ghost" onClick={onCheckApi}><RefreshCw size={14} className={apiChecking ? 'spin' : ''}/> Check system status</button>
-        </div>
+  const workspaces = [
+    { id: 'models', name: 'Models', description: 'Artifacts, versions, and provenance', count: '0' },
+    { id: 'experiments', name: 'Experiments', description: 'Evaluation runs and comparisons', count: '0' },
+    { id: 'datasets', name: 'Datasets', description: 'Sources, versions, and quality', count: '0' },
+  ];
+  return <div className="research-home">
+    <section className="research-intro">
+      <div>
+        <div className="eyebrow"><span className="eyebrow-line"/> VARN / RESEARCH</div>
+        <h1>Research workspace</h1>
+        <p>Models, data, and evaluations. One place to keep the work traceable.</p>
       </div>
-      <div className="hero-side-note"><span className="hero-side-index">01 / WORKSPACE</span><strong>{apiState === 'online' ? 'API reachable' : apiState === 'offline' ? 'API unreachable' : 'Checking API'}</strong><span>Model registry · Evaluation records · Dataset catalog</span><div className="hero-side-rule"><i/></div><small>Only verified connections are marked online.</small></div>
-      <div className="hero-foot"><span><StatusDot tone="amber"/> EARLY RESEARCH STAGE</span><span>PLATFORM BUILD 0.1.0</span><span>MODEL RECORDS: 0</span></div>
+      <div className="connection-brief">
+        <span className="connection-brief-label">API</span>
+        <span className="connection-brief-state"><StatusDot tone={apiState === 'online' ? 'green' : apiState === 'offline' ? 'red' : 'muted'}/>{apiState === 'online' ? 'Connected' : apiState === 'offline' ? 'Unavailable' : 'Checking'}</span>
+        <button className="text-button" onClick={onCheckApi} disabled={apiChecking}>{apiChecking ? 'Checking…' : 'Check connection'}</button>
+      </div>
     </section>
 
-    <div className="section-heading"><div><div className="eyebrow">SYSTEM SNAPSHOT</div><h2>Platform status</h2></div><span className="section-note">No telemetry fabricated</span></div>
-    <section className="metric-grid">
-      <Metric icon={Layers3} label="Registered models" value="—" sub="No models registered" tone="neutral" />
-      <Metric icon={Workflow} label="Evaluation runs" value="—" sub="No runs recorded" tone="neutral" />
-      <Metric icon={Database} label="Datasets" value="—" sub="No datasets registered" tone="neutral" />
-      <Metric icon={Network} label="Connected services" value={apiState === 'online' ? '1' : '0'} sub={apiState === 'online' ? 'API reachable' : apiState === 'offline' ? 'API not reachable' : 'Check connection'} tone={apiState === 'online' ? 'good' : 'neutral'} />
+    <section className="workspace-section">
+      <div className="plain-section-heading"><h2>Workspace</h2><span>0 records</span></div>
+      <div className="workspace-list">
+        {workspaces.map((item,index)=><button className="workspace-row" key={item.id} onClick={()=>onNavigate(item.id)}>
+          <span className="workspace-row-index">0{index+1}</span>
+          <span className="workspace-row-main"><strong>{item.name}</strong><small>{item.description}</small></span>
+          <span className="workspace-row-count">{item.count}</span>
+          <span className="workspace-row-state">Empty</span>
+          <span className="workspace-row-arrow">↗</span>
+        </button>)}
+      </div>
     </section>
 
-    <div className="content-grid">
-      <section className="panel activity-panel">
-        <div className="panel-heading"><div><span className="panel-kicker">TIMELINE</span><h3>Recent activity</h3></div><button className="icon-button" aria-label="View activity" onClick={() => onNavigate('activity')}><ArrowUpRight size={17}/></button></div>
-        <EmptyState icon={Activity} title="Quiet for now" body="Model runs, data imports, and system events will appear here as the platform is connected." action={{label:'View activity log',onClick:()=>onNavigate('activity')}}/>
-      </section>
-      <section className="panel readiness-panel">
-        <div className="panel-heading"><div><span className="panel-kicker">READINESS</span><h3>Core services</h3></div><button className="icon-button" aria-label="Check core services" onClick={onCheckApi}><RefreshCw size={15} className={apiChecking ? 'spin' : ''}/></button></div>
-        <div className="service-list">
-          <ServiceRow icon={ShieldCheck} name="VARN API" detail={apiState === 'online' ? 'Responding normally' : apiState === 'offline' ? 'Could not reach endpoint' : 'Status not checked'} status={apiState}/>
-          <ServiceRow icon={Layers3} name="Model registry" detail="Not connected" status="pending"/>
-          <ServiceRow icon={Database} name="Persistent storage" detail="Not configured" status="pending"/>
-          <ServiceRow icon={GitBranch} name="Kaggle pipeline" detail="Not connected" status="pending"/>
-        </div>
-        <div className="panel-footnote"><CircleHelp size={13}/> Statuses update only when a real check is available.</div>
-      </section>
-    </div>
-    <section className="panel next-panel">
-      <div className="next-icon"><Sparkles size={18}/></div><div className="next-copy"><span className="panel-kicker">NEXT MILESTONE</span><h3>Connect the research workflow</h3><p>Bring model artifacts and evaluation records into one repeatable, traceable system.</p></div><button className="button secondary" onClick={() => onNavigate('integrations')}>View integrations <ArrowUpRight size={14}/></button>
+    <section className="lower-workspace">
+      <div className="lower-section">
+        <div className="plain-section-heading"><h2>Connections</h2><button className="text-button" onClick={()=>onNavigate('integrations')}>Manage</button></div>
+        <div className="connection-row"><span className="connection-symbol">↗</span><span className="connection-name"><strong>VARN API</strong><small>Platform status endpoint</small></span><span className="connection-state"><StatusDot tone={apiState === 'online' ? 'green' : apiState === 'offline' ? 'red' : 'muted'}/>{apiState === 'online' ? 'Connected' : apiState === 'offline' ? 'Unavailable' : 'Checking'}</span></div>
+        <div className="connection-row"><span className="connection-symbol">↳</span><span className="connection-name"><strong>Kaggle</strong><small>Training and notebooks</small></span><span className="connection-state"><StatusDot/>Not connected</span></div>
+      </div>
+      <div className="lower-section activity-plain">
+        <div className="plain-section-heading"><h2>Recent activity</h2><button className="text-button" onClick={()=>onNavigate('activity')}>Open log ↗</button></div>
+        <p>No activity yet.</p>
+        <small>Recorded imports, model changes, and evaluation runs will appear here.</small>
+      </div>
     </section>
-  </>;
+    <div className="research-footnote">Early research build <span>·</span> Empty states reflect missing records, not successful evaluations.</div>
+  </div>;
 }
 
 function Metric({ icon: Icon, label, value, sub, tone }) {
