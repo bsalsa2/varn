@@ -20,7 +20,8 @@ npm run build
 - Responsive operations dashboard with working section navigation.
 - Basic API health check against `https://varn-api.varnlabs.workers.dev/health`.
 - Explicit empty states for models, experiments, datasets, activity, and unconfigured services.
-- No fabricated telemetry, evaluation metrics, model records, or historical events.
+- No fabricated telemetry, model records, or historical events.
+- Results page shows evaluation numbers hand-copied from Kaggle reports. Every value comes from a file in `evidence/`; nothing is fetched or computed.
 - Reduced-motion support and responsive mobile navigation.
 
 ## Not implemented yet

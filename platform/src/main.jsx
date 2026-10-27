@@ -5,8 +5,9 @@ import {
   Check, ChevronDown, CircleHelp, Command, Database, ExternalLink,
   Eye, Gauge, GitBranch, HardDrive, Layers3, LayoutDashboard, Menu,
   MoreHorizontal, Network, RadioTower, RefreshCw, Search, Settings2,
-  ShieldCheck, SlidersHorizontal, Sparkles, Workflow, X, Orbit
+  ShieldCheck, SlidersHorizontal, Sparkles, Workflow, X, FlaskConical, Orbit
 } from 'lucide-react';
+import { roboflow, birdDrone, runs, caveats } from './results.js';
 import './styles.css';
 
 const Sky = lazy(() => import('./sky/Sky.jsx'));
@@ -21,6 +22,7 @@ const navGroups = [
   { label: 'RESEARCH', items: [
     { id: 'models', label: 'Models', icon: Layers3 },
     { id: 'experiments', label: 'Experiments', icon: Workflow },
+    { id: 'results', label: 'Results', icon: FlaskConical },
     { id: 'datasets', label: 'Datasets', icon: Database },
   ]},
   { label: 'PLATFORM', items: [
@@ -95,6 +97,60 @@ function Metric({ icon: Icon, label, value, sub, tone }) {
 function ServiceRow({ icon: Icon, name, detail, status }) {
   const label = status === 'online' ? 'ONLINE' : status === 'offline' ? 'OFFLINE' : status === 'pending' ? 'PENDING' : 'UNKNOWN';
   return <div className="service-row"><div className="service-icon"><Icon size={16}/></div><div className="service-text"><strong>{name}</strong><span>{detail}</span></div><span className={`status-label ${status}`}><StatusDot tone={status === 'online' ? 'green' : status === 'offline' ? 'red' : 'muted'}/>{label}</span></div>;
+}
+
+function ScoreBar({ value }) {
+  return <span className="score-bar" aria-hidden="true"><i style={{ width: `${value * 100}%` }}/></span>;
+}
+
+function ResultsTable({ title, detail, rows, extraHead, extraKey }) {
+  return <section className="results-block">
+    <div className="plain-section-heading"><h2>{title}</h2><span>mAP50</span></div>
+    <p className="results-detail">{detail}</p>
+    <table className="results-table">
+      <thead><tr><th>Model</th><th className="num">mAP50</th><th/><th>{extraHead}</th><th>Source</th></tr></thead>
+      <tbody>{rows.map(r=><tr key={r.model}>
+        <td>{r.model}</td><td className="num">{r.metric.toFixed(3)}</td><td className="bar-cell"><ScoreBar value={r.metric}/></td>
+        <td>{r[extraKey]}</td><td className="src">{r.src}</td>
+      </tr>)}</tbody>
+    </table>
+  </section>;
+}
+
+function ResultsPage() {
+  return <div className="section-page results-page">
+    <div className="eyebrow"><span className="eyebrow-line"/>RESEARCH / RESULTS</div>
+    <div className="page-title-row"><div><h1>Results</h1><p>Hand-copied from Kaggle reports for notebook varnlabs/varn-train. Metric is mAP50 as labeled in the reports.</p></div><div className="page-title-icon"><FlaskConical size={24}/></div></div>
+
+    <div className="honesty-note"><AlertTriangle size={16}/><span><strong>Read each table on its own.</strong> Scores are only comparable within one table: same test set, and the model named on the row. The v3 and fine-tune scores on Bird vs Drone are different models and are never one result.</span></div>
+
+    <ResultsTable {...roboflow} extraHead="vs v3 (same set)" extraKey="vsV3"/>
+    <div className="results-sub">
+      <table className="results-table compact">
+        <thead><tr><th>Roboflow validation, per class (log)</th><th className="num">mAP50-95</th><th className="num">AP50 drone</th><th className="num">AP50 aircraft</th><th>Source</th></tr></thead>
+        <tbody>{roboflow.detail2.map(r=><tr key={r.label}><td>{r.label}</td><td className="num">{r.map5095}</td><td className="num">{r.drone}</td><td className="num">{r.aircraft}</td><td className="src">{r.src}</td></tr>)}</tbody>
+      </table>
+      <p className="results-detail">{roboflow.pr} <span className="src">({'kaggle-log-excerpts.md'})</span></p>
+    </div>
+
+    <ResultsTable {...birdDrone} extraHead="Notes" extraKey="extra"/>
+
+    <section className="results-block">
+      <div className="plain-section-heading"><h2>Runs</h2><span>{runs.length} recorded</span></div>
+      <div className="run-list">{runs.map(run=><div className={`run-row ${run.pending?'pending':''}`} key={run.id}>
+        <div className="run-main"><strong>{run.name}</strong><small>{run.pending ? run.config : `Mode: ${run.mode} · ${run.date}`}</small></div>
+        <div className="run-verdict">{run.pending ? <span className="status-label pending"><StatusDot/>PENDING</span> : <span>{run.verdict}</span>}
+          {run.pending && <small>Running, no result yet.</small>}
+          {run.note && <small>{run.note}</small>}</div>
+        <div className="src">{run.src}</div>
+      </div>)}</div>
+    </section>
+
+    <section className="results-block">
+      <div className="plain-section-heading"><h2>Caveats</h2></div>
+      <ul className="caveat-list">{caveats.map(c=><li key={c}>{c}</li>)}</ul>
+    </section>
+  </div>;
 }
 
 function SectionPage({ page, onNavigate }) {
@@ -174,7 +230,7 @@ function App() {
         </div>
       </header>
       <div className="page-content">
-        {page==='overview' ? <Overview apiState={apiState} onCheckApi={checkApi} apiChecking={apiChecking} onNavigate={choosePage}/> : <SectionPage page={page} onNavigate={choosePage}/>}
+        {page==='overview' ? <Overview apiState={apiState} onCheckApi={checkApi} apiChecking={apiChecking} onNavigate={choosePage}/> : page==='results' ? <ResultsPage/> : <SectionPage page={page} onNavigate={choosePage}/>}
         <footer className="footer"><span>VARN SYSTEMS PLATFORM <span className="footer-dot">·</span> EARLY ACCESS</span><span>BUILD 0.1.0 <span className="footer-dot">·</span> <a href="https://github.com/bsalsa2/varn" target="_blank" rel="noreferrer">SOURCE <ExternalLink size={10}/></a></span></footer>
       </div>
     </main>
