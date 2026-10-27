@@ -11,16 +11,16 @@ import './styles.css';
 
 const API_URL = 'https://varn-api.varnlabs.workers.dev';
 const navGroups = [
-  { label: 'COMMAND', items: [
+  { label: 'WORK', items: [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'activity', label: 'Activity log', icon: Activity },
   ]},
-  { label: 'INTELLIGENCE', items: [
+  { label: 'RESEARCH', items: [
     { id: 'models', label: 'Models', icon: Layers3 },
     { id: 'experiments', label: 'Experiments', icon: Workflow },
     { id: 'datasets', label: 'Datasets', icon: Database },
   ]},
-  { label: 'SYSTEMS', items: [
+  { label: 'PLATFORM', items: [
     { id: 'integrations', label: 'Integrations', icon: Network },
     { id: 'infrastructure', label: 'Infrastructure', icon: Gauge },
   ]},
@@ -37,49 +37,52 @@ function EmptyState({ icon: Icon = Boxes, title, body, action }) {
 }
 
 function Overview({ apiState, onCheckApi, apiChecking, onNavigate }) {
-  return <>
-    <section className="hero-panel">
-      <div className="hero-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> RESEARCH WORKSPACE</div>
-        <h1>Build with evidence.<br/><span>Know what works.</span></h1>
-        <p className="hero-description">A working home for VARN models, datasets, evaluations, and the systems that connect them. Empty means unconfigured—not successful.</p>
-        <div className="hero-actions">
-          <button className="button primary" onClick={() => onNavigate('models')}>Explore models <ArrowUpRight size={15}/></button>
-          <button className="button ghost" onClick={onCheckApi}><RefreshCw size={14} className={apiChecking ? 'spin' : ''}/> Check system status</button>
-        </div>
+  const workspaces = [
+    { id: 'models', name: 'Models', description: 'Artifacts, versions, and provenance', count: '0' },
+    { id: 'experiments', name: 'Experiments', description: 'Evaluation runs and comparisons', count: '0' },
+    { id: 'datasets', name: 'Datasets', description: 'Sources, versions, and quality', count: '0' },
+  ];
+  return <div className="research-home">
+    <section className="research-intro">
+      <div>
+        <div className="eyebrow"><span className="eyebrow-line"/> VARN / RESEARCH</div>
+        <h1>Research workspace</h1>
+        <p>Models, data, and evaluations. One place to keep the work traceable.</p>
       </div>
-      <div className="hero-side-note"><span className="hero-side-index">01 / WORKSPACE</span><strong>{apiState === 'online' ? 'API reachable' : apiState === 'offline' ? 'API unreachable' : 'Checking API'}</strong><span>Model registry · Evaluation records · Dataset catalog</span><div className="hero-side-rule"><i/></div><small>Only verified connections are marked online.</small></div>
-      <div className="hero-foot"><span><StatusDot tone="amber"/> EARLY RESEARCH STAGE</span><span>PLATFORM BUILD 0.1.0</span><span>MODEL RECORDS: 0</span></div>
+      <div className="connection-brief">
+        <span className="connection-brief-label">API</span>
+        <span className="connection-brief-state"><StatusDot tone={apiState === 'online' ? 'green' : apiState === 'offline' ? 'red' : 'muted'}/>{apiState === 'online' ? 'Connected' : apiState === 'offline' ? 'Unavailable' : 'Checking'}</span>
+        <button className="text-button" onClick={onCheckApi} disabled={apiChecking}>{apiChecking ? 'Checking…' : 'Check connection'}</button>
+      </div>
     </section>
 
-    <div className="section-heading"><div><div className="eyebrow">SYSTEM SNAPSHOT</div><h2>Platform status</h2></div><span className="section-note">No telemetry fabricated</span></div>
-    <section className="metric-grid">
-      <Metric icon={Layers3} label="Registered models" value="—" sub="No models registered" tone="neutral" />
-      <Metric icon={Workflow} label="Evaluation runs" value="—" sub="No runs recorded" tone="neutral" />
-      <Metric icon={Database} label="Datasets" value="—" sub="No datasets registered" tone="neutral" />
-      <Metric icon={Network} label="Connected services" value={apiState === 'online' ? '1' : '0'} sub={apiState === 'online' ? 'API reachable' : apiState === 'offline' ? 'API not reachable' : 'Check connection'} tone={apiState === 'online' ? 'good' : 'neutral'} />
+    <section className="workspace-section">
+      <div className="plain-section-heading"><h2>Workspace</h2><span>0 records</span></div>
+      <div className="workspace-list">
+        {workspaces.map((item,index)=><button className="workspace-row" key={item.id} onClick={()=>onNavigate(item.id)}>
+          <span className="workspace-row-index">0{index+1}</span>
+          <span className="workspace-row-main"><strong>{item.name}</strong><small>{item.description}</small></span>
+          <span className="workspace-row-count">{item.count}</span>
+          <span className="workspace-row-state">Empty</span>
+          <span className="workspace-row-arrow">↗</span>
+        </button>)}
+      </div>
     </section>
 
-    <div className="content-grid">
-      <section className="panel activity-panel">
-        <div className="panel-heading"><div><span className="panel-kicker">TIMELINE</span><h3>Recent activity</h3></div><button className="icon-button" aria-label="View activity" onClick={() => onNavigate('activity')}><ArrowUpRight size={17}/></button></div>
-        <EmptyState icon={Activity} title="Quiet for now" body="Model runs, data imports, and system events will appear here as the platform is connected." action={{label:'View activity log',onClick:()=>onNavigate('activity')}}/>
-      </section>
-      <section className="panel readiness-panel">
-        <div className="panel-heading"><div><span className="panel-kicker">READINESS</span><h3>Core services</h3></div><button className="icon-button" aria-label="Check core services" onClick={onCheckApi}><RefreshCw size={15} className={apiChecking ? 'spin' : ''}/></button></div>
-        <div className="service-list">
-          <ServiceRow icon={ShieldCheck} name="VARN API" detail={apiState === 'online' ? 'Responding normally' : apiState === 'offline' ? 'Could not reach endpoint' : 'Status not checked'} status={apiState}/>
-          <ServiceRow icon={Layers3} name="Model registry" detail="Not connected" status="pending"/>
-          <ServiceRow icon={Database} name="Persistent storage" detail="Not configured" status="pending"/>
-          <ServiceRow icon={GitBranch} name="Kaggle pipeline" detail="Not connected" status="pending"/>
-        </div>
-        <div className="panel-footnote"><CircleHelp size={13}/> Statuses update only when a real check is available.</div>
-      </section>
-    </div>
-    <section className="panel next-panel">
-      <div className="next-icon"><Sparkles size={18}/></div><div className="next-copy"><span className="panel-kicker">NEXT MILESTONE</span><h3>Connect the research workflow</h3><p>Bring model artifacts and evaluation records into one repeatable, traceable system.</p></div><button className="button secondary" onClick={() => onNavigate('integrations')}>View integrations <ArrowUpRight size={14}/></button>
+    <section className="lower-workspace">
+      <div className="lower-section">
+        <div className="plain-section-heading"><h2>Connections</h2><button className="text-button" onClick={()=>onNavigate('integrations')}>Manage</button></div>
+        <div className="connection-row"><span className="connection-symbol">↗</span><span className="connection-name"><strong>VARN API</strong><small>Platform status endpoint</small></span><span className="connection-state"><StatusDot tone={apiState === 'online' ? 'green' : apiState === 'offline' ? 'red' : 'muted'}/>{apiState === 'online' ? 'Connected' : apiState === 'offline' ? 'Unavailable' : 'Checking'}</span></div>
+        <div className="connection-row"><span className="connection-symbol">↳</span><span className="connection-name"><strong>Kaggle</strong><small>Training and notebooks</small></span><span className="connection-state"><StatusDot/>Not connected</span></div>
+      </div>
+      <div className="lower-section activity-plain">
+        <div className="plain-section-heading"><h2>Recent activity</h2><button className="text-button" onClick={()=>onNavigate('activity')}>Open log ↗</button></div>
+        <p>No activity yet.</p>
+        <small>Recorded imports, model changes, and evaluation runs will appear here.</small>
+      </div>
     </section>
-  </>;
+    <div className="research-footnote">Early research build <span>·</span> Empty states reflect missing records, not successful evaluations.</div>
+  </div>;
 }
 
 function Metric({ icon: Icon, label, value, sub, tone }) {
@@ -150,15 +153,13 @@ function App() {
     {mobileOpen && <button className="mobile-scrim" aria-label="Close menu" onClick={()=>setMobileOpen(false)}/>}
     <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
       <div className="brand-lockup"><BrandMark/><div><span className="brand-name">VARN</span><span className="brand-subtitle">SYSTEMS PLATFORM</span></div><button className="mobile-close icon-button" aria-label="Close menu" onClick={()=>setMobileOpen(false)}><X size={18}/></button></div>
-      <div className="workspace-switcher"><div className="workspace-avatar">V</div><div className="workspace-meta"><strong>VARN Research</strong><span>Development workspace</span></div><ChevronDown size={15}/></div>
+      <div className="sidebar-caption">Research workspace <span>·</span> Early build</div>
       <nav className="main-nav" aria-label="Main navigation">
         {filteredNav.map(group=><div className="nav-group" key={group.label}><div className="nav-group-label">{group.label}</div>{group.items.map(item=>{const Icon=item.icon;return <button key={item.id} className={`nav-item ${page===item.id?'active':''}`} onClick={()=>choosePage(item.id)}><Icon size={17} strokeWidth={1.8}/><span>{item.label}</span>{item.id==='activity'&&<span className="nav-count">0</span>}</button>})}</div>)}
         {filteredNav.length===0&&<div className="nav-no-results">No sections match “{query}”.</div>}
       </nav>
       <div className="sidebar-bottom">
-        <div className="sidebar-status"><div className="status-head"><span>API CONNECTION</span><StatusDot tone={apiState==='online'?'green':apiState==='offline'?'red':'muted'}/></div><div className="sidebar-status-value">{apiState==='online'?'Connected':apiState==='offline'?'Unavailable':'Checking status'}</div><button onClick={checkApi} className="status-refresh"><RefreshCw size={12} className={apiChecking?'spin':''}/> Refresh connection</button></div>
-        <button className="nav-item utility-item" onClick={()=>choosePage('infrastructure')}><Settings2 size={17}/><span>System settings</span></button>
-        <div className="user-row"><div className="user-avatar">V</div><div className="user-meta"><strong>VARN Operator</strong><span>Workspace owner</span></div><MoreHorizontal size={18}/></div>
+        <div className="sidebar-status-simple"><StatusDot tone={apiState==='online'?'green':apiState==='offline'?'red':'muted'}/><span>API {apiState==='online'?'connected':apiState==='offline'?'unavailable':'checking'}</span><button onClick={checkApi} aria-label="Refresh API status" title="Refresh API status"><RefreshCw size={12} className={apiChecking?'spin':''}/></button></div>
       </div>
     </aside>
 
@@ -166,10 +167,7 @@ function App() {
       <header className="topbar">
         <div className="topbar-left"><button className="mobile-menu icon-button" aria-label="Open menu" onClick={()=>setMobileOpen(true)}><Menu size={19}/></button><div className="breadcrumb"><span>VARN</span><span className="crumb-sep">/</span><strong>{currentTitle}</strong></div><span className="environment-pill"><span/>DEV</span></div>
         <div className="topbar-actions">
-          {searchOpen ? <div className="search-box"><Search size={15}/><input autoFocus placeholder="Find a section..." value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>e.key==='Escape'&&(setSearchOpen(false),setQuery(''))}/><button className="icon-button" onClick={()=>{setSearchOpen(false);setQuery('')}} aria-label="Close search"><X size={14}/></button></div> : <button className="top-action" onClick={()=>setSearchOpen(true)}><Search size={16}/><span>Search</span><kbd>⌘ K</kbd></button>}
-          <div className="top-divider"/>
-          <button className="icon-button notification-button" aria-label="Notifications" title="No notifications"><Bell size={17}/><span className="notification-dot"/></button>
-          <a className="icon-button help-button" href="https://github.com/bsalsa2/varn" target="_blank" rel="noreferrer" aria-label="Open repository"><CircleHelp size={17}/></a>
+          <a className="source-link" href="https://github.com/bsalsa2/varn" target="_blank" rel="noreferrer">Source ↗</a>
         </div>
       </header>
       <div className="page-content">
