@@ -11,16 +11,16 @@ import './styles.css';
 
 const API_URL = 'https://varn-api.varnlabs.workers.dev';
 const navGroups = [
-  { label: 'COMMAND', items: [
+  { label: 'WORK', items: [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'activity', label: 'Activity log', icon: Activity },
   ]},
-  { label: 'INTELLIGENCE', items: [
+  { label: 'RESEARCH', items: [
     { id: 'models', label: 'Models', icon: Layers3 },
     { id: 'experiments', label: 'Experiments', icon: Workflow },
     { id: 'datasets', label: 'Datasets', icon: Database },
   ]},
-  { label: 'SYSTEMS', items: [
+  { label: 'PLATFORM', items: [
     { id: 'integrations', label: 'Integrations', icon: Network },
     { id: 'infrastructure', label: 'Infrastructure', icon: Gauge },
   ]},
@@ -153,15 +153,13 @@ function App() {
     {mobileOpen && <button className="mobile-scrim" aria-label="Close menu" onClick={()=>setMobileOpen(false)}/>}
     <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
       <div className="brand-lockup"><BrandMark/><div><span className="brand-name">VARN</span><span className="brand-subtitle">SYSTEMS PLATFORM</span></div><button className="mobile-close icon-button" aria-label="Close menu" onClick={()=>setMobileOpen(false)}><X size={18}/></button></div>
-      <div className="workspace-switcher"><div className="workspace-avatar">V</div><div className="workspace-meta"><strong>VARN Research</strong><span>Development workspace</span></div><ChevronDown size={15}/></div>
+      <div className="sidebar-caption">Research workspace <span>·</span> Early build</div>
       <nav className="main-nav" aria-label="Main navigation">
         {filteredNav.map(group=><div className="nav-group" key={group.label}><div className="nav-group-label">{group.label}</div>{group.items.map(item=>{const Icon=item.icon;return <button key={item.id} className={`nav-item ${page===item.id?'active':''}`} onClick={()=>choosePage(item.id)}><Icon size={17} strokeWidth={1.8}/><span>{item.label}</span>{item.id==='activity'&&<span className="nav-count">0</span>}</button>})}</div>)}
         {filteredNav.length===0&&<div className="nav-no-results">No sections match “{query}”.</div>}
       </nav>
       <div className="sidebar-bottom">
-        <div className="sidebar-status"><div className="status-head"><span>API CONNECTION</span><StatusDot tone={apiState==='online'?'green':apiState==='offline'?'red':'muted'}/></div><div className="sidebar-status-value">{apiState==='online'?'Connected':apiState==='offline'?'Unavailable':'Checking status'}</div><button onClick={checkApi} className="status-refresh"><RefreshCw size={12} className={apiChecking?'spin':''}/> Refresh connection</button></div>
-        <button className="nav-item utility-item" onClick={()=>choosePage('infrastructure')}><Settings2 size={17}/><span>System settings</span></button>
-        <div className="user-row"><div className="user-avatar">V</div><div className="user-meta"><strong>VARN Operator</strong><span>Workspace owner</span></div><MoreHorizontal size={18}/></div>
+        <div className="sidebar-status-simple"><StatusDot tone={apiState==='online'?'green':apiState==='offline'?'red':'muted'}/><span>API {apiState==='online'?'connected':apiState==='offline'?'unavailable':'checking'}</span><button onClick={checkApi} aria-label="Refresh API status" title="Refresh API status"><RefreshCw size={12} className={apiChecking?'spin':''}/></button></div>
       </div>
     </aside>
 
@@ -169,10 +167,7 @@ function App() {
       <header className="topbar">
         <div className="topbar-left"><button className="mobile-menu icon-button" aria-label="Open menu" onClick={()=>setMobileOpen(true)}><Menu size={19}/></button><div className="breadcrumb"><span>VARN</span><span className="crumb-sep">/</span><strong>{currentTitle}</strong></div><span className="environment-pill"><span/>DEV</span></div>
         <div className="topbar-actions">
-          {searchOpen ? <div className="search-box"><Search size={15}/><input autoFocus placeholder="Find a section..." value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>e.key==='Escape'&&(setSearchOpen(false),setQuery(''))}/><button className="icon-button" onClick={()=>{setSearchOpen(false);setQuery('')}} aria-label="Close search"><X size={14}/></button></div> : <button className="top-action" onClick={()=>setSearchOpen(true)}><Search size={16}/><span>Search</span><kbd>⌘ K</kbd></button>}
-          <div className="top-divider"/>
-          <button className="icon-button notification-button" aria-label="Notifications" title="No notifications"><Bell size={17}/><span className="notification-dot"/></button>
-          <a className="icon-button help-button" href="https://github.com/bsalsa2/varn" target="_blank" rel="noreferrer" aria-label="Open repository"><CircleHelp size={17}/></a>
+          <a className="source-link" href="https://github.com/bsalsa2/varn" target="_blank" rel="noreferrer">Source ↗</a>
         </div>
       </header>
       <div className="page-content">
