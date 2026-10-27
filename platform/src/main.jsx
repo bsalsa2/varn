@@ -1,20 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, Bell, Boxes,
   Check, ChevronDown, CircleHelp, Command, Database, ExternalLink,
   Eye, Gauge, GitBranch, HardDrive, Layers3, LayoutDashboard, Menu,
   MoreHorizontal, Network, RadioTower, RefreshCw, Search, Settings2,
-  ShieldCheck, SlidersHorizontal, Sparkles, Workflow, X, FlaskConical
+  ShieldCheck, SlidersHorizontal, Sparkles, Workflow, X, FlaskConical, Orbit
 } from 'lucide-react';
 import { roboflow, birdDrone, runs, caveats } from './results.js';
 import './styles.css';
+
+const Sky = lazy(() => import('./sky/Sky.jsx'));
 
 const API_URL = 'https://varn-api.varnlabs.workers.dev';
 const navGroups = [
   { label: 'WORK', items: [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'activity', label: 'Activity log', icon: Activity },
+    { id: 'sky', label: 'Sky', icon: Orbit },
   ]},
   { label: 'RESEARCH', items: [
     { id: 'models', label: 'Models', icon: Layers3 },
@@ -202,7 +205,7 @@ function App() {
   useEffect(() => { checkApi(); }, []);
 
   const currentTitle = [...navGroups.flatMap(g => g.items)].find(item => item.id === page)?.label ?? 'Overview';
-  const choosePage = (id) => { setPage(id); setMobileOpen(false); setQuery(''); setSearchOpen(false); };
+  const choosePage = (id) => { if (id === 'sky') { location.hash = 'sky'; return; } setPage(id); setMobileOpen(false); setQuery(''); setSearchOpen(false); };
   const filteredNav = navGroups.map(group => ({...group, items: group.items.filter(item => item.label.toLowerCase().includes(query.toLowerCase()))})).filter(group => group.items.length);
 
   return <div className="app-shell">
@@ -234,4 +237,11 @@ function App() {
   </div>;
 }
 
-createRoot(document.getElementById('root')).render(<App/>);
+function Root() {
+  const [hash, setHash] = useState(location.hash);
+  useEffect(() => { const on = () => setHash(location.hash); addEventListener('hashchange', on); return () => removeEventListener('hashchange', on); }, []);
+  if (hash === '#sky') return <Suspense fallback={<div style={{position:'fixed',inset:0,background:'#0B0F14'}}/>}><Sky/></Suspense>;
+  return <App/>;
+}
+
+createRoot(document.getElementById('root')).render(<Root/>);
