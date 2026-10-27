@@ -157,8 +157,8 @@ kbd { font: 500 11px var(--body); padding: 1px 5px; border-radius: 5px; backgrou
   .sky-head .legend, .sky-head .subline { display: none; }
   .headline { font-size: 17px; margin-top: 6px; }
   .view-toggle { margin-top: 8px; }
-  .sky-panel { left: 12px; right: 12px; top: auto; bottom: 84px; width: auto; max-height: 40vh; }
-  .tracks { max-height: calc(40vh - 100px); }
+  .sky-panel { left: 12px; right: 12px; top: auto; bottom: 72px; width: auto; max-height: 34vh; }
+  .tracks { max-height: calc(34vh - 96px); }
   .sky-time { bottom: 12px; width: calc(100vw - 24px); padding: 8px 10px; gap: 8px; }
   .sky-time .step, .clock small { display: none; }
   .clock { min-width: 64px; font-size: 13px; }

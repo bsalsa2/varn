@@ -14,7 +14,7 @@ const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${
 
 export function layoutFor(w, h) {
   const mobile = w < 760;
-  if (mobile) { const r = Math.min(w * 0.46, h * 0.3); return { cx: w / 2, cy: 70 + r + 26, r, mobile }; }
+  if (mobile) { const r = Math.min(w * 0.4, h * 0.21); return { cx: w / 2, cy: 160 + r, r, mobile }; }
   const r = Math.min(h * 0.43, (w - 120) * 0.4);
   return { cx: w * 0.56, cy: h * 0.48, r, mobile };
 }
