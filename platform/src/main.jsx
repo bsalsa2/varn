@@ -40,25 +40,16 @@ function Overview({ apiState, onCheckApi, apiChecking, onNavigate }) {
   return <>
     <section className="hero-panel">
       <div className="hero-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> OPERATIONS / OVERVIEW</div>
-        <h1>Situational awareness.<br/><span>At a glance.</span></h1>
-        <p className="hero-description">A unified view of VARN's systems, intelligence pipeline, and research activity.</p>
+        <div className="eyebrow"><span className="eyebrow-line"/> RESEARCH WORKSPACE</div>
+        <h1>Build with evidence.<br/><span>Know what works.</span></h1>
+        <p className="hero-description">A working home for VARN models, datasets, evaluations, and the systems that connect them. Empty means unconfigured—not successful.</p>
         <div className="hero-actions">
           <button className="button primary" onClick={() => onNavigate('models')}>Explore models <ArrowUpRight size={15}/></button>
           <button className="button ghost" onClick={onCheckApi}><RefreshCw size={14} className={apiChecking ? 'spin' : ''}/> Check system status</button>
         </div>
       </div>
-      <div className="radar-wrap" aria-label="Decorative radar visualization">
-        <div className="radar-label top-left">VARN / SYS-01</div>
-        <div className="radar-label bottom-right">LIVE LINK // {apiState === 'online' ? 'ESTABLISHED' : apiState === 'offline' ? 'UNAVAILABLE' : 'CHECK PENDING'}</div>
-        <div className="radar">
-          <div className="radar-ring ring-one"/><div className="radar-ring ring-two"/><div className="radar-ring ring-three"/>
-          <div className="radar-cross horizontal"/><div className="radar-cross vertical"/>
-          <div className="radar-sweep"/><span className="radar-point point-a"/><span className="radar-point point-b"/><span className="radar-point point-c"/>
-          <div className="radar-center"><BrandMark/></div>
-        </div>
-      </div>
-      <div className="hero-foot"><span><StatusDot tone="amber"/> EARLY RESEARCH STAGE</span><span>BUILD 0.1.0</span><span>ENVIRONMENT: DEVELOPMENT</span></div>
+      <div className="hero-side-note"><span className="hero-side-index">01 / WORKSPACE</span><strong>{apiState === 'online' ? 'API reachable' : apiState === 'offline' ? 'API unreachable' : 'Checking API'}</strong><span>Model registry · Evaluation records · Dataset catalog</span><div className="hero-side-rule"><i/></div><small>Only verified connections are marked online.</small></div>
+      <div className="hero-foot"><span><StatusDot tone="amber"/> EARLY RESEARCH STAGE</span><span>PLATFORM BUILD 0.1.0</span><span>MODEL RECORDS: 0</span></div>
     </section>
 
     <div className="section-heading"><div><div className="eyebrow">SYSTEM SNAPSHOT</div><h2>Platform status</h2></div><span className="section-note">No telemetry fabricated</span></div>
