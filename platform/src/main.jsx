@@ -1,0 +1,192 @@
+import React, { useEffect, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import {
+  Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, Bell, Boxes,
+  Check, ChevronDown, CircleHelp, Command, Database, ExternalLink,
+  Eye, Gauge, GitBranch, HardDrive, Layers3, LayoutDashboard, Menu,
+  MoreHorizontal, Network, RadioTower, RefreshCw, Search, Settings2,
+  ShieldCheck, SlidersHorizontal, Sparkles, Workflow, X
+} from 'lucide-react';
+import './styles.css';
+
+const API_URL = 'https://varn-api.varnlabs.workers.dev';
+const navGroups = [
+  { label: 'COMMAND', items: [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'activity', label: 'Activity log', icon: Activity },
+  ]},
+  { label: 'INTELLIGENCE', items: [
+    { id: 'models', label: 'Models', icon: Layers3 },
+    { id: 'experiments', label: 'Experiments', icon: Workflow },
+    { id: 'datasets', label: 'Datasets', icon: Database },
+  ]},
+  { label: 'SYSTEMS', items: [
+    { id: 'integrations', label: 'Integrations', icon: Network },
+    { id: 'infrastructure', label: 'Infrastructure', icon: Gauge },
+  ]},
+];
+
+function BrandMark() {
+  return <div className="brand-mark" aria-hidden="true"><svg viewBox="0 0 42 42"><path d="M7 31 17.2 9h7.5L35 31h-8.1l-6-13.1L14.8 31Z" fill="currentColor"/><path d="M17.2 25.2h9.1l2.2 5.8H14.8Z" fill="#111315"/></svg></div>;
+}
+
+function StatusDot({ tone = 'muted' }) { return <span className={`status-dot ${tone}`} />; }
+
+function EmptyState({ icon: Icon = Boxes, title, body, action }) {
+  return <div className="empty-state"><div className="empty-icon"><Icon size={21}/></div><h3>{title}</h3><p>{body}</p>{action && <button className="button secondary" onClick={action.onClick}>{action.label}</button>}</div>;
+}
+
+function Overview({ apiState, onCheckApi, apiChecking, onNavigate }) {
+  return <>
+    <section className="hero-panel">
+      <div className="hero-copy">
+        <div className="eyebrow"><span className="eyebrow-line"/> OPERATIONS / OVERVIEW</div>
+        <h1>Situational awareness.<br/><span>At a glance.</span></h1>
+        <p className="hero-description">A unified view of VARN's systems, intelligence pipeline, and research activity.</p>
+        <div className="hero-actions">
+          <button className="button primary" onClick={() => onNavigate('models')}>Explore models <ArrowUpRight size={15}/></button>
+          <button className="button ghost" onClick={onCheckApi}><RefreshCw size={14} className={apiChecking ? 'spin' : ''}/> Check system status</button>
+        </div>
+      </div>
+      <div className="radar-wrap" aria-label="Decorative radar visualization">
+        <div className="radar-label top-left">VARN / SYS-01</div>
+        <div className="radar-label bottom-right">LIVE LINK // {apiState === 'online' ? 'ESTABLISHED' : apiState === 'offline' ? 'UNAVAILABLE' : 'CHECK PENDING'}</div>
+        <div className="radar">
+          <div className="radar-ring ring-one"/><div className="radar-ring ring-two"/><div className="radar-ring ring-three"/>
+          <div className="radar-cross horizontal"/><div className="radar-cross vertical"/>
+          <div className="radar-sweep"/><span className="radar-point point-a"/><span className="radar-point point-b"/><span className="radar-point point-c"/>
+          <div className="radar-center"><BrandMark/></div>
+        </div>
+      </div>
+      <div className="hero-foot"><span><StatusDot tone="amber"/> EARLY RESEARCH STAGE</span><span>BUILD 0.1.0</span><span>ENVIRONMENT: DEVELOPMENT</span></div>
+    </section>
+
+    <div className="section-heading"><div><div className="eyebrow">SYSTEM SNAPSHOT</div><h2>Platform status</h2></div><span className="section-note">No telemetry fabricated</span></div>
+    <section className="metric-grid">
+      <Metric icon={Layers3} label="Registered models" value="—" sub="No models registered" tone="neutral" />
+      <Metric icon={Workflow} label="Evaluation runs" value="—" sub="No runs recorded" tone="neutral" />
+      <Metric icon={Database} label="Datasets" value="—" sub="No datasets registered" tone="neutral" />
+      <Metric icon={Network} label="Connected services" value={apiState === 'online' ? '1' : '0'} sub={apiState === 'online' ? 'API reachable' : apiState === 'offline' ? 'API not reachable' : 'Check connection'} tone={apiState === 'online' ? 'good' : 'neutral'} />
+    </section>
+
+    <div className="content-grid">
+      <section className="panel activity-panel">
+        <div className="panel-heading"><div><span className="panel-kicker">TIMELINE</span><h3>Recent activity</h3></div><button className="icon-button" aria-label="View activity" onClick={() => onNavigate('activity')}><ArrowUpRight size={17}/></button></div>
+        <EmptyState icon={Activity} title="Quiet for now" body="Model runs, data imports, and system events will appear here as the platform is connected." action={{label:'View activity log',onClick:()=>onNavigate('activity')}}/>
+      </section>
+      <section className="panel readiness-panel">
+        <div className="panel-heading"><div><span className="panel-kicker">READINESS</span><h3>Core services</h3></div><button className="icon-button" aria-label="Check core services" onClick={onCheckApi}><RefreshCw size={15} className={apiChecking ? 'spin' : ''}/></button></div>
+        <div className="service-list">
+          <ServiceRow icon={ShieldCheck} name="VARN API" detail={apiState === 'online' ? 'Responding normally' : apiState === 'offline' ? 'Could not reach endpoint' : 'Status not checked'} status={apiState}/>
+          <ServiceRow icon={Layers3} name="Model registry" detail="Not connected" status="pending"/>
+          <ServiceRow icon={Database} name="Persistent storage" detail="Not configured" status="pending"/>
+          <ServiceRow icon={GitBranch} name="Kaggle pipeline" detail="Not connected" status="pending"/>
+        </div>
+        <div className="panel-footnote"><CircleHelp size={13}/> Statuses update only when a real check is available.</div>
+      </section>
+    </div>
+    <section className="panel next-panel">
+      <div className="next-icon"><Sparkles size={18}/></div><div className="next-copy"><span className="panel-kicker">NEXT MILESTONE</span><h3>Connect the research workflow</h3><p>Bring model artifacts and evaluation records into one repeatable, traceable system.</p></div><button className="button secondary" onClick={() => onNavigate('integrations')}>View integrations <ArrowUpRight size={14}/></button>
+    </section>
+  </>;
+}
+
+function Metric({ icon: Icon, label, value, sub, tone }) {
+  return <div className="metric-card"><div className="metric-top"><div className="metric-icon"><Icon size={16}/></div><span className="metric-label">{label}</span><MoreHorizontal size={17} className="muted-icon"/></div><div className={`metric-value ${tone}`}>{value}</div><div className="metric-sub"><span className="sub-line"/>{sub}</div></div>;
+}
+
+function ServiceRow({ icon: Icon, name, detail, status }) {
+  const label = status === 'online' ? 'ONLINE' : status === 'offline' ? 'OFFLINE' : status === 'pending' ? 'PENDING' : 'UNKNOWN';
+  return <div className="service-row"><div className="service-icon"><Icon size={16}/></div><div className="service-text"><strong>{name}</strong><span>{detail}</span></div><span className={`status-label ${status}`}><StatusDot tone={status === 'online' ? 'green' : status === 'offline' ? 'red' : 'muted'}/>{label}</span></div>;
+}
+
+function SectionPage({ page, onNavigate }) {
+  const config = {
+    activity: { kicker:'COMMAND / LOGS', title:'Activity log', desc:'A chronological record of platform events and research activity.', icon:Activity, empty:'No activity recorded', body:'Events will appear when connected systems begin reporting real activity.' },
+    models: { kicker:'INTELLIGENCE / REGISTRY', title:'Model registry', desc:'Track model artifacts, versions, provenance, and evaluation status.', icon:Layers3, empty:'Your registry is empty', body:'Register a model artifact to start tracking versions and evidence. No models have been added yet.' },
+    experiments: { kicker:'INTELLIGENCE / EVALUATION', title:'Experiments', desc:'Compare controlled runs with reproducible configurations and honest results.', icon:Workflow, empty:'No experiments yet', body:'Evaluation runs will appear here when a real training or evaluation pipeline is connected.' },
+    datasets: { kicker:'INTELLIGENCE / DATA', title:'Datasets', desc:'Keep datasets, versions, sources, and quality checks organized.', icon:Database, empty:'No datasets registered', body:'Dataset records will be listed here after a source is connected or a dataset is added.' },
+    integrations: { kicker:'SYSTEMS / CONNECTIONS', title:'Integrations', desc:'Connect the tools and sources that power VARN research.', icon:Network, empty:'No integrations connected', body:'Connections are not configured yet. Nothing is connected automatically.' },
+    infrastructure: { kicker:'SYSTEMS / HEALTH', title:'Infrastructure', desc:'Understand service health, storage, deployment, and runtime configuration.', icon:Gauge, empty:'Infrastructure telemetry unavailable', body:'Only the basic API health endpoint exists today. Other services will show up when implemented.' },
+  }[page];
+  const Icon = config.icon;
+  return <div className="section-page">
+    <div className="eyebrow"><span className="eyebrow-line"/>{config.kicker}</div>
+    <div className="page-title-row"><div><h1>{config.title}</h1><p>{config.desc}</p></div><div className="page-title-icon"><Icon size={24}/></div></div>
+    {page === 'integrations' && <div className="integration-grid">
+      <IntegrationCard icon={GitBranch} name="Kaggle" detail="Model training and notebooks" status="Not connected" />
+      <IntegrationCard icon={ShieldCheck} name="VARN API" detail="Platform status and service health" status="Basic endpoint available" />
+      <IntegrationCard icon={Database} name="Object storage" detail="Model artifacts and dataset files" status="Not configured" />
+    </div>}
+    <section className="panel page-empty-panel"><EmptyState icon={Icon} title={config.empty} body={config.body} action={page === 'integrations' ? {label:'Check API status',onClick:()=>onNavigate('overview')} : undefined}/></section>
+    <div className="honesty-note"><ShieldCheck size={16}/><span><strong>Evidence-first by design.</strong> This workspace does not invent metrics, model versions, event history, or service health.</span></div>
+  </div>;
+}
+
+function IntegrationCard({icon: Icon,name,detail,status}) {
+  return <div className="integration-card"><div className="integration-card-top"><div className="metric-icon"><Icon size={17}/></div><span className="status-label pending"><StatusDot/>NOT CONNECTED</span></div><h3>{name}</h3><p>{detail}</p><div className="integration-status">{status}</div></div>;
+}
+
+function App() {
+  const [page, setPage] = useState('overview');
+  const [apiState, setApiState] = useState('unknown');
+  const [apiChecking, setApiChecking] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
+
+  async function checkApi() {
+    setApiChecking(true);
+    try {
+      const response = await fetch(`${API_URL}/health`, { method: 'GET', cache: 'no-store' });
+      if (!response.ok) throw new Error('API returned a non-success status');
+      const data = await response.json();
+      setApiState(data?.ok === true ? 'online' : 'offline');
+    } catch {
+      setApiState('offline');
+    } finally {
+      setApiChecking(false);
+    }
+  }
+
+  useEffect(() => { checkApi(); }, []);
+
+  const currentTitle = [...navGroups.flatMap(g => g.items)].find(item => item.id === page)?.label ?? 'Overview';
+  const choosePage = (id) => { setPage(id); setMobileOpen(false); setQuery(''); setSearchOpen(false); };
+  const filteredNav = navGroups.map(group => ({...group, items: group.items.filter(item => item.label.toLowerCase().includes(query.toLowerCase()))})).filter(group => group.items.length);
+
+  return <div className="app-shell">
+    {mobileOpen && <button className="mobile-scrim" aria-label="Close menu" onClick={()=>setMobileOpen(false)}/>}
+    <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
+      <div className="brand-lockup"><BrandMark/><div><span className="brand-name">VARN</span><span className="brand-subtitle">SYSTEMS PLATFORM</span></div><button className="mobile-close icon-button" aria-label="Close menu" onClick={()=>setMobileOpen(false)}><X size={18}/></button></div>
+      <div className="workspace-switcher"><div className="workspace-avatar">V</div><div className="workspace-meta"><strong>VARN Research</strong><span>Development workspace</span></div><ChevronDown size={15}/></div>
+      <nav className="main-nav" aria-label="Main navigation">
+        {filteredNav.map(group=><div className="nav-group" key={group.label}><div className="nav-group-label">{group.label}</div>{group.items.map(item=>{const Icon=item.icon;return <button key={item.id} className={`nav-item ${page===item.id?'active':''}`} onClick={()=>choosePage(item.id)}><Icon size={17} strokeWidth={1.8}/><span>{item.label}</span>{item.id==='activity'&&<span className="nav-count">0</span>}</button>})}</div>)}
+        {filteredNav.length===0&&<div className="nav-no-results">No sections match “{query}”.</div>}
+      </nav>
+      <div className="sidebar-bottom">
+        <div className="sidebar-status"><div className="status-head"><span>API CONNECTION</span><StatusDot tone={apiState==='online'?'green':apiState==='offline'?'red':'muted'}/></div><div className="sidebar-status-value">{apiState==='online'?'Connected':apiState==='offline'?'Unavailable':'Checking status'}</div><button onClick={checkApi} className="status-refresh"><RefreshCw size={12} className={apiChecking?'spin':''}/> Refresh connection</button></div>
+        <button className="nav-item utility-item" onClick={()=>choosePage('infrastructure')}><Settings2 size={17}/><span>System settings</span></button>
+        <div className="user-row"><div className="user-avatar">V</div><div className="user-meta"><strong>VARN Operator</strong><span>Workspace owner</span></div><MoreHorizontal size={18}/></div>
+      </div>
+    </aside>
+
+    <main className="main-area">
+      <header className="topbar">
+        <div className="topbar-left"><button className="mobile-menu icon-button" aria-label="Open menu" onClick={()=>setMobileOpen(true)}><Menu size={19}/></button><div className="breadcrumb"><span>VARN</span><span className="crumb-sep">/</span><strong>{currentTitle}</strong></div><span className="environment-pill"><span/>DEV</span></div>
+        <div className="topbar-actions">
+          {searchOpen ? <div className="search-box"><Search size={15}/><input autoFocus placeholder="Find a section..." value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>e.key==='Escape'&&(setSearchOpen(false),setQuery(''))}/><button className="icon-button" onClick={()=>{setSearchOpen(false);setQuery('')}} aria-label="Close search"><X size={14}/></button></div> : <button className="top-action" onClick={()=>setSearchOpen(true)}><Search size={16}/><span>Search</span><kbd>⌘ K</kbd></button>}
+          <div className="top-divider"/>
+          <button className="icon-button notification-button" aria-label="Notifications" title="No notifications"><Bell size={17}/><span className="notification-dot"/></button>
+          <a className="icon-button help-button" href="https://github.com/bsalsa2/varn" target="_blank" rel="noreferrer" aria-label="Open repository"><CircleHelp size={17}/></a>
+        </div>
+      </header>
+      <div className="page-content">
+        {page==='overview' ? <Overview apiState={apiState} onCheckApi={checkApi} apiChecking={apiChecking} onNavigate={choosePage}/> : <SectionPage page={page} onNavigate={choosePage}/>}
+        <footer className="footer"><span>VARN SYSTEMS PLATFORM <span className="footer-dot">·</span> EARLY ACCESS</span><span>BUILD 0.1.0 <span className="footer-dot">·</span> <a href="https://github.com/bsalsa2/varn" target="_blank" rel="noreferrer">SOURCE <ExternalLink size={10}/></a></span></footer>
+      </div>
+    </main>
+  </div>;
+}
+
+createRoot(document.getElementById('root')).render(<App/>);
