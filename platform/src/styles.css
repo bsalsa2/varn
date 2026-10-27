@@ -76,3 +76,21 @@
 .page-content{padding-top:0}
 @media(max-width:900px){.research-home{padding:30px 24px 20px}.lower-workspace{gap:28px}.workspace-row{grid-template-columns:32px minmax(0,1fr) 35px 90px 18px;gap:10px}}
 @media(max-width:650px){.research-home{padding:24px 17px 18px}.research-intro{flex-direction:column;gap:22px;padding-bottom:24px}.research-intro h1{font-size:32px;margin-top:18px}.connection-brief{display:grid;grid-template-columns:auto 1fr;align-items:center;min-width:0;gap:8px 12px}.connection-brief-label{grid-row:1}.connection-brief-state{grid-column:2;grid-row:1}.connection-brief .text-button{grid-column:1/-1}.workspace-row{grid-template-columns:22px minmax(0,1fr) 25px 16px;padding:16px 2px;gap:9px}.workspace-row-state{display:none}.workspace-row-main strong{font-size:13px}.workspace-row-main small{font-size:10px}.lower-workspace{grid-template-columns:1fr;gap:32px;margin-top:32px}.research-footnote{margin-top:30px;line-height:1.8}}
+
+/* Remove template chrome from the shell. */
+.sidebar-caption{padding:17px 18px 25px;font-size:10px;color:#8d958d;letter-spacing:.015em}
+.sidebar-caption span{color:#b7a17b;padding:0 4px}
+.workspace-switcher{display:none}
+.topbar{height:54px}
+.topbar-actions{gap:16px}
+.source-link{font-size:11px;color:#9ba39c;text-decoration:none}
+.source-link:hover{color:#d7bd8e}
+.sidebar-status-simple{display:flex;align-items:center;gap:9px;padding:14px 4px;border-top:1px solid #292f2b;color:#9aa39a;font-size:10px}
+.sidebar-status-simple button{margin-left:auto;padding:3px;border:0;background:transparent;color:#8e978e;cursor:pointer;display:flex}
+.sidebar-status-simple button:hover{color:#d7bd8e}
+.nav-group-label{font-size:9px;letter-spacing:.09em;color:#7c857c}
+.nav-item{border-radius:2px}
+.nav-item.active{background:#151816;border-color:#343a34;box-shadow:none}
+.brand-lockup{padding-bottom:13px}
+.sidebar-bottom{padding-top:16px}
+@media(max-width:650px){.sidebar-caption{padding-bottom:18px}.topbar{height:52px}}
