@@ -1,247 +1,400 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, Bell, Boxes,
-  Check, ChevronDown, CircleHelp, Command, Database, ExternalLink,
-  Eye, Gauge, GitBranch, HardDrive, Layers3, LayoutDashboard, Menu,
-  MoreHorizontal, Network, RadioTower, RefreshCw, Search, Settings2,
-  ShieldCheck, SlidersHorizontal, Sparkles, Workflow, X, FlaskConical, Orbit
+  ArrowUpRight, Database, FlaskConical, Grid3x3, Layers3,
+  Orbit, RefreshCw, Search, Server, Workflow, X, CornerDownLeft,
 } from 'lucide-react';
-import { roboflow, birdDrone, runs, caveats } from './results.js';
+import Earth from './earth/Earth.jsx';
+import { formatLat, formatLon } from './earth/sun.js';
+import { caveats } from './results.js';
+import { EVIDENCE, models, datasets, bestVerified, runOne, pendingRun, roboflow, birdDrone, runs } from './records.js';
 import './styles.css';
 
 const Sky = lazy(() => import('./sky/Sky.jsx'));
 
 const API_URL = 'https://varn-api.varnlabs.workers.dev';
-const navGroups = [
-  { label: 'WORK', items: [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'activity', label: 'Activity log', icon: Activity },
-    { id: 'sky', label: 'Sky', icon: Orbit },
-  ]},
-  { label: 'RESEARCH', items: [
-    { id: 'models', label: 'Models', icon: Layers3 },
-    { id: 'experiments', label: 'Experiments', icon: Workflow },
-    { id: 'results', label: 'Results', icon: FlaskConical },
-    { id: 'datasets', label: 'Datasets', icon: Database },
-  ]},
-  { label: 'PLATFORM', items: [
-    { id: 'integrations', label: 'Integrations', icon: Network },
-    { id: 'infrastructure', label: 'Infrastructure', icon: Gauge },
-  ]},
+const ROUTES = [
+  { id: 'overview', label: 'Overview', icon: Orbit, key: '1' },
+  { id: 'results', label: 'Results', icon: FlaskConical, key: '2' },
+  { id: 'runs', label: 'Runs', icon: Workflow, key: '3' },
+  { id: 'models', label: 'Models', icon: Layers3, key: '4' },
+  { id: 'datasets', label: 'Datasets', icon: Database, key: '5' },
+  { id: 'system', label: 'System', icon: Server, key: '6' },
 ];
+const routeFromHash = () => { const id = location.hash.replace(/^#\/?/, ''); return ROUTES.some((r) => r.id === id) ? id : 'overview'; };
+const utcTime = (d) => d ? d.toISOString().slice(11, 16) + ' UTC' : '—';
+const cx = (...c) => c.filter(Boolean).join(' ');
 
-function BrandMark() {
-  return <div className="brand-mark" aria-hidden="true"><svg viewBox="0 0 42 42"><path d="M7 31 17.2 9h7.5L35 31h-8.1l-6-13.1L14.8 31Z" fill="currentColor"/><path d="M17.2 25.2h9.1l2.2 5.8H14.8Z" fill="#111315"/></svg></div>;
+function useReducedMotion() {
+  const q = '(prefers-reduced-motion: reduce)';
+  const [v, setV] = useState(() => matchMedia(q).matches);
+  useEffect(() => { const m = matchMedia(q); const on = () => setV(m.matches); m.addEventListener('change', on); return () => m.removeEventListener('change', on); }, []);
+  return v;
 }
 
-function StatusDot({ tone = 'muted' }) { return <span className={`status-dot ${tone}`} />; }
-
-function EmptyState({ icon: Icon = Boxes, title, body, action }) {
-  return <div className="empty-state"><div className="empty-icon"><Icon size={21}/></div><h3>{title}</h3><p>{body}</p>{action && <button className="button secondary" onClick={action.onClick}>{action.label}</button>}</div>;
+function useApiHealth() {
+  const [api, setApi] = useState({ state: 'checking', latency: null, checkedAt: null, body: null, error: null });
+  const busy = useRef(false);
+  const check = useCallback(async () => {
+    if (busy.current) return;
+    busy.current = true;
+    setApi((a) => ({ ...a, state: a.checkedAt ? a.state : 'checking', busy: true }));
+    const t0 = performance.now();
+    try {
+      const res = await fetch(`${API_URL}/health`, { cache: 'no-store' });
+      const latency = Math.round(performance.now() - t0);
+      const body = await res.json().catch(() => null);
+      const ok = res.ok && body?.ok === true;
+      setApi({ state: ok ? 'online' : 'offline', latency, checkedAt: new Date(), body, error: ok ? null : `HTTP ${res.status}` });
+    } catch (err) {
+      setApi({ state: 'offline', latency: null, checkedAt: new Date(), body: null, error: err?.message || 'Network error' });
+    } finally { busy.current = false; }
+  }, []);
+  useEffect(() => {
+    check();
+    const id = setInterval(() => { if (!document.hidden) check(); }, 120000);
+    return () => clearInterval(id);
+  }, [check]);
+  return [api, check];
 }
 
-function Overview({ apiState, onCheckApi, apiChecking, onNavigate }) {
-  const workspaces = [
-    { id: 'models', name: 'Models', description: 'Artifacts, versions, and provenance', count: '0' },
-    { id: 'experiments', name: 'Experiments', description: 'Evaluation runs and comparisons', count: '0' },
-    { id: 'datasets', name: 'Datasets', description: 'Sources, versions, and quality', count: '0' },
+const API_LABEL = { online: 'Online', offline: 'Unreachable', checking: 'Checking' };
+
+function Mark() {
+  return <svg className="mark" viewBox="0 0 42 42" aria-hidden="true"><path d="M7 31 17.2 9h7.5L35 31h-8.1l-6-13.1L14.8 31Z" fill="currentColor"/><path d="M17.2 25.2h9.1l2.2 5.8H14.8Z" fill="var(--bg)"/></svg>;
+}
+
+function Signal({ state }) { return <span className={`signal ${state}`} aria-hidden="true"/>; }
+
+/* ───────────── Rail ───────────── */
+function Rail({ route, go, api, onPalette }) {
+  return <nav className="rail" aria-label="Command Center">
+    <a className="rail-brand" href="#/overview" onClick={(e) => { e.preventDefault(); go('overview'); }}>
+      <Mark/><span className="rail-word">VARN</span>
+    </a>
+    <button className="rail-search" onClick={onPalette} aria-label="Open command menu">
+      <Search size={14}/><span>Go to…</span><kbd>⌘K</kbd>
+    </button>
+    <ul className="rail-list">
+      {ROUTES.map((r) => { const Icon = r.icon; const on = route === r.id;
+        return <li key={r.id}><a href={`#/${r.id}`} className={cx('rail-item', on && 'on')} aria-current={on ? 'page' : undefined}
+          onClick={(e) => { e.preventDefault(); go(r.id); }}>
+          <Icon size={16} strokeWidth={1.6}/><span>{r.label}</span><kbd>{r.key}</kbd>
+        </a></li>; })}
+      <li className="sky-li"><a href="#sky" className="rail-item"><Orbit size={16} strokeWidth={1.6}/><span>Sky<span className="lg-only"> view</span></span><ArrowUpRight size={13} className="rail-ext"/></a></li>
+    </ul>
+    <button className="rail-status" onClick={() => go('system')} title="API health">
+      <Signal state={api.state}/>
+      <span className="rail-status-text"><strong>API {API_LABEL[api.state].toLowerCase()}</strong>
+        <small>{api.latency != null ? `${api.latency} ms · ` : ''}{utcTime(api.checkedAt)}</small></span>
+    </button>
+  </nav>;
+}
+
+/* ───────────── Overview: the planet carries the page ───────────── */
+function Overview({ go, api, openInspector }) {
+  const cells = [
+    { k: 'Best verified', v: bestVerified.metric.toFixed(3), unit: 'mAP50', d: 'v3 (.pt) · Roboflow clean validation', to: 'results' },
+    { k: 'Last decision', v: 'Keep v3', d: `Fine-tune run 1 scored ${runOne.metric.toFixed(3)} (${runOne.vsV3})`, to: 'runs' },
+    { k: 'In progress', v: pendingRun.name, small: true, d: 'Running · no result recorded yet', to: 'runs' },
   ];
-  return <div className="research-home">
-    <section className="research-intro">
-      <div>
-        <div className="eyebrow"><span className="eyebrow-line"/> VARN / RESEARCH</div>
-        <h1>Research workspace</h1>
-        <p>Models, data, and evaluations. One place to keep the work traceable.</p>
+  return <div className="overview">
+    <header className="overview-head enter">
+      <p className="eyebrow"><span>VARN</span><i/>Command Center<i/>Research build 0.1</p>
+      <h1 className="display">Every result<br/>traces to its source.</h1>
+      <p className="lede">Detection models, datasets and evaluation runs for VARN's sky-awareness research. Numbers appear here only when a report backs them.</p>
+      <div className="overview-actions">
+        <button className="btn primary" onClick={() => go('results')}>Open results<ArrowUpRight size={15}/></button>
+        <button className="btn ghost" onClick={() => openInspector({ type: 'evidence', src: bestVerified.src, highlight: '0.853', title: 'Where 0.853 comes from' })}>View the evidence</button>
       </div>
-      <div className="connection-brief">
-        <span className="connection-brief-label">API</span>
-        <span className="connection-brief-state"><StatusDot tone={apiState === 'online' ? 'green' : apiState === 'offline' ? 'red' : 'muted'}/>{apiState === 'online' ? 'Connected' : apiState === 'offline' ? 'Unavailable' : 'Checking'}</span>
-        <button className="text-button" onClick={onCheckApi} disabled={apiChecking}>{apiChecking ? 'Checking…' : 'Check connection'}</button>
-      </div>
-    </section>
+    </header>
 
-    <section className="workspace-section">
-      <div className="plain-section-heading"><h2>Workspace</h2><span>0 records</span></div>
-      <div className="workspace-list">
-        {workspaces.map((item,index)=><button className="workspace-row" key={item.id} onClick={()=>onNavigate(item.id)}>
-          <span className="workspace-row-index">0{index+1}</span>
-          <span className="workspace-row-main"><strong>{item.name}</strong><small>{item.description}</small></span>
-          <span className="workspace-row-count">{item.count}</span>
-          <span className="workspace-row-state">Empty</span>
-          <span className="workspace-row-arrow">↗</span>
-        </button>)}
-      </div>
+    <section className="readout glass enter" style={{ '--d': '120ms' }} aria-label="Research readout">
+      {cells.map((c) => <button key={c.k} className="readout-cell" onClick={() => go(c.to)}>
+        <span className="label">{c.k}</span>
+        <span className={cx('readout-value', c.small && 'small')}>{c.v}{c.unit && <em>{c.unit}</em>}</span>
+        <span className="readout-detail">{c.d}</span>
+      </button>)}
+      <button className="readout-cell" onClick={() => go('system')}>
+        <span className="label">Platform API</span>
+        <span className="readout-value small"><Signal state={api.state}/>{API_LABEL[api.state]}</span>
+        <span className="readout-detail">{api.latency != null ? `${api.latency} ms round trip · ` : ''}checked {utcTime(api.checkedAt)}</span>
+      </button>
     </section>
-
-    <section className="lower-workspace">
-      <div className="lower-section">
-        <div className="plain-section-heading"><h2>Connections</h2><button className="text-button" onClick={()=>onNavigate('integrations')}>Manage</button></div>
-        <div className="connection-row"><span className="connection-symbol">↗</span><span className="connection-name"><strong>VARN API</strong><small>Platform status endpoint</small></span><span className="connection-state"><StatusDot tone={apiState === 'online' ? 'green' : apiState === 'offline' ? 'red' : 'muted'}/>{apiState === 'online' ? 'Connected' : apiState === 'offline' ? 'Unavailable' : 'Checking'}</span></div>
-        <div className="connection-row"><span className="connection-symbol">↳</span><span className="connection-name"><strong>Kaggle</strong><small>Training and notebooks</small></span><span className="connection-state"><StatusDot/>Not connected</span></div>
-      </div>
-      <div className="lower-section activity-plain">
-        <div className="plain-section-heading"><h2>Recent activity</h2><button className="text-button" onClick={()=>onNavigate('activity')}>Open log ↗</button></div>
-        <p>No activity yet.</p>
-        <small>Recorded imports, model changes, and evaluation runs will appear here.</small>
-      </div>
-    </section>
-    <div className="research-footnote">Early research build <span>·</span> Empty states reflect missing records, not successful evaluations.</div>
   </div>;
 }
 
-function Metric({ icon: Icon, label, value, sub, tone }) {
-  return <div className="metric-card"><div className="metric-top"><div className="metric-icon"><Icon size={16}/></div><span className="metric-label">{label}</span><MoreHorizontal size={17} className="muted-icon"/></div><div className={`metric-value ${tone}`}>{value}</div><div className="metric-sub"><span className="sub-line"/>{sub}</div></div>;
-}
-
-function ServiceRow({ icon: Icon, name, detail, status }) {
-  const label = status === 'online' ? 'ONLINE' : status === 'offline' ? 'OFFLINE' : status === 'pending' ? 'PENDING' : 'UNKNOWN';
-  return <div className="service-row"><div className="service-icon"><Icon size={16}/></div><div className="service-text"><strong>{name}</strong><span>{detail}</span></div><span className={`status-label ${status}`}><StatusDot tone={status === 'online' ? 'green' : status === 'offline' ? 'red' : 'muted'}/>{label}</span></div>;
-}
-
-function ScoreBar({ value }) {
-  return <span className="score-bar" aria-hidden="true"><i style={{ width: `${value * 100}%` }}/></span>;
-}
-
-function ResultsTable({ title, detail, rows, extraHead, extraKey }) {
-  return <section className="results-block">
-    <div className="plain-section-heading"><h2>{title}</h2><span>mAP50</span></div>
-    <p className="results-detail">{detail}</p>
-    <table className="results-table">
-      <thead><tr><th>Model</th><th className="num">mAP50</th><th/><th>{extraHead}</th><th>Source</th></tr></thead>
-      <tbody>{rows.map(r=><tr key={r.model}>
-        <td>{r.model}</td><td className="num">{r.metric.toFixed(3)}</td><td className="bar-cell"><ScoreBar value={r.metric}/></td>
-        <td>{r[extraKey]}</td><td className="src">{r.src}</td>
-      </tr>)}</tbody>
-    </table>
+/* ───────────── Workspace sheet ───────────── */
+function Sheet({ eyebrow, title, desc, children, aside }) {
+  return <section className="sheet enter">
+    <header className="sheet-head">
+      <div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1>{desc && <p className="sheet-desc">{desc}</p>}</div>
+      {aside}
+    </header>
+    <div className="sheet-body">{children}</div>
   </section>;
 }
 
-function ResultsPage() {
-  return <div className="section-page results-page">
-    <div className="eyebrow"><span className="eyebrow-line"/>RESEARCH / RESULTS</div>
-    <div className="page-title-row"><div><h1>Results</h1><p>Hand-copied from Kaggle reports for notebook varnlabs/varn-train. Metric is mAP50 as labeled in the reports.</p></div><div className="page-title-icon"><FlaskConical size={24}/></div></div>
+function Bar({ value }) { return <span className="bar" aria-hidden="true"><i style={{ '--w': `${value * 100}%` }}/></span>; }
 
-    <div className="honesty-note"><AlertTriangle size={16}/><span><strong>Read each table on its own.</strong> Scores are only comparable within one table: same test set, and the model named on the row. The v3 and fine-tune scores on Bird vs Drone are different models and are never one result.</span></div>
+function ScoreTable({ table, extraHead, extraKey, open }) {
+  const best = Math.max(...table.rows.map((r) => r.metric));
+  return <div className="block">
+    <div className="block-head"><h2>{table.title}</h2><span className="label">mAP50</span></div>
+    <p className="block-note">{table.detail}</p>
+    <table className="table">
+      <thead><tr><th>Model</th><th className="num">mAP50</th><th className="bar-col"><span className="sr-only">Scale</span></th><th>{extraHead}</th><th className="src-col">Source</th></tr></thead>
+      <tbody>{table.rows.map((r) => <tr key={r.model} tabIndex={0} className={cx(r.metric === best && 'lead')}
+        onClick={() => open({ type: 'evidence', src: r.src, highlight: r.metric.toFixed(3).replace(/0$/, ''), title: `${r.model} · ${table.title}` })}
+        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.click(); }}>
+        <td>{r.model}</td><td className="num mono">{r.metric.toFixed(3)}</td><td className="bar-col"><Bar value={r.metric}/></td>
+        <td className="muted">{r[extraKey]}</td><td className="src-col"><span className="src">{r.src}</span></td>
+      </tr>)}</tbody>
+    </table>
+  </div>;
+}
 
-    <ResultsTable {...roboflow} extraHead="vs v3 (same set)" extraKey="vsV3"/>
-    <div className="results-sub">
-      <table className="results-table compact">
-        <thead><tr><th>Roboflow validation, per class (log)</th><th className="num">mAP50-95</th><th className="num">AP50 drone</th><th className="num">AP50 aircraft</th><th>Source</th></tr></thead>
-        <tbody>{roboflow.detail2.map(r=><tr key={r.label}><td>{r.label}</td><td className="num">{r.map5095}</td><td className="num">{r.drone}</td><td className="num">{r.aircraft}</td><td className="src">{r.src}</td></tr>)}</tbody>
+function Results({ open }) {
+  return <Sheet eyebrow="Research / Results" title="Results"
+    desc="Hand-copied from Kaggle reports for notebook varnlabs/varn-train. Select a row to read the source."
+    aside={<div className="callout"><strong>Read each table on its own.</strong> Scores compare only within a table: same test set, the model named on the row.</div>}>
+    <ScoreTable table={roboflow} extraHead="vs v3, same set" extraKey="vsV3" open={open}/>
+    <div className="block">
+      <table className="table compact">
+        <thead><tr><th>Roboflow validation, per class</th><th className="num">mAP50-95</th><th className="num">AP50 drone</th><th className="num">AP50 aircraft</th><th className="src-col">Source</th></tr></thead>
+        <tbody>{roboflow.detail2.map((r) => <tr key={r.label} tabIndex={0}
+          onClick={() => open({ type: 'evidence', src: r.src, highlight: r.map5095, title: `${r.label} · per class` })}
+          onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.click(); }}>
+          <td>{r.label}</td><td className="num mono">{r.map5095}</td><td className="num mono">{r.drone}</td><td className="num mono">{r.aircraft}</td><td className="src-col"><span className="src">{r.src}</span></td></tr>)}</tbody>
       </table>
-      <p className="results-detail">{roboflow.pr} <span className="src">({'kaggle-log-excerpts.md'})</span></p>
+      <p className="block-note">{roboflow.pr}.</p>
+    </div>
+    <ScoreTable table={birdDrone} extraHead="Notes" extraKey="extra" open={open}/>
+    <div className="block">
+      <div className="block-head"><h2>Caveats</h2></div>
+      <ol className="caveats">{caveats.map((c) => <li key={c}>{c}</li>)}</ol>
+    </div>
+  </Sheet>;
+}
+
+function Runs({ open }) {
+  return <Sheet eyebrow="Research / Runs" title="Runs" desc="Every training and scoring run with a recorded report, oldest first.">
+    <ol className="timeline">{runs.map((run, i) => <li key={run.id} className={cx('tl-item', run.pending && 'pending')}>
+      <span className="tl-node" aria-hidden="true"/>
+      <button className="tl-card" onClick={() => open({ type: 'evidence', src: run.src, highlight: run.pending ? 'running' : 'Verdict', title: run.name })}>
+        <span className="tl-meta mono">{String(i + 1).padStart(2, '0')}<i/>{run.pending ? 'Running' : `${run.mode} · ${run.date}`}</span>
+        <strong>{run.name}</strong>
+        <span className="tl-verdict">{run.pending ? run.config : run.verdict}</span>
+        {run.note && <span className="tl-note mono">{run.note}</span>}
+        <span className="src">{run.src}</span>
+      </button>
+    </li>)}</ol>
+  </Sheet>;
+}
+
+function Models({ open }) {
+  return <Sheet eyebrow="Research / Models" title="Models" desc="Models named in the evidence. There is no model registry yet; this list is read from the reports.">
+    <div className="cards">{models.map((m) => <button key={m.id} className="card" onClick={() => open({ type: 'model', model: m })}>
+      <span className="card-top"><span className={cx('chip', m.tone)}><Signal state={m.tone === 'ok' ? 'online' : m.tone === 'pending' ? 'checking' : 'idle'}/>{m.status}</span><ArrowUpRight size={15} className="card-arrow"/></span>
+      <strong className="card-title">{m.name}</strong>
+      {m.detail && <span className="mono card-sub">{m.detail}</span>}
+      <span className="card-body">{m.summary}</span>
+      <dl className="card-facts">{m.facts.slice(-2).map(([k, v]) => <div key={k}><dt>{k}</dt><dd className="mono">{v.split(' · ')[0].split(' (')[0]}</dd></div>)}</dl>
+    </button>)}</div>
+  </Sheet>;
+}
+
+function Datasets({ open }) {
+  return <Sheet eyebrow="Research / Datasets" title="Datasets" desc="Sets the reports evaluated or trained on. Counts are as reported, after near-duplicate removal.">
+    <table className="table datasets">
+      <thead><tr><th>Dataset</th><th>Role</th><th className="num">Images</th><th className="num">Instances</th><th>Classes</th></tr></thead>
+      <tbody>{datasets.map((d) => <tr key={d.id} tabIndex={0} onClick={() => open({ type: 'dataset', dataset: d })} onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.click(); }}>
+        <td><strong>{d.name}</strong></td><td className="muted">{d.role}</td>
+        <td className="num mono">{d.images.toLocaleString('en-US')}</td><td className="num mono">{d.instances ?? '—'}</td><td className="muted">{d.classes}</td>
+      </tr>)}</tbody>
+    </table>
+  </Sheet>;
+}
+
+function System({ api, check, earth }) {
+  return <Sheet eyebrow="Platform / System" title="System" desc="What this client can verify right now. Nothing on this page is assumed.">
+    <div className="sys-grid">
+      <div className="sys-panel">
+        <div className="block-head"><h2>Platform API</h2><button className="btn ghost sm" onClick={check} disabled={api.busy}><RefreshCw size={13} className={api.busy ? 'spin' : ''}/>Check now</button></div>
+        <dl className="facts">
+          <div><dt>Status</dt><dd><Signal state={api.state}/>{API_LABEL[api.state]}{api.error && <span className="muted"> · {api.error}</span>}</dd></div>
+          <div><dt>Round trip</dt><dd className="mono">{api.latency != null ? `${api.latency} ms` : '—'}</dd></div>
+          <div><dt>Last checked</dt><dd className="mono">{api.checkedAt ? api.checkedAt.toISOString().replace('T', ' ').slice(0, 19) + ' UTC' : '—'}</dd></div>
+          <div><dt>Endpoint</dt><dd className="mono">{API_URL.replace('https://', '')}/health</dd></div>
+        </dl>
+        <pre className="raw" aria-label="Raw response">{api.body ? JSON.stringify(api.body, null, 2) : '// no response body'}</pre>
+      </div>
+      <div className="sys-panel">
+        <div className="block-head"><h2>Connections</h2></div>
+        <ul className="conn">
+          <li><span><strong>Kaggle</strong><small>Training notebooks · results are copied by hand</small></span><span className="chip muted"><Signal state="idle"/>Not connected</span></li>
+          <li><span><strong>Object storage</strong><small>Model artifacts and dataset files</small></span><span className="chip muted"><Signal state="idle"/>Not configured</span></li>
+          <li><span><strong>Activity log</strong><small>No event source exists yet, so none is shown</small></span><span className="chip muted"><Signal state="idle"/>None</span></li>
+        </ul>
+        <div className="block-head" style={{ marginTop: 28 }}><h2>Earth imagery</h2></div>
+        <dl className="facts">
+          <div><dt>Renderer</dt><dd>{{ ready: 'WebGL 2 · loaded', loading: 'Loading imagery…', failed: 'Imagery failed to load', unsupported: 'WebGL 2 unavailable · static fallback' }[earth]}</dd></div>
+          <div><dt>Source</dt><dd>NASA Blue Marble and Earth at Night composites (public domain)</dd></div>
+          <div><dt>Live?</dt><dd>No. Only the sun angle is current; the view is a slow camera drift.</dd></div>
+        </dl>
+      </div>
+    </div>
+  </Sheet>;
+}
+
+/* ───────────── Inspector (contextual) ───────────── */
+function EvidenceText({ src, highlight }) {
+  const text = EVIDENCE[src] ?? '';
+  const firstHit = useRef(null);
+  useEffect(() => { firstHit.current?.scrollIntoView({ block: 'center' }); }, [src, highlight]);
+  let marked = false;
+  return <pre className="evidence">{text.split('\n').map((line, i) => {
+    const hit = highlight && line.includes(highlight);
+    const ref = hit && !marked ? (marked = true, firstHit) : undefined;
+    return <span key={i} ref={ref} className={cx('ev-line', hit && 'hit')}><span className="ev-n">{i + 1}</span>{line || ' '}</span>;
+  })}</pre>;
+}
+
+function Inspector({ item, onClose }) {
+  const ref = useRef(null);
+  useEffect(() => { ref.current?.focus(); }, [item]);
+  if (!item) return null;
+  let title, body, src;
+  if (item.type === 'evidence') { title = item.title; src = item.src; body = null; }
+  if (item.type === 'model') { const m = item.model; title = m.name; src = m.src;
+    body = <><p className="insp-lede">{m.summary}</p><dl className="facts">{m.facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl></>; }
+  if (item.type === 'dataset') { const d = item.dataset; title = d.name; src = d.src;
+    body = <><p className="insp-lede">{d.role}</p><dl className="facts">
+      <div><dt>Images</dt><dd className="mono">{d.images.toLocaleString('en-US')}</dd></div>
+      <div><dt>Instances</dt><dd className="mono">{d.instances ?? 'Not reported'}</dd></div>
+      <div><dt>Classes</dt><dd>{d.classes}</dd></div>
+      <div><dt>Cleaning</dt><dd>{d.note}</dd></div>
+      <div><dt>Caveat</dt><dd>{d.caveat}</dd></div></dl></>; }
+  return <aside className="inspector glass" role="dialog" aria-label={title} tabIndex={-1} ref={ref}
+    onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
+    <header className="insp-head"><div><p className="eyebrow">Evidence</p><h2>{title}</h2></div>
+      <button className="icon-btn" onClick={onClose} aria-label="Close panel"><X size={16}/></button></header>
+    {body}
+    <div className="insp-src"><span className="label">Source file</span><span className="mono">platform/evidence/{src}</span></div>
+    <EvidenceText src={src} highlight={item.highlight}/>
+  </aside>;
+}
+
+/* ───────────── Command menu ───────────── */
+function Palette({ open, onClose, go, actions }) {
+  const [q, setQ] = useState('');
+  const [i, setI] = useState(0);
+  const input = useRef(null);
+  const items = useMemo(() => [
+    ...ROUTES.map((r) => ({ id: r.id, label: r.label, hint: `Go · ${r.key}`, icon: r.icon, run: () => go(r.id) })),
+    ...actions,
+  ].filter((x) => x.label.toLowerCase().includes(q.toLowerCase())), [q, actions, go]);
+  useEffect(() => { if (open) { setQ(''); setI(0); setTimeout(() => input.current?.focus(), 0); } }, [open]);
+  useEffect(() => setI(0), [q]);
+  if (!open) return null;
+  const run = (x) => { onClose(); x.run(); };
+  return <div className="palette-scrim" onMouseDown={onClose}>
+    <div className="palette glass" role="dialog" aria-modal="true" aria-label="Command menu" onMouseDown={(e) => e.stopPropagation()}>
+      <div className="palette-input"><Search size={16}/>
+        <input ref={input} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Go to a page or run an action" aria-label="Search commands"
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowDown') { e.preventDefault(); setI((v) => Math.min(items.length - 1, v + 1)); }
+            if (e.key === 'ArrowUp') { e.preventDefault(); setI((v) => Math.max(0, v - 1)); }
+            if (e.key === 'Enter' && items[i]) run(items[i]);
+            if (e.key === 'Escape') onClose();
+          }}/><kbd>esc</kbd></div>
+      <ul className="palette-list" role="listbox">{items.map((x, n) => { const Icon = x.icon;
+        return <li key={x.id} role="option" aria-selected={n === i} className={cx(n === i && 'on')} onMouseEnter={() => setI(n)} onClick={() => run(x)}>
+          <Icon size={15} strokeWidth={1.6}/><span>{x.label}</span><small>{x.hint}</small>{n === i && <CornerDownLeft size={13}/>}</li>; })}
+        {!items.length && <li className="empty">Nothing matches “{q}”.</li>}</ul>
+    </div>
+  </div>;
+}
+
+/* ───────────── Shell ───────────── */
+function CommandCenter() {
+  const [route, setRoute] = useState(routeFromHash);
+  const [api, check] = useApiHealth();
+  const [inspect, setInspect] = useState(null);
+  const [palette, setPalette] = useState(false);
+  const [earth, setEarth] = useState('loading');
+  const [view, setView] = useState(null);
+  const [grid, setGrid] = useState(() => { try { return localStorage.getItem('varn.cc.grid') !== '0'; } catch { return true; } });
+  const reduced = useReducedMotion();
+
+  useEffect(() => { try { localStorage.setItem('varn.cc.grid', grid ? '1' : '0'); } catch { /* storage unavailable */ } }, [grid]);
+  useEffect(() => { const on = () => setRoute(routeFromHash()); addEventListener('hashchange', on); return () => removeEventListener('hashchange', on); }, []);
+  useEffect(() => { document.title = `${ROUTES.find((r) => r.id === route).label} · VARN`; }, [route]);
+
+  const go = useCallback((id) => { setInspect(null); if (location.hash !== `#/${id}`) location.hash = `/${id}`; setRoute(id); }, []);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPalette((v) => !v); return; }
+      if (e.target.closest('input, textarea, [contenteditable]') || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === 'Escape') { setInspect(null); return; }
+      const r = ROUTES.find((x) => x.key === e.key); if (r && !palette) go(r.id);
+    };
+    addEventListener('keydown', onKey); return () => removeEventListener('keydown', onKey);
+  }, [go, palette]);
+
+  const actions = useMemo(() => [
+    { id: 'check', label: 'Check API health', hint: 'Action', icon: RefreshCw, run: check },
+    { id: 'grid', label: grid ? 'Hide graticule' : 'Show graticule', hint: 'Action', icon: Grid3x3, run: () => setGrid((g) => !g) },
+    { id: 'sky', label: 'Open Sky view', hint: 'Separate view', icon: Orbit, run: () => { location.hash = 'sky'; } },
+  ], [check, grid]);
+
+  const mode = route === 'overview' ? 'overview' : inspect ? 'inspect' : 'work';
+  const page = { results: <Results open={setInspect}/>, runs: <Runs open={setInspect}/>, models: <Models open={setInspect}/>,
+    datasets: <Datasets open={setInspect}/>, system: <System api={api} check={check} earth={earth}/> }[route];
+
+  return <div className={cx('cc', `mode-${mode}`, `earth-${earth}`)}>
+    <div className="earth-layer">
+      {earth !== 'unsupported' && <Earth mode={mode} grid={grid} reducedMotion={reduced} onStatus={setEarth} onView={setView}/>}
+      <div className="earth-fallback" aria-hidden="true"/>
+      <div className="earth-shade" aria-hidden="true"/>
     </div>
 
-    <ResultsTable {...birdDrone} extraHead="Notes" extraKey="extra"/>
-
-    <section className="results-block">
-      <div className="plain-section-heading"><h2>Runs</h2><span>{runs.length} recorded</span></div>
-      <div className="run-list">{runs.map(run=><div className={`run-row ${run.pending?'pending':''}`} key={run.id}>
-        <div className="run-main"><strong>{run.name}</strong><small>{run.pending ? run.config : `Mode: ${run.mode} · ${run.date}`}</small></div>
-        <div className="run-verdict">{run.pending ? <span className="status-label pending"><StatusDot/>PENDING</span> : <span>{run.verdict}</span>}
-          {run.pending && <small>Running, no result yet.</small>}
-          {run.note && <small>{run.note}</small>}</div>
-        <div className="src">{run.src}</div>
-      </div>)}</div>
-    </section>
-
-    <section className="results-block">
-      <div className="plain-section-heading"><h2>Caveats</h2></div>
-      <ul className="caveat-list">{caveats.map(c=><li key={c}>{c}</li>)}</ul>
-    </section>
-  </div>;
-}
-
-function SectionPage({ page, onNavigate }) {
-  const config = {
-    activity: { kicker:'COMMAND / LOGS', title:'Activity log', desc:'A chronological record of platform events and research activity.', icon:Activity, empty:'No activity recorded', body:'Events will appear when connected systems begin reporting real activity.' },
-    models: { kicker:'INTELLIGENCE / REGISTRY', title:'Model registry', desc:'Track model artifacts, versions, provenance, and evaluation status.', icon:Layers3, empty:'Your registry is empty', body:'Register a model artifact to start tracking versions and evidence. No models have been added yet.' },
-    experiments: { kicker:'INTELLIGENCE / EVALUATION', title:'Experiments', desc:'Compare controlled runs with reproducible configurations and honest results.', icon:Workflow, empty:'No experiments yet', body:'Evaluation runs will appear here when a real training or evaluation pipeline is connected.' },
-    datasets: { kicker:'INTELLIGENCE / DATA', title:'Datasets', desc:'Keep datasets, versions, sources, and quality checks organized.', icon:Database, empty:'No datasets registered', body:'Dataset records will be listed here after a source is connected or a dataset is added.' },
-    integrations: { kicker:'SYSTEMS / CONNECTIONS', title:'Integrations', desc:'Connect the tools and sources that power VARN research.', icon:Network, empty:'No integrations connected', body:'Connections are not configured yet. Nothing is connected automatically.' },
-    infrastructure: { kicker:'SYSTEMS / HEALTH', title:'Infrastructure', desc:'Understand service health, storage, deployment, and runtime configuration.', icon:Gauge, empty:'Infrastructure telemetry unavailable', body:'Only the basic API health endpoint exists today. Other services will show up when implemented.' },
-  }[page];
-  const Icon = config.icon;
-  return <div className="section-page">
-    <div className="eyebrow"><span className="eyebrow-line"/>{config.kicker}</div>
-    <div className="page-title-row"><div><h1>{config.title}</h1><p>{config.desc}</p></div><div className="page-title-icon"><Icon size={24}/></div></div>
-    {page === 'integrations' && <div className="integration-grid">
-      <IntegrationCard icon={GitBranch} name="Kaggle" detail="Model training and notebooks" status="Not connected" />
-      <IntegrationCard icon={ShieldCheck} name="VARN API" detail="Platform status and service health" status="Basic endpoint available" />
-      <IntegrationCard icon={Database} name="Object storage" detail="Model artifacts and dataset files" status="Not configured" />
-    </div>}
-    <section className="panel page-empty-panel"><EmptyState icon={Icon} title={config.empty} body={config.body} action={page === 'integrations' ? {label:'Check API status',onClick:()=>onNavigate('overview')} : undefined}/></section>
-    <div className="honesty-note"><ShieldCheck size={16}/><span><strong>Evidence-first by design.</strong> This workspace does not invent metrics, model versions, event history, or service health.</span></div>
-  </div>;
-}
-
-function IntegrationCard({icon: Icon,name,detail,status}) {
-  return <div className="integration-card"><div className="integration-card-top"><div className="metric-icon"><Icon size={17}/></div><span className="status-label pending"><StatusDot/>NOT CONNECTED</span></div><h3>{name}</h3><p>{detail}</p><div className="integration-status">{status}</div></div>;
-}
-
-function App() {
-  const [page, setPage] = useState('overview');
-  const [apiState, setApiState] = useState('unknown');
-  const [apiChecking, setApiChecking] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [query, setQuery] = useState('');
-
-  async function checkApi() {
-    setApiChecking(true);
-    try {
-      const response = await fetch(`${API_URL}/health`, { method: 'GET', cache: 'no-store' });
-      if (!response.ok) throw new Error('API returned a non-success status');
-      const data = await response.json();
-      setApiState(data?.ok === true ? 'online' : 'offline');
-    } catch {
-      setApiState('offline');
-    } finally {
-      setApiChecking(false);
-    }
-  }
-
-  useEffect(() => { checkApi(); }, []);
-
-  const currentTitle = [...navGroups.flatMap(g => g.items)].find(item => item.id === page)?.label ?? 'Overview';
-  const choosePage = (id) => { if (id === 'sky') { location.hash = 'sky'; return; } setPage(id); setMobileOpen(false); setQuery(''); setSearchOpen(false); };
-  const filteredNav = navGroups.map(group => ({...group, items: group.items.filter(item => item.label.toLowerCase().includes(query.toLowerCase()))})).filter(group => group.items.length);
-
-  return <div className="app-shell">
-    {mobileOpen && <button className="mobile-scrim" aria-label="Close menu" onClick={()=>setMobileOpen(false)}/>}
-    <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
-      <div className="brand-lockup"><BrandMark/><div><span className="brand-name">VARN</span><span className="brand-subtitle">SYSTEMS PLATFORM</span></div><button className="mobile-close icon-button" aria-label="Close menu" onClick={()=>setMobileOpen(false)}><X size={18}/></button></div>
-      <div className="sidebar-caption">Research workspace <span>·</span> Early build</div>
-      <nav className="main-nav" aria-label="Main navigation">
-        {filteredNav.map(group=><div className="nav-group" key={group.label}><div className="nav-group-label">{group.label}</div>{group.items.map(item=>{const Icon=item.icon;return <button key={item.id} className={`nav-item ${page===item.id?'active':''}`} onClick={()=>choosePage(item.id)}><Icon size={17} strokeWidth={1.8}/><span>{item.label}</span>{item.id==='activity'&&<span className="nav-count">0</span>}</button>})}</div>)}
-        {filteredNav.length===0&&<div className="nav-no-results">No sections match “{query}”.</div>}
-      </nav>
-      <div className="sidebar-bottom">
-        <div className="sidebar-status-simple"><StatusDot tone={apiState==='online'?'green':apiState==='offline'?'red':'muted'}/><span>API {apiState==='online'?'connected':apiState==='offline'?'unavailable':'checking'}</span><button onClick={checkApi} aria-label="Refresh API status" title="Refresh API status"><RefreshCw size={12} className={apiChecking?'spin':''}/></button></div>
+    <div className="window">
+      <Rail route={route} go={go} api={api} onPalette={() => setPalette(true)}/>
+      <div className="pane">
+        <div className="fog" aria-hidden="true"/>
+        <header className="pane-bar">
+          <p className="crumb"><span>VARN</span><i>/</i><strong>{ROUTES.find((r) => r.id === route).label}</strong></p>
+          <div className="pills">
+            <button className={cx('pill', grid && 'on')} onClick={() => setGrid(!grid)} aria-pressed={grid} title="Show the 15° graticule on the planet"><Grid3x3 size={13}/>Graticule</button>
+            <a className="pill" href="#sky"><Orbit size={13}/>Sky view<ArrowUpRight size={12}/></a>
+          </div>
+        </header>
+        <main className="stage" key={route}>
+          {route === 'overview' ? <Overview go={go} api={api} openInspector={setInspect}/> : page}
+        </main>
+        <Inspector item={inspect} onClose={() => setInspect(null)}/>
       </div>
-    </aside>
+    </div>
 
-    <main className="main-area">
-      <header className="topbar">
-        <div className="topbar-left"><button className="mobile-menu icon-button" aria-label="Open menu" onClick={()=>setMobileOpen(true)}><Menu size={19}/></button><div className="breadcrumb"><span>VARN</span><span className="crumb-sep">/</span><strong>{currentTitle}</strong></div><span className="environment-pill"><span/>DEV</span></div>
-        <div className="topbar-actions">
-          <a className="source-link" href="https://github.com/bsalsa2/varn" target="_blank" rel="noreferrer">Source ↗</a>
-        </div>
-      </header>
-      <div className="page-content">
-        {page==='overview' ? <Overview apiState={apiState} onCheckApi={checkApi} apiChecking={apiChecking} onNavigate={choosePage}/> : page==='results' ? <ResultsPage/> : <SectionPage page={page} onNavigate={choosePage}/>}
-        <footer className="footer"><span>VARN SYSTEMS PLATFORM <span className="footer-dot">·</span> EARLY ACCESS</span><span>BUILD 0.1.0 <span className="footer-dot">·</span> <a href="https://github.com/bsalsa2/varn" target="_blank" rel="noreferrer">SOURCE <ExternalLink size={10}/></a></span></footer>
-      </div>
-    </main>
+    <footer className="caption" aria-label="About the Earth imagery">
+      <span className="caption-row"><b>Earth</b>NASA Blue Marble · Earth at Night<i/>composite imagery, not a live feed</span>
+      <span className="caption-row mono">
+        {earth === 'failed' ? 'Imagery unavailable' : earth === 'unsupported' ? 'Static render · sun position not current' : view ? <>
+          <b>Sun</b>{formatLat(view.sun.lat)} {formatLon(view.sun.lon)}<i/>computed for now<i/><b>View</b>{formatLat(view.lat)} {formatLon(view.lon)}</> : 'Loading imagery…'}
+      </span>
+    </footer>
+
+    <Palette open={palette} onClose={() => setPalette(false)} go={go} actions={actions}/>
   </div>;
 }
 
 function Root() {
   const [hash, setHash] = useState(location.hash);
   useEffect(() => { const on = () => setHash(location.hash); addEventListener('hashchange', on); return () => removeEventListener('hashchange', on); }, []);
-  if (hash === '#sky') return <Suspense fallback={<div style={{position:'fixed',inset:0,background:'#0B0F14'}}/>}><Sky/></Suspense>;
-  return <App/>;
+  if (hash === '#sky') return <Suspense fallback={<div style={{ position: 'fixed', inset: 0, background: '#0B0F14' }}/>}><Sky/></Suspense>;
+  return <CommandCenter/>;
 }
 
 createRoot(document.getElementById('root')).render(<Root/>);
