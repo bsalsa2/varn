@@ -65,3 +65,12 @@ GitHub pre-release  ◀── model + report ◀── Kaggle free GPU trains �
 - **Kaggle's free GPU has a weekly allowance** and can queue. Check Kaggle for the current numbers.
 - **Where things are kept:** `training-state` release (which clips are used), `current-model` release (the weights the next run starts from), and one `model-<date>` pre-release per run with the `.onnx` and a `report.json`.
 - **Cost:** nothing. If a free tier changes, this is the part to revisit.
+
+## Kaggle sync (Command Center)
+
+`.github/workflows/kaggle-sync.yml` runs `kaggle_sync.py` every 6 hours (and on demand from the
+Actions tab). It reads the status and `report.md` / `report.json` of `varnlabs/varn-train` and
+`<KAGGLE_USERNAME>/skynode-train` using the same `KAGGLE_USERNAME` / `KAGGLE_KEY` secrets, and
+commits `platform/public/data/kaggle.json` only when something changed. Set the repository
+variable `KAGGLE_KERNELS` (comma separated `owner/slug`) to sync different notebooks.
+The file is public: only notebook status and reports are copied, never logs or weights.

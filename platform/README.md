@@ -25,6 +25,8 @@ The Command Center is one floating glass window over a WebGL render of Earth (`s
 - The workspace pane is clear on Overview and frosts over on other pages. Rows open an inspector that shows
   the exact lines of the evidence file a number came from (`evidence/*.md`, imported raw).
 - Models and Datasets are read from the reports (`src/records.js`); there is no registry yet.
+- Runs shows Kaggle notebook status and reports from `public/data/kaggle.json`, written by the
+  Kaggle sync workflow (`training/automation/kaggle_sync.py`). Until it has run, the page says so.
 - ⌘K / Ctrl K opens a command menu; keys 1–6 switch pages; Esc closes panels.
 - Falls back to a static still when WebGL 2 is unavailable, and to a plain dark background if imagery fails.
   `prefers-reduced-motion` stops the drift, parallax and entrance animations.

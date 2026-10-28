@@ -60,6 +60,22 @@ function useApiHealth() {
 
 const API_LABEL = { online: 'Online', offline: 'Unreachable', checking: 'Checking' };
 
+// Written by .github/workflows/kaggle-sync.yml; absent until that workflow has run once.
+function useKaggleSync() {
+  const [sync, setSync] = useState({ state: 'loading', data: null });
+  useEffect(() => {
+    fetch('/data/kaggle.json', { cache: 'no-store' })
+      // A missing file comes back as the SPA's index.html (status 200), so check the type too.
+      .then((r) => { if (r.status === 404 || !(r.headers.get('content-type') || '').includes('json')) return null; if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then((data) => setSync(data?.kernels ? { state: 'ready', data } : { state: 'missing', data: null }))
+      .catch(() => setSync({ state: 'error', data: null }));
+  }, []);
+  return sync;
+}
+const KAGGLE_TONE = (status) => status === 'COMPLETE' ? 'online' : /RUNNING|QUEUED/.test(status) ? 'checking' : /ERROR|CANCEL/.test(status) ? 'offline' : 'idle';
+const KAGGLE_LABEL = (status) => ({ COMPLETE: 'Complete', RUNNING: 'Running', QUEUED: 'Queued', ERROR: 'Error', UNKNOWN: 'Unknown' }[status] ?? status.toLowerCase().replace(/_/g, ' '));
+const syncedWhen = (iso) => iso ? iso.replace('T', ' ').replace('Z', ' UTC') : '—';
+
 function Mark() {
   return <svg className="mark" viewBox="0 0 42 42" aria-hidden="true"><path d="M7 31 17.2 9h7.5L35 31h-8.1l-6-13.1L14.8 31Z" fill="currentColor"/><path d="M17.2 25.2h9.1l2.2 5.8H14.8Z" fill="var(--bg)"/></svg>;
 }
@@ -177,8 +193,24 @@ function Results({ open }) {
   </Sheet>;
 }
 
-function Runs({ open }) {
+function KaggleBlock({ sync, open }) {
+  return <div className="block kaggle">
+    <div className="block-head"><h2>Kaggle notebooks</h2><span className="label">{sync.state === 'ready' ? `Changed ${syncedWhen(sync.data.changed_at)}` : 'Auto-synced'}</span></div>
+    <p className="block-note">Status and report straight from the Kaggle API, synced every 6 hours by a GitHub Action. Not hand-checked; the tables on Results are.</p>
+    {sync.state === 'ready' ? <div className="kernels">{sync.data.kernels.map((k) => <button key={k.ref} className="kernel" onClick={() => open({ type: 'kaggle', kernel: k, changedAt: sync.data.changed_at })}>
+      <span className="mono kernel-ref">{k.ref}</span>
+      <span className={cx('chip', k.status === 'COMPLETE' && 'ok')}><Signal state={KAGGLE_TONE(k.status)}/>{KAGGLE_LABEL(k.status)}</span>
+      <span className="kernel-note">{k.report_md ? 'Report available' : 'No report in output'}</span>
+      <ArrowUpRight size={15} className="card-arrow"/>
+    </button>)}</div>
+      : <p className="empty-line">{sync.state === 'loading' ? 'Loading…' : sync.state === 'error' ? 'The synced file could not be read.' : 'Not synced yet. Run “Kaggle sync” once from the repository’s Actions tab.'}</p>}
+  </div>;
+}
+
+function Runs({ open, sync }) {
   return <Sheet eyebrow="Research / Runs" title="Runs" desc="Every training and scoring run with a recorded report, oldest first.">
+    <KaggleBlock sync={sync} open={open}/>
+    <div className="block"><div className="block-head"><h2>Recorded runs</h2><span className="label">Hand-copied evidence</span></div></div>
     <ol className="timeline">{runs.map((run, i) => <li key={run.id} className={cx('tl-item', run.pending && 'pending')}>
       <span className="tl-node" aria-hidden="true"/>
       <button className="tl-card" onClick={() => open({ type: 'evidence', src: run.src, highlight: run.pending ? 'running' : 'Verdict', title: run.name })}>
@@ -216,7 +248,7 @@ function Datasets({ open }) {
   </Sheet>;
 }
 
-function System({ api, check, earth }) {
+function System({ api, check, earth, sync }) {
   return <Sheet eyebrow="Platform / System" title="System" desc="What this client can verify right now. Nothing on this page is assumed.">
     <div className="sys-grid">
       <div className="sys-panel">
@@ -232,7 +264,8 @@ function System({ api, check, earth }) {
       <div className="sys-panel">
         <div className="block-head"><h2>Connections</h2></div>
         <ul className="conn">
-          <li><span><strong>Kaggle</strong><small>Training notebooks · results are copied by hand</small></span><span className="chip muted"><Signal state="idle"/>Not connected</span></li>
+          <li><span><strong>Kaggle</strong><small>{sync.state === 'ready' ? `Synced by GitHub Action every 6 h · last change ${syncedWhen(sync.data.changed_at)}` : 'Sync workflow added; it has not run yet'}</small></span>
+            {sync.state === 'ready' ? <span className="chip ok"><Signal state="online"/>Synced</span> : <span className="chip muted"><Signal state="idle"/>Not synced</span>}</li>
           <li><span><strong>Object storage</strong><small>Model artifacts and dataset files</small></span><span className="chip muted"><Signal state="idle"/>Not configured</span></li>
           <li><span><strong>Activity log</strong><small>No event source exists yet, so none is shown</small></span><span className="chip muted"><Signal state="idle"/>None</span></li>
         </ul>
@@ -265,6 +298,18 @@ function Inspector({ item, onClose }) {
   useEffect(() => { ref.current?.focus(); }, [item]);
   if (!item) return null;
   let title, body, src;
+  if (item.type === 'kaggle') { const k = item.kernel;
+    return <aside className="inspector glass" role="dialog" aria-label={k.ref} tabIndex={-1} ref={ref} onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
+      <header className="insp-head"><div><p className="eyebrow">Kaggle · auto-synced</p><h2 className="mono-title">{k.ref}</h2></div>
+        <button className="icon-btn" onClick={onClose} aria-label="Close panel"><X size={16}/></button></header>
+      <dl className="facts">
+        <div><dt>Status</dt><dd><Signal state={KAGGLE_TONE(k.status)}/>{KAGGLE_LABEL(k.status)}</dd></div>
+        <div><dt>Last change</dt><dd className="mono">{syncedWhen(item.changedAt)}</dd></div>
+        <div><dt>Notebook</dt><dd><a className="link" href={k.url} target="_blank" rel="noreferrer">Open on Kaggle <ArrowUpRight size={12}/></a></dd></div>
+      </dl>
+      <div className="insp-src"><span className="label">report.md from the run output</span><span className="mono">platform/public/data/kaggle.json</span></div>
+      <pre className="evidence">{(k.report_md || 'No report.md in this run’s output.').split('\n').map((line, i) => <span key={i} className="ev-line"><span className="ev-n">{i + 1}</span>{line || ' '}</span>)}</pre>
+    </aside>; }
   if (item.type === 'evidence') { title = item.title; src = item.src; body = null; }
   if (item.type === 'model') { const m = item.model; title = m.name; src = m.src;
     body = <><p className="insp-lede">{m.summary}</p><dl className="facts">{m.facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl></>; }
@@ -320,6 +365,7 @@ function Palette({ open, onClose, go, actions }) {
 function CommandCenter() {
   const [route, setRoute] = useState(routeFromHash);
   const [api, check] = useApiHealth();
+  const sync = useKaggleSync();
   const [inspect, setInspect] = useState(null);
   const [palette, setPalette] = useState(false);
   const [earth, setEarth] = useState('loading');
@@ -350,8 +396,8 @@ function CommandCenter() {
   ], [check, grid]);
 
   const mode = route === 'overview' ? 'overview' : inspect ? 'inspect' : 'work';
-  const page = { results: <Results open={setInspect}/>, runs: <Runs open={setInspect}/>, models: <Models open={setInspect}/>,
-    datasets: <Datasets open={setInspect}/>, system: <System api={api} check={check} earth={earth}/> }[route];
+  const page = { results: <Results open={setInspect}/>, runs: <Runs open={setInspect} sync={sync}/>, models: <Models open={setInspect}/>,
+    datasets: <Datasets open={setInspect}/>, system: <System api={api} check={check} earth={earth} sync={sync}/> }[route];
 
   return <div className={cx('cc', `mode-${mode}`, `earth-${earth}`)}>
     <div className="earth-layer">
