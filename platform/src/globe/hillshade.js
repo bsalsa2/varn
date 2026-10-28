@@ -41,3 +41,32 @@ export function metersPerPixel(level, y) {
   const lat = Math.atan(Math.sinh(Math.PI * (1 - (2 * (y + 0.5)) / 2 ** level)));
   return (156543.03392804097 * Math.cos(lat)) / 2 ** level;
 }
+
+/**
+ * Build an (n+2)×(n+2) grid from a tile and its eight neighbours so shading at the tile's edge uses
+ * real neighbouring heights, not a clamped copy of its own edge: no seam lines between tiles.
+ * `nb` has keys nw, n, ne, w, e, sw, s, se (Float32Array or null). A missing neighbour is filled by
+ * repeating the tile's own edge, which is only visible at the edge of the world.
+ */
+export function padTile(center, nb, n) {
+  const m = n + 2, out = new Float32Array(m * m);
+  const px = (t, x, y) => (t ? t[y * n + x] : null);
+  for (let y = -1; y <= n; y++) {
+    for (let x = -1; x <= n; x++) {
+      const gx = x < 0 ? -1 : x >= n ? 1 : 0, gy = y < 0 ? -1 : y >= n ? 1 : 0;
+      const key = (gy < 0 ? 'n' : gy > 0 ? 's' : '') + (gx < 0 ? 'w' : gx > 0 ? 'e' : '');
+      const tile = key ? nb[key] : center;
+      const lx = (x + n) % n, ly = (y + n) % n;
+      const v = px(tile, lx, ly);
+      out[(y + 1) * m + x + 1] = v ?? center[Math.min(n - 1, Math.max(0, y)) * n + Math.min(n - 1, Math.max(0, x))];
+    }
+  }
+  return out;
+}
+
+/** Shade a padded grid and return just the centre n×n RGBA. */
+export function hillshadeTile(padded, n, metersPerPixel, opts) {
+  const m = n + 2, full = hillshade(padded, m, metersPerPixel, opts), out = new Uint8ClampedArray(n * n * 4);
+  for (let y = 0; y < n; y++) out.set(full.subarray(((y + 1) * m + 1) * 4, ((y + 1) * m + 1 + n) * 4), y * n * 4);
+  return out;
+}

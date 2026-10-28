@@ -123,3 +123,26 @@ html, body, #root { margin: 0; height: 100%; background: #05070a; }
   .earth .e-status { left: 12px; right: 12px; bottom: 8px; font-size: 10px; }
   .earth .e-pop { left: 12px !important; right: 12px; width: auto; top: auto !important; bottom: 130px; }
 }
+
+/* connection checks, warnings, recovery */
+.earth .e-btn { position: relative; }
+.earth .e-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 2px rgba(12, 16, 22, .9); }
+.earth .e-conn-head { display: flex; align-items: center; justify-content: space-between; }
+.earth .e-test { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 7px; font: 500 10.5px var(--body); letter-spacing: 0; text-transform: none; color: var(--fog); border: 1px solid var(--line); }
+.earth .e-test:hover:not(:disabled) { color: var(--bone); border-color: var(--line-2); }
+.earth .e-test:disabled { opacity: .6; cursor: default; }
+.earth .e-conn { margin: 4px 0 0; padding: 0; list-style: none; }
+.earth .e-conn li { display: flex; gap: 10px; padding: 6px 8px; }
+.earth .e-conn i { flex: none; width: 7px; height: 7px; margin-top: 6px; border-radius: 50%; background: var(--sage); }
+.earth .e-conn li.warn i { background: var(--amber); }
+.earth .e-conn li.fail i { background: #E0644A; }
+.earth .e-conn span { display: flex; flex-direction: column; min-width: 0; }
+.earth .e-conn strong { font-weight: 500; font-size: 12.5px; }
+.earth .e-conn small { font-size: 11px; color: var(--dim); }
+.earth .e-conn li.fail small, .earth .e-conn li.warn small { color: var(--amber); }
+.earth .e-warn { display: flex; align-items: center; gap: 6px; color: var(--amber); }
+.earth .e-lost { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(380px, calc(100vw - 32px)); padding: 18px; border-radius: 14px; text-align: center;
+  background: rgba(12, 16, 22, .94); border: 1px solid var(--line-2); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.earth .e-lost p, .earth-fatal p { margin: 0; color: var(--fog); font-size: 13px; }
+.earth .e-restart { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 10px; color: #0b0f14; background: var(--bone); font-weight: 500; }
+.earth-fatal > div { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 420px; }

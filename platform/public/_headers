@@ -1,0 +1,9 @@
+# Cloudflare Pages response headers.
+# Globe engine files and bundled imagery change only when the site is rebuilt with a new version.
+/cesium/*
+  Cache-Control: public, max-age=604800
+/earth/*
+  Cache-Control: public, max-age=604800
+# Allow the browser features the globe uses on this site (location for the "My location" button).
+/*
+  Permissions-Policy: geolocation=(self)

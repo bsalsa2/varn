@@ -1,35 +1,11 @@
 // 3D terrain from AWS Terrain Tiles (Terrarium-encoded PNG elevation, open data, no key).
-// Tiles are decoded by a small pool of workers into 65×65 heightmaps; past the source's deepest
+// Tiles are decoded by the elevation worker into 65×65 heightmaps; past the source's deepest
 // level Cesium refines the parent tile instead of asking for data that does not exist.
 import { CustomHeightmapTerrainProvider, WebMercatorTilingScheme, Credit } from 'cesium';
 import { TERRAIN } from './sources.js';
+import { ask } from './tileWorker.js';
 
 const SIZE = 65;
-const POOL = Math.max(2, Math.min(4, (navigator.hardwareConcurrency || 4) - 1));
-
-let workers = null, next = 0, seq = 0;
-const pending = new Map();
-function pool() {
-  if (workers) return workers;
-  workers = Array.from({ length: POOL }, () => {
-    const w = new Worker(new URL('./terrainWorker.js', import.meta.url), { type: 'module' });
-    w.onmessage = ({ data }) => {
-      const p = pending.get(data.id); if (!p) return;
-      pending.delete(data.id);
-      data.error ? p.reject(new Error(data.error)) : p.resolve(data.heights);
-    };
-    return w;
-  });
-  return workers;
-}
-function decode(url) {
-  return new Promise((resolve, reject) => {
-    const id = ++seq;
-    pending.set(id, { resolve, reject });
-    const ws = pool();
-    ws[next++ % ws.length].postMessage({ id, url, size: SIZE });
-  });
-}
 
 export function createTerrain({ onError } = {}) {
   let failures = 0;
@@ -39,14 +15,23 @@ export function createTerrain({ onError } = {}) {
     credit: new Credit(TERRAIN.credit),
     callback: (x, y, level) => {
       if (level > TERRAIN.maxLevel) return undefined;
-      return decode(TERRAIN.url.replace('{z}', level).replace('{x}', x).replace('{y}', y))
+      return ask({ type: 'heights', z: level, x, y, size: SIZE })
+        .then((r) => r.heights)
         .catch((err) => {
           failures++;
-          if (failures === 3) onError?.(err);
+          if (failures === 4) onError?.(err);
           return new Float32Array(SIZE * SIZE);           // flat tile rather than a hole
         });
     },
   });
   provider.getTileDataAvailable = (x, y, level) => level <= TERRAIN.maxLevel;
   return provider;
+}
+
+/** One real decode through the worker: proves the worker runs and AWS answers. */
+export async function testTerrain() {
+  const t0 = performance.now();
+  const r = await ask({ type: 'heights', z: 4, x: 2, y: 5, size: SIZE });
+  if (!(r.heights?.length === SIZE * SIZE)) throw new Error('unexpected elevation data');
+  return Math.round(performance.now() - t0);
 }

@@ -77,6 +77,18 @@ and redeploy. Google requires its own geocoder and attribution while these tiles
 With `VITE_CESIUM_ION_TOKEN` the viewer also uses Cesium World Terrain. These keys are client-side by design,
 so restrict and cap them.
 
+## Smoothness, brightness and connection checks
+
+- **No UI churn while the globe moves.** The camera, cursor and tile-queue readouts live in a small store that notifies React at most ~8×/s, so panning and zooming never re-render the interface.
+- **Relief shading is seamless and cheap.** Tiles are shaded from a 3×3 neighbourhood so there are no lines at tile edges, in one shared elevation worker (decoded-tile cache, newest-first queue). While flying, shading tiles are skipped rather than queued, and Cesium asks again when the camera settles.
+- **Transitions fade, they do not switch.** Lighting, the night side and city lights blend with altitude; there is no pop at a threshold.
+- **Failed tiles retry** (up to three times) instead of leaving permanent holes.
+- **Brightness.** Day-side imagery is graded in a final pass (gamma 0.86, gain 1.05, saturation 1.14, soft highlight shoulder). Measured against the same scene before the grade: close-up +14 %, orbit +20 % mean luminance.
+- **Quality governor.** If the average frame time stays above ~34 ms the renderer steps down once (resolution, then MSAA); the status line says "Quality adjusted for speed". `?fixed` disables it.
+- **Graphics-context loss** shows a "Restart the globe" card instead of a frozen canvas.
+- **Connections** (Layers panel): a quick check runs automatically after load and lists real results per source: Esri imagery, AWS elevation, globe engine files, bundled NASA imagery, Esri capture dates and labels, WebGL, location permission. "Test all" adds NASA GIBS and place search. An amber dot on the Layers button means something failed. A layer that cannot load switches itself off; nothing is shown as active unless data returned.
+- `?debug` exposes the Cesium widget and `__setTime(iso)` (freezes the clock) for testing.
+
 ## Controls
 
 Drag to rotate, scroll or pinch to zoom, right-drag or Ctrl-drag to tilt. `/` search, `L` layers,
