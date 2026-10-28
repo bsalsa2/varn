@@ -72,11 +72,13 @@ export const OVERLAYS = {
   },
   fires: {
     label: 'Fires', name: 'Active fires and thermal anomalies', cadence: 'daily', lookback: 3, alpha: 1, group: 'eo',
-    resolution: '375 m detections', note: 'VIIRS thermal anomalies. A detection is a hot pixel, not a confirmed fire.',
+    sparse: true, probe: [3, 4, 3],                         // Africa/Middle East: some detections nearly every day
+    resolution: '375 m detections', note: 'Satellite thermal anomalies. A detection is a hot pixel, not a confirmed fire. Each is only a pixel or two wide: zoom in to a region to see them.',
     candidates: [
       ['VIIRS_NOAA20_Thermal_Anomalies_375m_All', 8, 'png'],
       ['VIIRS_SNPP_Thermal_Anomalies_375m_All', 8, 'png'],
-      ['MODIS_Combined_Thermal_Anomalies_All', 8, 'png'],
+      ['MODIS_Terra_Thermal_Anomalies_All', 7, 'png'],
+      ['MODIS_Aqua_Thermal_Anomalies_All', 7, 'png'],
     ],
   },
   vegetation: {
@@ -113,14 +115,14 @@ function times(cadence, lookback, now = new Date()) {
   return out;
 }
 
-async function tileExists(url) {
+async function tileExists(url, minBytes = 300) {
   try {
     const res = await fetch(url, { cache: 'force-cache' });
     if (!res.ok) return false;
     const type = res.headers.get('content-type') || '';
     if (!type.startsWith('image/')) return false;
     const size = (await res.blob()).size;
-    return size > 300;                                          // GIBS answers missing days with a tiny empty tile
+    return size > minBytes;                                     // GIBS answers missing days with a tiny empty tile
   } catch { return false; }
 }
 
@@ -130,13 +132,18 @@ async function tileExists(url) {
  */
 export async function resolveOverlay(key, signal) {
   const o = OVERLAYS[key];
-  for (const time of times(o.cadence, o.lookback)) {
-    if (signal?.aborted) return null;
-    // Candidates for one time are probed together; the first in list order that answers wins.
-    const ok = await Promise.all(o.candidates.map(([id, level, ext]) =>
-      tileExists(gibsUrl(id, level, ext, time).replace('{z}', '1').replace('{y}', '0').replace('{x}', '0'))));
-    const i = ok.indexOf(true);
-    if (i >= 0) { const [id, level, ext] = o.candidates[i]; return { id, level, ext, time }; }
+  const [pz, px, py] = o.probe || [1, 0, 0];
+  // Sparse layers (fires) are mostly transparent, so a small tile is normal: they get a second,
+  // size-blind pass, which still needs a real image answer from NASA for that date.
+  for (const minBytes of o.sparse ? [300, 0] : [300]) {
+    for (const time of times(o.cadence, o.lookback)) {
+      if (signal?.aborted) return null;
+      // Candidates for one time are probed together; the first in list order that answers wins.
+      const ok = await Promise.all(o.candidates.map(([id, level, ext]) =>
+        tileExists(gibsUrl(id, level, ext, time).replace('{z}', pz).replace('{y}', py).replace('{x}', px), minBytes)));
+      const i = ok.indexOf(true);
+      if (i >= 0) { const [id, level, ext] = o.candidates[i]; return { id, level, ext, time }; }
+    }
   }
   return null;
 }

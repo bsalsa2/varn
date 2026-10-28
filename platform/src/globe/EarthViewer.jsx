@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Math as CMath } from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
-import { Layers, Plus, Minus, Globe2, LocateFixed, Search, X, Copy, Loader2, Navigation2, Box, RefreshCw, TriangleAlert } from 'lucide-react';
+import { Layers, Plus, Minus, Globe2, LocateFixed, Search, X, Copy, Loader2, Navigation2, Box, RefreshCw, TriangleAlert, SquareTerminal } from 'lucide-react';
 import { BASE, TERRAIN, OVERLAYS, UPGRADES } from './sources.js';
 import { createEngine, HAS_3D, reduceMotion } from './engine.js';
 import { createLive } from './live.js';
 import { parseCoords, searchPlaces, searchGoogle, imageryMetadata } from './lookup.js';
 import { runChecks, summarize } from './diagnostics.js';
+import * as feeds from './feeds.js';
+import Terminal from './Terminal.jsx';
 import './globe.css';
 
 const fmt = (v, pos, neg, d = 4) => `${Math.abs(v).toFixed(d)}°${v >= 0 ? pos : neg}`;
@@ -43,7 +45,11 @@ export default function EarthViewer() {
   const [searching, setSearching] = useState(false);
   const [notice, setNotice] = useState('');
   const [checks, setChecks] = useState({ list: [], running: false, deep: false });
+  const [term, setTerm] = useState(() => location.hash === '#terminal');
+  const [markers, setMarkers] = useState({ quakes: 0, incidents: 0 });
+  const engRef = useRef(null), stateRef = useRef({}), uiRef = useRef({}), pendingSelect = useRef(null);
   const live = useLive(engine);
+  engRef.current = engine; stateRef.current = state; uiRef.current = ui;
 
   const flash = useCallback((m) => { setNotice(m); setTimeout(() => setNotice((x) => (x === m ? '' : x)), 5000); }, []);
   const layerState = useCallback((k, patch) => {
@@ -61,6 +67,7 @@ export default function EarthViewer() {
         onLost: (why) => setFatal(why), onLayer: layerState,
         onPick: (p) => setPick(p), onMoveStart: () => setPick(null),
         onViewChange: (c) => {
+          if (pendingSelect.current) { setPick({ ...pendingSelect.current, x: innerWidth * 0.58, y: innerHeight * 0.3 }); pendingSelect.current = null; }
           if (!c) { setMeta(null); return; }
           imageryMetadata(c.lat, c.lon).then((m) => setMeta(m ? { ...m, ok: true } : { ok: false })).catch(() => setMeta({ ok: false }));
         },
@@ -88,6 +95,32 @@ export default function EarthViewer() {
     if (!engine) return;
     for (const k of ['fires', 'vegetation', 'nightLights']) engine.setOverlay(k, ui.eo === k);
   }, [engine, ui.eo]);
+
+  /* ── map markers: earthquakes and fire incidents (real feeds; nothing is drawn unless data came back) ── */
+  const plot = useCallback((name, items) => {
+    engRef.current?.setMarkers(name, items, feeds.styleFor);
+    setMarkers((m) => ({ ...m, [name]: items?.length || 0 }));
+  }, []);
+  useEffect(() => { setMarkers({ quakes: 0, incidents: 0 }); }, [engine]);
+
+  const prevEo = useRef(null);
+  useEffect(() => {
+    if (!engine) return undefined;
+    let dead = false;
+    if (ui.eo === 'fires') {
+      feeds.fetchEvents({ category: 'wildfires', days: 30 })
+        .then((r) => { if (!dead) plot('incidents', r.items); })
+        .catch((e) => { if (!dead) flash(`Fire incidents unavailable: ${e.message}`); });
+    } else if (prevEo.current === 'fires') plot('incidents', null);
+    prevEo.current = ui.eo;
+    return () => { dead = true; };
+  }, [engine, ui.eo, plot, flash]);
+
+  const toggleQuakes = useCallback(() => {
+    if (markers.quakes) { plot('quakes', null); return; }
+    feeds.fetchQuakes({ window: 'day', minMag: 2.5 }).then((r) => { plot('quakes', r.items); if (!r.items.length) flash('USGS reports no earthquakes of M2.5 or more in the past 24 hours.'); })
+      .catch((e) => flash(`Earthquakes unavailable: ${e.message}`));
+  }, [markers.quakes, plot, flash]);
 
   /* ── connection checks: a quick one at startup, a full one on demand ── */
   const test = useCallback(async (deep) => {
@@ -142,6 +175,59 @@ export default function EarthViewer() {
     finally { setSearching(false); }
   };
 
+  /* ── what the terminal may touch ── */
+  const layerRows = () => {
+    const u = uiRef.current, st = stateRef.current;
+    const note = (k, extra = '') => (st[k]?.status === 'error' ? st[k].error : st[k]?.status === 'loading' ? 'loading' : st[k]?.time ? when(st[k].time) : extra);
+    return [
+      { key: 'satellite', name: 'satellite', on: u.satellite, note: note('satellite', 'Esri World Imagery') },
+      { key: 'terrain', name: 'terrain', on: u.terrain, note: note('terrain', 'AWS elevation') },
+      { key: 'labels', name: 'labels', on: u.labels, note: 'Esri boundaries and places' },
+      { key: 'daynight', name: 'daynight', on: u.daynight, note: 'real sun position' },
+      { key: 'buildings', name: 'buildings', on: u.buildings && HAS_3D, note: HAS_3D ? (st.buildings?.source || note('buildings', '3D tiles')) : 'needs a Cesium ion token (free) or Google key' },
+      { key: 'clouds', name: 'clouds', on: u.clouds, note: note('clouds', 'NASA GIBS daily') },
+      { key: 'weather', name: 'weather', on: u.weather, note: note('weather', 'NASA IMERG precipitation') },
+      { key: 'fires', name: 'fires', on: u.eo === 'fires', note: note('fires', 'NASA GIBS thermal anomalies + EONET incidents') },
+      { key: 'vegetation', name: 'vegetation', on: u.eo === 'vegetation', note: note('vegetation', 'MODIS NDVI') },
+      { key: 'nightLights', name: 'nightlights', on: u.eo === 'nightLights', note: note('nightLights', 'VIIRS night lights') },
+    ];
+  };
+  const termCtx = useMemo(() => {
+    const E = (m, fallback) => (...a) => (engRef.current ? engRef.current[m](...a) : fallback);
+    return {
+      engine: {
+        view: () => engRef.current?.view() ?? { height: null, heading: 0, pitch: -90, loading: 0, failed: 0, quality: 'full', centre: null, sun: { lat: 0, lon: 0 } },
+        flyToPlace: E('flyToPlace'), home: E('home'), tilt: E('tilt'), northUp: E('northUp'), markerCount: E('markerCount', 0),
+        setMarkers: (name, items, style) => plot(name, items),
+      },
+      layers: {
+        list: layerRows,
+        async set(key, on) {
+          if (key === 'buildings' && !HAS_3D) return 'no 3D source is configured: set VITE_CESIUM_ION_TOKEN (free Cesium ion account) or VITE_GOOGLE_MAPS_API_KEY and rebuild';
+          const flat = { satellite: 'satellite', terrain: 'terrain', labels: 'labels', daynight: 'daynight', buildings: 'buildings', clouds: 'clouds', weather: 'weather' };
+          if (flat[key]) setUi((u) => ({ ...u, [flat[key]]: on }));
+          else setUi((u) => ({ ...u, eo: on ? key : (u.eo === key ? null : u.eo) }));
+          if (!on) return undefined;
+          // Wait (briefly) for the layer to say whether data actually arrived.
+          for (let i = 0; i < 60; i++) {
+            await new Promise((r) => setTimeout(r, 250));
+            const st = stateRef.current[key];
+            if (st?.status === 'error') return st.error;
+            if (st?.status === 'on') return undefined;
+            if (!['clouds', 'weather', 'fires', 'vegetation', 'nightLights', 'buildings'].includes(key)) return undefined;
+          }
+          return 'still loading after 15 s: check Layers › Connections';
+        },
+      },
+      feeds,
+      geocode: (text) => (UPGRADES.googleKey ? searchGoogle(text, UPGRADES.googleKey) : searchPlaces(text)),
+      checks: (deep) => runChecks({ scene: engRef.current?.scene, deep }),
+      imagery: (lat, lon) => imageryMetadata(lat, lon),
+      select: (item) => { pendingSelect.current = { marker: item, set: item.kind === 'quake' ? 'quakes' : 'incidents' }; },
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plot]);
+
   useEffect(() => {
     const onKey = (e) => {
       if (e.target.closest('input, textarea, select')) { if (e.key === 'Escape') e.target.blur(); return; }
@@ -149,6 +235,7 @@ export default function EarthViewer() {
       else if (e.key === 'Escape') { setPick(null); setPanel(false); setResults(null); }
       else if (e.key === 'h') engine?.home();
       else if (e.key === 'l') setPanel((v) => !v);
+      else if (e.key === '`') { e.preventDefault(); setTerm((v) => !v); }
     };
     addEventListener('keydown', onKey); return () => removeEventListener('keydown', onKey);
   }, [engine]);
@@ -166,7 +253,7 @@ export default function EarthViewer() {
 
   if (fatal && !engine) return <div className="earth earth-fatal"><div><p>{fatal}</p><button className="e-restart" onClick={() => setEpoch((n) => n + 1)}><RefreshCw size={14}/>Restart the globe</button></div></div>;
 
-  return <div className="earth">
+  return <div className={`earth ${term ? 'term-open' : ''}`}>
     <div ref={host} className="earth-canvas" />
 
     <header className="e-top">
@@ -190,6 +277,7 @@ export default function EarthViewer() {
     <div className="e-controls" role="group" aria-label="Map controls">
       <button className={`e-btn ${panel ? 'on' : ''}`} onClick={() => setPanel((v) => !v)} aria-expanded={panel} aria-controls="e-layers" title="Layers (L)">
         <Layers size={17}/>{problem && <i className="e-dot" aria-label="A data source is unreachable"/>}</button>
+      <button className={`e-btn ${term ? 'on' : ''}`} onClick={() => setTerm((v) => !v)} aria-pressed={term} title="Terminal (`)" aria-label="Toggle command terminal"><SquareTerminal size={17}/></button>
       <span className="e-gap"/>
       <button className="e-btn" onClick={() => engine?.zoom(0.45)} title="Zoom in" aria-label="Zoom in"><Plus size={17}/></button>
       <button className="e-btn" onClick={() => engine?.zoom(2.2)} title="Zoom out" aria-label="Zoom out"><Minus size={17}/></button>
@@ -206,14 +294,15 @@ export default function EarthViewer() {
       <Row label="Terrain" sub={state.terrain?.error || `${TERRAIN.name} · elevation ${TERRAIN.resolution}`} tag="Static" on={ui.terrain} st={state.terrain?.status} onToggle={() => setUi((u) => ({ ...u, terrain: !u.terrain }))}/>
       <Row label="Labels" sub="Countries, borders, cities and places · Esri" tag="Basemap" on={ui.labels} onToggle={() => setUi((u) => ({ ...u, labels: !u.labels }))}/>
       <Row label="Day / night" sub="Real sun position now, shown from orbit · city lights: NASA" tag="Live" on={ui.daynight} onToggle={() => setUi((u) => ({ ...u, daynight: !u.daynight }))}/>
-      <Row label="3D buildings" tag="Key needed" disabled={!HAS_3D} on={ui.buildings} st={state.buildings?.status}
-        sub={!HAS_3D ? 'Photorealistic 3D cities need a Google Maps Platform key or Cesium ion token. Not configured.'
-          : state.buildings?.error || `Google Photorealistic 3D Tiles${UPGRADES.googleKey ? '' : ' via Cesium ion'} · replaces the flat imagery while on`}
+      <Row label="3D buildings" tag={HAS_3D ? '3D' : 'Key needed'} disabled={!HAS_3D} on={ui.buildings} st={state.buildings?.status}
+        sub={!HAS_3D ? 'Needs a free Cesium ion token (OSM buildings, or Google photoreal tiles on its free tier) or a Google Maps key. None is configured in this build.'
+          : state.buildings?.error || (state.buildings?.source ? `${state.buildings.source}${state.buildings.source.startsWith('Google') ? ' · replaces the flat imagery while on' : ' · over the satellite imagery'}` : 'Connecting to the 3D source…')}
         onToggle={() => setUi((u) => ({ ...u, buildings: !u.buildings }))}/>
       <OverlayRow k="clouds" on={ui.clouds} st={state.clouds} onToggle={() => setUi((u) => ({ ...u, clouds: !u.clouds }))}/>
       <OverlayRow k="weather" on={ui.weather} st={state.weather} onToggle={() => setUi((u) => ({ ...u, weather: !u.weather }))}/>
+      <Row label="Earthquakes" sub={markers.quakes ? `${markers.quakes} plotted · USGS, past 24 h, M2.5+ · click a marker for details` : 'USGS Earthquake Hazards Program · past 24 h, M2.5+'} tag="Live" on={markers.quakes > 0} onToggle={toggleQuakes}/>
       <div className="e-sub">Earth observation</div>
-      {['fires', 'vegetation', 'nightLights'].map((k) => <OverlayRow key={k} k={k} on={ui.eo === k} st={state[k]} radio
+      {['fires', 'vegetation', 'nightLights'].map((k) => <OverlayRow key={k} k={k} on={ui.eo === k} st={state[k]} radio extra={k === 'fires' && markers.incidents ? `${markers.incidents} EONET incident marker${markers.incidents === 1 ? '' : 's'}` : ''}
         onToggle={() => setUi((u) => ({ ...u, eo: u.eo === k ? null : k }))}/>)}
 
       <div className="e-sub e-conn-head">Connections
@@ -224,7 +313,9 @@ export default function EarthViewer() {
       <p className="e-note">Basemaps are mosaics of images captured at different times; daily and half-hourly layers show the time of the data shown. Nothing here is live video.</p>
     </section>}
 
-    {pick && <div className="e-pop glassy" style={{ left: Math.min(pick.x + 14, innerWidth - 300), top: Math.min(pick.y + 14, innerHeight - 200) }} role="dialog" aria-label="Location">
+    {pick?.marker && <MarkerPop pick={pick} onClose={() => setPick(null)}/>}
+
+    {pick && !pick.marker && <div className="e-pop glassy" style={{ left: Math.min(pick.x + 14, innerWidth - 300), top: Math.min(pick.y + 14, innerHeight - 200) }} role="dialog" aria-label="Location">
       <header><strong>Location</strong><button className="e-x" onClick={() => setPick(null)} aria-label="Close"><X size={13}/></button></header>
       <dl>
         <div><dt>Latitude</dt><dd>{fmtLat(pick.lat, 6)}</dd></div>
@@ -248,6 +339,8 @@ export default function EarthViewer() {
       <div ref={creditsRef} className="e-credits"/>
     </footer>
 
+    <Terminal ctx={termCtx} open={term} onClose={() => setTerm(false)}/>
+
     {notice && <div className="e-toast" role="status">{notice}</div>}
     {fatal && engine && <div className="e-lost" role="alertdialog" aria-label="Graphics problem"><TriangleAlert size={18}/><p>{fatal}</p>
       <button className="e-restart" onClick={() => setEpoch((n) => n + 1)}><RefreshCw size={14}/>Restart the globe</button></div>}
@@ -262,9 +355,28 @@ function Row({ label, sub, tag, on, st, onToggle, radio, disabled }) {
   </button>;
 }
 
-function OverlayRow({ k, on, st = {}, onToggle, radio }) {
+function OverlayRow({ k, on, st = {}, onToggle, radio, extra }) {
   const o = OVERLAYS[k];
   const sub = st.status === 'error' && !on ? st.error : st.status === 'loading' ? 'Finding the latest available data…'
-    : `${o.name} · NASA GIBS · ${o.resolution}${st.time ? ` · ${when(st.time)}` : ''}`;
+    : `${o.name} · NASA GIBS · ${o.resolution}${st.time ? ` · ${when(st.time)}` : ''}${extra ? ` · ${extra}` : ''}`;
   return <Row label={o.label} sub={sub} tag={cadenceTag[o.cadence] || o.cadence} on={on} st={on ? st.status : undefined} onToggle={onToggle} radio={radio}/>;
+}
+
+const safeUrl = (u) => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : null; } catch { return null; } };
+
+function MarkerPop({ pick, onClose }) {
+  const it = pick.marker, link = safeUrl(it.url);
+  const t = Number.isFinite(it.time) ? new Date(it.time).toISOString().replace('T', ' ').slice(0, 16) + ' UTC' : 'not reported';
+  return <div className="e-pop glassy" style={{ left: Math.max(8, Math.min(pick.x + 14, innerWidth - 300)), top: Math.max(8, Math.min(pick.y + 14, innerHeight - 240)) }} role="dialog" aria-label={it.title}>
+    <header><strong>{it.kind === 'quake' ? `M${it.mag.toFixed(1)} earthquake` : it.category}</strong><button className="e-x" onClick={onClose} aria-label="Close"><X size={13}/></button></header>
+    <dl>
+      <div><dt>{it.kind === 'quake' ? 'Place' : 'Event'}</dt><dd>{it.title}</dd></div>
+      <div><dt>{it.kind === 'quake' ? 'Time' : 'Last update'}</dt><dd>{t}</dd></div>
+      <div><dt>Position</dt><dd>{fmtLat(it.lat, 3)} {fmtLon(it.lon, 3)}</dd></div>
+      {it.kind === 'quake' && Number.isFinite(it.depthKm) && <div><dt>Depth</dt><dd>{Math.round(it.depthKm)} km</dd></div>}
+      {it.kind === 'quake' && it.tsunami && <div><dt>Note</dt><dd>USGS tsunami flag set: see tsunami.gov</dd></div>}
+      {it.kind !== 'quake' && it.magnitude != null && <div><dt>Size</dt><dd>{it.magnitude} {it.unit}</dd></div>}
+      <div><dt>Source</dt><dd>{it.kind === 'quake' ? 'USGS' : 'NASA EONET'}{link && <> · <a href={link} target="_blank" rel="noreferrer noopener">details</a></>}</dd></div>
+    </dl>
+  </div>;
 }

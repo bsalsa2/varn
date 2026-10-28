@@ -146,3 +146,42 @@ html, body, #root { margin: 0; height: 100%; background: #05070a; }
 .earth .e-lost p, .earth-fatal p { margin: 0; color: var(--fog); font-size: 13px; }
 .earth .e-restart { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 10px; color: #0b0f14; background: var(--bone); font-weight: 500; }
 .earth-fatal > div { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 420px; }
+
+/* ── command terminal ───────────────────────────────────── */
+.earth { --term-w: min(540px, calc(100vw - 32px)); }
+.earth .e-term { position: absolute; z-index: 6; left: 16px; top: 72px; bottom: 16px; width: var(--term-w); display: flex; flex-direction: column; overflow: hidden;
+  background: rgba(4, 8, 7, .86); border: 1px solid rgba(110, 231, 168, .22); border-radius: 12px; backdrop-filter: blur(14px) saturate(1.1); -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .55), inset 0 0 0 1px rgba(255, 255, 255, .03); font-family: ui-monospace, 'JetBrains Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  opacity: 0; transform: translateX(-12px); pointer-events: none; visibility: hidden; transition: opacity .18s ease, transform .18s ease, visibility 0s .18s; }
+.earth .e-term.open { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .18s ease, transform .18s ease; }
+.earth .t-class { display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 10.5px; letter-spacing: .14em; color: #6ee7a8; background: rgba(110, 231, 168, .08); border-bottom: 1px solid rgba(110, 231, 168, .18); }
+.earth .t-class i { width: 6px; height: 6px; border-radius: 50%; background: #6ee7a8; box-shadow: 0 0 8px #6ee7a8; animation: t-pulse 2.4s ease-in-out infinite; }
+.earth .t-class span { margin-left: auto; letter-spacing: .04em; color: rgba(110, 231, 168, .8); font-variant-numeric: tabular-nums; }
+.earth .t-title { display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 11px; letter-spacing: .12em; color: var(--fog); border-bottom: 1px solid rgba(255, 255, 255, .06); }
+.earth .t-title strong { color: var(--bone); font-weight: 600; }
+.earth .t-title .e-x { margin-left: auto; }
+.earth .t-body { flex: 1; overflow: auto; padding: 10px 12px; font-size: 12px; line-height: 1.55; color: #cfe9dc; scrollbar-width: thin; scrollbar-color: rgba(110, 231, 168, .25) transparent; }
+.earth .t-line { white-space: pre-wrap; overflow-wrap: anywhere; min-height: 1.55em; }
+.earth .t-line.head { color: #6ee7a8; letter-spacing: .04em; }
+.earth .t-line.cmd { color: var(--bone); }
+.earth .t-line.dim { color: #7f9489; }
+.earth .t-line.ok { color: #6ee7a8; }
+.earth .t-line.warn { color: var(--amber); }
+.earth .t-line.err { color: #ff7a66; }
+.earth .t-busy span { animation: t-blink 1s steps(2, start) infinite; }
+.earth .t-input { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-top: 1px solid rgba(110, 231, 168, .18); background: rgba(0, 0, 0, .25); cursor: text; }
+.earth .t-prompt { color: #6ee7a8; font-size: 12px; white-space: nowrap; }
+.earth .t-input input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: var(--bone); font: inherit; font-size: 12.5px; caret-color: #6ee7a8; }
+.earth .t-input input::placeholder { color: #51645a; }
+.earth .t-input:focus-within { box-shadow: inset 0 0 0 1px rgba(110, 231, 168, .35); }
+@keyframes t-pulse { 50% { opacity: .35; } }
+@keyframes t-blink { to { visibility: hidden; } }
+/* the status block moves aside while the terminal is open */
+.earth.term-open .e-status { left: calc(var(--term-w) + 32px); }
+@media (max-width: 760px) {
+  .earth .e-term { left: 8px; right: 8px; width: auto; top: auto; height: 52vh; bottom: 8px; }
+  .earth.term-open .e-status { left: 16px; bottom: calc(52vh + 16px); }
+}
+@media (prefers-reduced-motion: reduce) { .earth .t-class i, .earth .t-busy span { animation: none; } .earth .e-term { transition: none; } }
+
+.earth .e-pop a { color: #6ee7a8; text-underline-offset: 2px; }

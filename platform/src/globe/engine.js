@@ -4,7 +4,8 @@ import {
   CesiumWidget, ContextLimits, ImageryLayer, UrlTemplateImageryProvider, SingleTileImageryProvider, ArcGisMapServerImageryProvider,
   EllipsoidTerrainProvider, BoundingSphere, HeadingPitchRange, RequestScheduler, sampleTerrain,
   Cartesian2, Cartesian3, Cartographic, Color, Credit, Ion, JulianDate, Math as CMath, Rectangle,
-  ScreenSpaceEventHandler, ScreenSpaceEventType, createWorldTerrainAsync, createGooglePhotorealistic3DTileset, GoogleMaps,
+  ScreenSpaceEventHandler, ScreenSpaceEventType, createWorldTerrainAsync, createGooglePhotorealistic3DTileset, createOsmBuildingsAsync, GoogleMaps,
+  PointPrimitiveCollection, NearFarScalar,
 } from 'cesium';
 import { BASE, LABELS, OVERLAYS, GIBS_CREDIT, UPGRADES, TERRAIN, gibsUrl, resolveOverlay } from './sources.js';
 import { createTerrain } from './terrain.js';
@@ -160,6 +161,8 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
   }, ScreenSpaceEventType.MOUSE_MOVE);
   handler.setInputAction((delta) => { diving = delta > 0; }, ScreenSpaceEventType.WHEEL);
   handler.setInputAction((c) => {
+    const hit = scene.pick(c.position);
+    if (hit?.id?.item) { onPick?.({ marker: hit.id.item, set: hit.id.set, x: c.position.x, y: c.position.y }); return; }
     const p = globe.pick(camera.getPickRay(c.position), scene);
     if (!p) { onPick?.(null); return; }
     const g = Cartographic.fromCartesian(p);
@@ -287,25 +290,64 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
     scene.requestRender();
   }
 
+  /** Photorealistic tiles when Google (directly or through Cesium ion) answers; otherwise extruded OSM buildings on the satellite imagery. */
+  async function loadBuildings() {
+    const why = [];
+    try {
+      const ts = await createGooglePhotorealistic3DTileset({ key: UPGRADES.googleKey || undefined, onlyUsingWithGoogleGeocoder: !!UPGRADES.googleKey }, { maximumScreenSpaceError: 8 });
+      return { tileset: ts, source: 'Google Photorealistic 3D Tiles', replacesGlobe: true };
+    } catch (e) { why.push(`Google 3D Tiles: ${e.message || e}`); }
+    if (UPGRADES.ionToken) {
+      try { return { tileset: await createOsmBuildingsAsync(), source: 'Cesium OSM Buildings', replacesGlobe: false }; }
+      catch (e) { why.push(`OSM Buildings: ${e.message || e}`); }
+    }
+    throw new Error(why.join(' · '));
+  }
+  function showBuildings() {
+    if (!layers.tiles) return;
+    layers.tiles.show = want.buildings;
+    globe.show = !(want.buildings && layers.tilesReplace);          // photoreal tiles carry their own imagery and terrain
+    scene.requestRender();
+  }
   function setBuildings(on) {
     want.buildings = on;
     if (!HAS_3D) return;
     if (on && !layers.tiles && !layers.tilesPending) {
       layers.tilesPending = true;
       onLayer?.('buildings', { status: 'loading', error: null });
-      createGooglePhotorealistic3DTileset({ key: UPGRADES.googleKey || undefined, onlyUsingWithGoogleGeocoder: !!UPGRADES.googleKey }, { maximumScreenSpaceError: 12 })
-        .then((ts) => {
-          if (widget.isDestroyed()) return;
-          layers.tiles = scene.primitives.add(ts);
-          ts.show = want.buildings; globe.show = !ts.show;       // the tiles carry their own imagery and terrain
-          onLayer?.('buildings', { status: 'on' }); scene.requestRender();
-        })
-        .catch((e) => { onLayer?.('buildings', { status: 'error', error: `3D tiles unavailable (${e.message || e})`, off: true }); })
+      loadBuildings().then(({ tileset, source, replacesGlobe }) => {
+        if (widget.isDestroyed()) return;
+        layers.tiles = scene.primitives.add(tileset); layers.tilesReplace = replacesGlobe;
+        tileset.tileFailed?.addEventListener((err) => { onLayer?.('buildings', { status: 'on', source, error: `Some 3D tiles failed to load (${err.message || 'request error'})` }); });
+        showBuildings();
+        onLayer?.('buildings', { status: 'on', source, error: null });
+      }).catch((e) => { onLayer?.('buildings', { status: 'error', error: `3D buildings unavailable (${e.message || e})`, off: true }); })
         .finally(() => { layers.tilesPending = false; });
     }
-    if (layers.tiles) { layers.tiles.show = on; globe.show = !on; }
+    showBuildings();
+  }
+
+  /* ── vector markers (earthquakes, fire incidents, events) ── */
+  const markerSets = {};
+  function setMarkers(name, items, styleOf) {
+    markerSets[name]?.coll && scene.primitives.remove(markerSets[name].coll);
+    delete markerSets[name];
+    if (items?.length) {
+      const coll = scene.primitives.add(new PointPrimitiveCollection());
+      for (const it of items) {
+        const st = styleOf(it);
+        coll.add({
+          position: Cartesian3.fromDegrees(it.lon, it.lat, 0), pixelSize: st.size, color: Color.fromCssColorString(st.color).withAlpha(0.9),
+          outlineColor: Color.BLACK.withAlpha(0.65), outlineWidth: 1.5, id: { set: name, item: it },
+          scaleByDistance: new NearFarScalar(1.5e5, 1.5, 2.5e7, 0.55),
+          disableDepthTestDistance: 5e6,                                // visible over terrain up close; globe still hides the far side
+        });
+      }
+      markerSets[name] = { coll, items };
+    }
     scene.requestRender();
   }
+  const markerCount = (name) => markerSets[name]?.items.length ?? 0;
 
   const overlayWanted = (key) => ({ clouds: want.clouds, weather: want.weather }[key] ?? want.eo === key);
   const aborters = {};
@@ -355,7 +397,11 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
   const api = {
     widget, scene, camera, live, layers, want, stats,
     info: () => ({ webgl2: !!scene.context.webgl2, maxTexture: ContextLimits.maximumTextureSize, msaa: scene.msaaSamples, ratio: dpr * widget.resolutionScale, quality: live.get().quality }),
-    setSatellite, setLabels, setDayNight, setTerrain, setBuildings, setOverlay, flyToPlace,
+    setSatellite, setLabels, setDayNight, setTerrain, setBuildings, setOverlay, flyToPlace, setMarkers, markerCount,
+    view() {
+      const p = camera.pickEllipsoid(screenCentre(), globe.ellipsoid), g = p && Cartographic.fromCartesian(p);
+      return { ...live.get(), centre: g ? { lat: CMath.toDegrees(g.latitude), lon: CMath.toDegrees(g.longitude) } : null, want: { ...want }, sun: subsolarPoint() };
+    },
     flyTo: (lat, lon, h) => fly({ destination: Cartesian3.fromDegrees(lon, lat, h) }),
     flyToRectangle: (w, s, e, n) => fly({ destination: Rectangle.fromDegrees(w, s, e, n) }),
     home() { const h = homeView(); fly({ destination: Cartesian3.fromDegrees(h.lon, h.lat, h.height), orientation: { heading: 0, pitch: -CMath.PI_OVER_TWO, roll: 0 } }); },
@@ -372,6 +418,7 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
       canvas.removeEventListener('webglcontextlost', lost);
       offChanged(); offLoad(); offStart(); offEnd(); offRenderError(); offPost();
       Object.values(aborters).forEach((a) => a.abort());
+      Object.keys(markerSets).forEach((k) => setMarkers(k, null));
       handler.destroy();
       if (!widget.isDestroyed()) widget.destroy();
     },

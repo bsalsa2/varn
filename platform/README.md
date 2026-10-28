@@ -89,6 +89,44 @@ so restrict and cap them.
 - **Connections** (Layers panel): a quick check runs automatically after load and lists real results per source: Esri imagery, AWS elevation, globe engine files, bundled NASA imagery, Esri capture dates and labels, WebGL, location permission. "Test all" adds NASA GIBS and place search. An amber dot on the Layers button means something failed. A layer that cannot load switches itself off; nothing is shown as active unless data returned.
 - `?debug` exposes the Cesium widget and `__setTime(iso)` (freezes the clock) for testing.
 
+## Command terminal
+
+Press `` ` `` (or the terminal button, or open `/#terminal`) for a command-line view of the same globe. It is labelled **UNCLASSIFIED // PUBLIC DATA ONLY** because that is exactly what it is: open data, shown with its own timestamps, nothing simulated, no agency branding. If a source is down you get its error.
+
+| Command | What it does |
+|---|---|
+| `brief` | One-screen summary: M4.5+ quakes (24 h) and open natural events (7 d) |
+| `quakes [hour\|day\|week\|month] [min_mag]` | USGS earthquakes: table, markers on the globe, alert line at M6+ |
+| `fires [days]` | NASA EONET wildfire incidents (markers) + NASA GIBS thermal detections (raster) |
+| `events [category\|all] [days]` | Storms, volcanoes, floods… from NASA EONET |
+| `go <n>` | Fly to item *n* of the last list and open its details |
+| `fly <place \| lat, lon> [km]` | Fly to a place name or coordinates |
+| `layers [name on\|off]` | List or switch layers (`fires`, `clouds`, `weather`, `buildings`, …) |
+| `watch quakes [min_mag]` | Poll the USGS past-hour feed every 2 min and print new events |
+| `status`, `sun`, `imagery`, `time` | Camera, sun angle at the view centre, imagery capture date, UTC |
+| `mark <name>` / `marks [name]` | Bookmarks (stored in this browser) |
+| `check [deep]` | Real connection test of every data source |
+| `about` | Sources, licences and limits |
+
+Tab completes, ↑/↓ recalls history, Ctrl+L clears. The command logic is plain JS (`src/globe/commands.js`) with unit tests.
+
+Earthquakes can also be switched on from **Layers › Earthquakes**, and turning on **Fires** plots the EONET incidents next to the satellite detections.
+
+### About fires
+
+NASA's thermal-anomaly layer is raw satellite hot-pixel detections: each is one or two pixels wide, so from orbit it is nearly invisible and only reads when you zoom to a region. That is why the incident markers exist. EONET lists notable incidents rather than every fire; a detection is not a confirmed fire. The layer finder also treats these mostly-transparent tiles as valid when NASA answers with a small image (an earlier size check wrongly rejected them as "unavailable").
+
+### 3D buildings
+
+Off until a source is configured. Nothing is billed unless you set a key.
+
+| Set at build time | You get | Cost |
+|---|---|---|
+| `VITE_CESIUM_ION_TOKEN` | Google Photorealistic 3D Tiles through Cesium ion, falling back to Cesium OSM Buildings over the satellite imagery | Free Cesium ion community tier (personal / non-commercial use; Google tiles are capped at 1,000 root tiles a month on it, per Cesium's published tiers: check cesium.com/pricing) |
+| `VITE_GOOGLE_MAPS_API_KEY` | Google Photorealistic 3D Tiles directly | Billed Google Maps Platform account |
+
+If the source rejects the token the layer reports the error, switches itself off, and the flat globe stays. Photorealistic tiles replace the flat globe while on (so overlays are hidden); OSM Buildings draw over it.
+
 ## Controls
 
 Drag to rotate, scroll or pinch to zoom, right-drag or Ctrl-drag to tilt. `/` search, `L` layers,
