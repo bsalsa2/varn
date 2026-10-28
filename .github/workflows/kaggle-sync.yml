@@ -1,0 +1,50 @@
+# Copies the status and reports of VARN's Kaggle notebooks into the Command Center
+# (platform/public/data/kaggle.json). The Kaggle key stays in GitHub secrets.
+# It commits only when something changed; each commit to main rebuilds the site, so it
+# checks every 6 hours (about 120 checks a month, far fewer commits).
+name: Kaggle sync
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write    # to commit platform/public/data/kaggle.json
+
+concurrency:
+  group: kaggle-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install -q kaggle
+
+      - name: Sync from Kaggle
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          KAGGLE_KERNELS: ${{ vars.KAGGLE_KERNELS }}
+        run: python training/automation/kaggle_sync.py
+
+      - name: Commit if changed
+        run: |
+          git add platform/public/data/kaggle.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Nothing changed on Kaggle; no commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Kaggle sync: update notebook status"
+          git push
