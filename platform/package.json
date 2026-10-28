@@ -7,12 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test src/sky/sky.test.js src/globe/hillshade.test.js src/globe/commands.test.js"
+    "test": "node --test src/sky/sky.test.js src/globe/hillshade.test.js src/globe/commands.test.js src/globe/buildingsData.test.js"
   },
   "dependencies": {
+    "@mapbox/vector-tile": "^2.0.5",
     "@vitejs/plugin-react": "^5.0.0",
     "cesium": "^1.146.0",
     "lucide-react": "^0.468.0",
+    "pbf": "^4.0.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "vite": "^7.0.0"

@@ -11,6 +11,8 @@ import { BASE, LABELS, OVERLAYS, GIBS_CREDIT, UPGRADES, TERRAIN, gibsUrl, resolv
 import { createTerrain } from './terrain.js';
 import { createHillshadeProvider } from './hillshadeLayer.js';
 import { createGrade } from './grade.js';
+import { createBuildings } from './buildingsLayer.js';
+import { createPrefetcher } from './prefetch.js';
 import { createLive } from './live.js';
 import { subsolarPoint } from '../earth/sun.js';
 
@@ -43,7 +45,7 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
   const live = createLive({ height: null, heading: 0, pitch: -90, lat: 0, lon: 0, loading: 0, cursor: null, quality: 'full', failed: 0 });
   const stats = { failed: 0 };
   const layers = {};
-  const want = { satellite: true, terrain: true, labels: false, daynight: true, clouds: false, weather: false, eo: null, buildings: HAS_3D };
+  const want = { satellite: true, terrain: true, labels: false, daynight: true, clouds: false, weather: false, eo: null, buildings: true };
 
   const widget = new CesiumWidget(host, {
     baseLayer: false, terrainProvider: new EllipsoidTerrainProvider(), creditContainer: credits,
@@ -64,7 +66,7 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
   globe.dynamicAtmosphereLightingFromSun = true;
   globe.depthTestAgainstTerrain = true;
   globe.maximumScreenSpaceError = 1.5;
-  globe.tileCacheSize = 600;
+  globe.tileCacheSize = 900;
   globe.preloadAncestors = true;
   globe.preloadSiblings = true;
   globe.loadingDescendantLimit = 24;
@@ -116,6 +118,7 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
     const c = camera.positionCartographic;
     live.set({ height: c.height, lat: CMath.toDegrees(c.latitude), lon: CMath.toDegrees(c.longitude), heading: CMath.toDegrees(camera.heading), pitch: CMath.toDegrees(camera.pitch) });
     updateFades();
+    layers.open?.schedule();
   };
   camera.percentageChanged = 0.01;
   const offChanged = camera.changed.addEventListener(readCamera);
@@ -127,6 +130,7 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
   const screenCentre = () => new Cartesian2(scene.canvas.clientWidth / 2, scene.canvas.clientHeight / 2);
   const offEnd = camera.moveEnd.addEventListener(() => {
     readCamera();
+    layers.open?.update();
     const h = camera.positionCartographic.height;
     if (h > 60000) autoTilted = false;
     // Like Google Earth: diving in with the wheel eases the view toward the horizon once, near the ground.
@@ -159,7 +163,16 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
       if (!c || Math.abs(c.lat - lat) > 1e-4 || Math.abs(c.lon - lon) > 1e-4) live.set({ cursor: { lat, lon } });
     });
   }, ScreenSpaceEventType.MOUSE_MOVE);
-  handler.setInputAction((delta) => { diving = delta > 0; }, ScreenSpaceEventType.WHEEL);
+  const prefetch = createPrefetcher((z, x, y) => BASE.esri.url.replace('{z}', z).replace('{y}', y).replace('{x}', x));
+  let lastWarm = 0;
+  handler.setInputAction((delta) => {
+    diving = delta > 0;
+    const now = performance.now();
+    if (!diving || now - lastWarm < 120 || !layers.esri) return;
+    lastWarm = now;
+    const p = camera.pickEllipsoid(lastMove || screenCentre(), globe.ellipsoid);
+    if (p) { const g = Cartographic.fromCartesian(p); prefetch.ahead(CMath.toDegrees(g.latitude), CMath.toDegrees(g.longitude), camera.positionCartographic.height); }
+  }, ScreenSpaceEventType.WHEEL);
   handler.setInputAction((c) => {
     const hit = scene.pick(c.position);
     if (hit?.id?.item) { onPick?.({ marker: hit.id.item, set: hit.id.set, x: c.position.x, y: c.position.y }); return; }
@@ -290,39 +303,53 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
     scene.requestRender();
   }
 
-  /** Photorealistic tiles when Google (directly or through Cesium ion) answers; otherwise extruded OSM buildings on the satellite imagery. */
-  async function loadBuildings() {
+  /**
+   * Buildings, best source first:
+   *  1. Photorealistic 3D Tiles (Google, directly or via a Cesium ion token), if configured.
+   *  2. Cesium OSM Buildings (Cesium ion token).
+   *  3. Open data, no key: OpenStreetMap footprints extruded to their mapped heights (buildingsLayer.js).
+   * Only one of them is ever on screen, so geometry is never duplicated.
+   */
+  async function loadTiles3D() {
     const why = [];
     try {
       const ts = await createGooglePhotorealistic3DTileset({ key: UPGRADES.googleKey || undefined, onlyUsingWithGoogleGeocoder: !!UPGRADES.googleKey }, { maximumScreenSpaceError: 8 });
       return { tileset: ts, source: 'Google Photorealistic 3D Tiles', replacesGlobe: true };
     } catch (e) { why.push(`Google 3D Tiles: ${e.message || e}`); }
-    if (UPGRADES.ionToken) {
-      try { return { tileset: await createOsmBuildingsAsync(), source: 'Cesium OSM Buildings', replacesGlobe: false }; }
-      catch (e) { why.push(`OSM Buildings: ${e.message || e}`); }
-    }
+    try { return { tileset: await createOsmBuildingsAsync(), source: 'Cesium OSM Buildings', replacesGlobe: false }; }
+    catch (e) { why.push(`OSM Buildings: ${e.message || e}`); }
     throw new Error(why.join(' · '));
   }
   function showBuildings() {
-    if (!layers.tiles) return;
-    layers.tiles.show = want.buildings;
-    globe.show = !(want.buildings && layers.tilesReplace);          // photoreal tiles carry their own imagery and terrain
+    if (layers.tiles) {
+      layers.tiles.show = want.buildings;
+      globe.show = !(want.buildings && layers.tilesReplace);        // photoreal tiles carry their own imagery and terrain
+    }
+    layers.open?.setEnabled(want.buildings && !layers.tiles);        // open footprints only when no tileset is in use
     scene.requestRender();
+  }
+  function useOpenBuildings(note) {
+    layers.open ||= createBuildings({
+      scene, globe, camera, creditDisplay: widget.creditDisplay,
+      onState: (st) => onLayer?.('buildings', { ...st, error: st.error || note || null, ...(st.error ? { off: true } : {}) }),
+    });
+    layers.open.setEnabled(want.buildings);
   }
   function setBuildings(on) {
     want.buildings = on;
-    if (!HAS_3D) return;
-    if (on && !layers.tiles && !layers.tilesPending) {
+    if (on && !layers.tiles && !layers.tilesPending && !layers.open) {
+      if (!HAS_3D) { useOpenBuildings(); return; }
       layers.tilesPending = true;
       onLayer?.('buildings', { status: 'loading', error: null });
-      loadBuildings().then(({ tileset, source, replacesGlobe }) => {
+      loadTiles3D().then(({ tileset, source, replacesGlobe }) => {
         if (widget.isDestroyed()) return;
         layers.tiles = scene.primitives.add(tileset); layers.tilesReplace = replacesGlobe;
         tileset.tileFailed?.addEventListener((err) => { onLayer?.('buildings', { status: 'on', source, error: `Some 3D tiles failed to load (${err.message || 'request error'})` }); });
         showBuildings();
         onLayer?.('buildings', { status: 'on', source, error: null });
-      }).catch((e) => { onLayer?.('buildings', { status: 'error', error: `3D buildings unavailable (${e.message || e})`, off: true }); })
+      }).catch((e) => { if (!widget.isDestroyed()) useOpenBuildings(`Photoreal 3D unavailable (${e.message || e}); showing open building footprints.`); })
         .finally(() => { layers.tilesPending = false; });
+      return;
     }
     showBuildings();
   }
@@ -397,6 +424,7 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
   const api = {
     widget, scene, camera, live, layers, want, stats,
     info: () => ({ webgl2: !!scene.context.webgl2, maxTexture: ContextLimits.maximumTextureSize, msaa: scene.msaaSamples, ratio: dpr * widget.resolutionScale, quality: live.get().quality }),
+    buildingStats: () => layers.open?.stats() ?? null, prefetchStats: () => prefetch.stats(),
     setSatellite, setLabels, setDayNight, setTerrain, setBuildings, setOverlay, flyToPlace, setMarkers, markerCount,
     view() {
       const p = camera.pickEllipsoid(screenCentre(), globe.ellipsoid), g = p && Cartographic.fromCartesian(p);
@@ -419,13 +447,14 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
       offChanged(); offLoad(); offStart(); offEnd(); offRenderError(); offPost();
       Object.values(aborters).forEach((a) => a.abort());
       Object.keys(markerSets).forEach((k) => setMarkers(k, null));
+      layers.open?.destroy();
       handler.destroy();
       if (!widget.isDestroyed()) widget.destroy();
     },
   };
   // ?debug exposes the globe to the test harness (camera placement, brightness checks, frozen clock).
   if (params.has('debug')) {
-    window.__varnWidget = widget; window.__fromDeg = Cartesian3.fromDegrees; window.__engine = api; window.__grade = grade;
+    window.__varnWidget = widget; window.__cesium = { sampleTerrain, Cartographic }; window.__fromDeg = Cartesian3.fromDegrees; window.__engine = api; window.__grade = grade;
     window.__setTime = (iso) => { window.__freezeTime = true; widget.clock.currentTime = JulianDate.fromIso8601(iso); scene.requestRender(); };
   }
   applyLighting();

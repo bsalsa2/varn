@@ -118,14 +118,21 @@ NASA's thermal-anomaly layer is raw satellite hot-pixel detections: each is one 
 
 ### 3D buildings
 
-Off until a source is configured. Nothing is billed unless you set a key.
+On by default and automatic: nothing is drawn from orbit or at regional scale; buildings grow out of the ground once the camera is below about 6.5 km. Only one source is ever on screen, chosen in this order:
 
-| Set at build time | You get | Cost |
-|---|---|---|
-| `VITE_CESIUM_ION_TOKEN` | Google Photorealistic 3D Tiles through Cesium ion, falling back to Cesium OSM Buildings over the satellite imagery | Free Cesium ion community tier (personal / non-commercial use; Google tiles are capped at 1,000 root tiles a month on it, per Cesium's published tiers: check cesium.com/pricing) |
-| `VITE_GOOGLE_MAPS_API_KEY` | Google Photorealistic 3D Tiles directly | Billed Google Maps Platform account |
+| # | Source | Needs | Cost | What you see |
+|---|---|---|---|---|
+| 1 | Google Photorealistic 3D Tiles (directly with `VITE_GOOGLE_MAPS_API_KEY`, or through Cesium ion with `VITE_CESIUM_ION_TOKEN`) | a key | Google key: billed Google Maps Platform account. Cesium ion community tier: free, personal / non-commercial use, capped at about 1,000 root tiles a month (check cesium.com/pricing) | photogrammetry, replaces the flat globe while on |
+| 2 | Cesium OSM Buildings (ion token) | ion token | free tier | extruded OSM buildings |
+| 3 | **Open footprints (the default)**: OpenStreetMap buildings from OpenFreeMap vector tiles, extruded in the existing Cesium scene (`buildingsLayer.js`, `buildingsData.js`) | nothing | free, no key | plain extruded footprints |
 
-If the source rejects the token the layer reports the error, switches itself off, and the flat globe stays. Photorealistic tiles replace the flat globe while on (so overlays are hidden); OSM Buildings draw over it.
+What the default source is and is not: footprints plus a height in metres, from OSM `height` or `building:levels` tags (and `min_height` for overhangs). There are no roof shapes and no facade detail, and buildings are not photogrammetry. Many buildings are not mapped with a height and use a plain low default; the Layers panel states what share of the loaded buildings that is. Coverage is wherever OSM has buildings, which is dense and well-mapped in most large cities and thin elsewhere. Dense tiles are thinned to their largest 4,500 footprints; at most 20 tiles / 40,000 buildings stay in memory. Where there is no data, nothing is drawn. Heights are placed on the same terrain data the globe uses.
+
+Attribution: © OpenStreetMap contributors, building tiles by OpenFreeMap / OpenMapTiles (shown in the credits line). OpenFreeMap asks for fair use; if traffic ever grows large, self-host or sponsor it. If the source is unreachable the layer reports the reason and switches itself off.
+
+### Zoom sharpness
+
+Imagery tiles load progressively: the sharper parents stay on screen while finer tiles arrive, with no blank flash. Imagery is never sharpened artificially. When you zoom beyond what the source captured, the status line says "enlarged beyond the source detail". While a zoom is under way the app warms the browser cache with the tiles it is heading toward (under the cursor, low priority, capped), the tile cache holds 900 tiles, failed tiles retry, and the "Sharpening imagery" indicator only appears if loading lasts more than 0.7 s.
 
 ## Controls
 

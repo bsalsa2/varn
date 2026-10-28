@@ -3,7 +3,7 @@ import { Math as CMath } from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
 import { Layers, Plus, Minus, Globe2, LocateFixed, Search, X, Copy, Loader2, Navigation2, Box, RefreshCw, TriangleAlert, SquareTerminal } from 'lucide-react';
 import { BASE, TERRAIN, OVERLAYS, UPGRADES } from './sources.js';
-import { createEngine, HAS_3D, reduceMotion } from './engine.js';
+import { createEngine, reduceMotion } from './engine.js';
 import { createLive } from './live.js';
 import { parseCoords, searchPlaces, searchGoogle, imageryMetadata } from './lookup.js';
 import { runChecks, summarize } from './diagnostics.js';
@@ -24,6 +24,17 @@ const cadenceTag = { daily: 'Daily', 'half-hourly': 'Every 30 min', '8-day compo
 const idle = createLive({ height: null, heading: 0, pitch: -90, loading: 0, cursor: null, quality: 'full', failed: 0 });
 const when = (t) => (t.length > 10 ? t.replace('T', ' ').replace('Z', ' UTC') : t);
 
+/** True only after `value` has been true for `ms`: keeps short loads from flickering an indicator. */
+function useDelayed(value, ms) {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    if (!value) { setOn(false); return undefined; }
+    const t = setTimeout(() => setOn(true), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return on;
+}
+
 /** Subscribe to the engine's live store (updates at most ~8×/s). */
 function useLive(engine) {
   const store = engine?.live ?? idle;
@@ -35,7 +46,7 @@ export default function EarthViewer() {
   const [engine, setEngine] = useState(null);
   const [epoch, setEpoch] = useState(0);
   const [fatal, setFatal] = useState(null);
-  const [ui, setUi] = useState({ satellite: true, terrain: true, labels: false, daynight: true, clouds: false, weather: false, eo: null, buildings: HAS_3D });
+  const [ui, setUi] = useState({ satellite: true, terrain: true, labels: false, daynight: true, clouds: false, weather: false, eo: null, buildings: true });
   const [state, setState] = useState({});
   const [panel, setPanel] = useState(false);
   const [meta, setMeta] = useState(null);
@@ -49,6 +60,7 @@ export default function EarthViewer() {
   const [markers, setMarkers] = useState({ quakes: 0, incidents: 0 });
   const engRef = useRef(null), stateRef = useRef({}), uiRef = useRef({}), pendingSelect = useRef(null);
   const live = useLive(engine);
+  const slowLoad = useDelayed(live.loading > 0, 700);          // brief loads stay silent
   engRef.current = engine; stateRef.current = state; uiRef.current = ui;
 
   const flash = useCallback((m) => { setNotice(m); setTimeout(() => setNotice((x) => (x === m ? '' : x)), 5000); }, []);
@@ -78,7 +90,7 @@ export default function EarthViewer() {
     }
     setFatal(null);
     eng.setSatellite(true); eng.setTerrain(true); eng.setDayNight(true);
-    if (HAS_3D) eng.setBuildings(true);
+    eng.setBuildings(true);
     setEngine(eng);
     return () => { eng.destroy(); setEngine(null); };
   }, [epoch, layerState]);
@@ -184,7 +196,7 @@ export default function EarthViewer() {
       { key: 'terrain', name: 'terrain', on: u.terrain, note: note('terrain', 'AWS elevation') },
       { key: 'labels', name: 'labels', on: u.labels, note: 'Esri boundaries and places' },
       { key: 'daynight', name: 'daynight', on: u.daynight, note: 'real sun position' },
-      { key: 'buildings', name: 'buildings', on: u.buildings && HAS_3D, note: HAS_3D ? (st.buildings?.source || note('buildings', '3D tiles')) : 'needs a Cesium ion token (free) or Google key' },
+      { key: 'buildings', name: 'buildings', on: u.buildings, note: st.buildings?.error || st.buildings?.source || 'appears when zoomed into a city' },
       { key: 'clouds', name: 'clouds', on: u.clouds, note: note('clouds', 'NASA GIBS daily') },
       { key: 'weather', name: 'weather', on: u.weather, note: note('weather', 'NASA IMERG precipitation') },
       { key: 'fires', name: 'fires', on: u.eo === 'fires', note: note('fires', 'NASA GIBS thermal anomalies + EONET incidents') },
@@ -203,7 +215,6 @@ export default function EarthViewer() {
       layers: {
         list: layerRows,
         async set(key, on) {
-          if (key === 'buildings' && !HAS_3D) return 'no 3D source is configured: set VITE_CESIUM_ION_TOKEN (free Cesium ion account) or VITE_GOOGLE_MAPS_API_KEY and rebuild';
           const flat = { satellite: 'satellite', terrain: 'terrain', labels: 'labels', daynight: 'daynight', buildings: 'buildings', clouds: 'clouds', weather: 'weather' };
           if (flat[key]) setUi((u) => ({ ...u, [flat[key]]: on }));
           else setUi((u) => ({ ...u, eo: on ? key : (u.eo === key ? null : u.eo) }));
@@ -243,10 +254,13 @@ export default function EarthViewer() {
   /* ── status line ── */
   const sat = state.satellite || {};
   const activeOverlays = Object.keys(OVERLAYS).filter((k) => state[k]?.status === 'on' && (k === 'clouds' ? ui.clouds : k === 'weather' ? ui.weather : ui.eo === k));
+  // Metres per screen pixel for a straight-down view (60° lens); if that is finer than the source resolution, the picture is enlarged, not sharper.
+  const screenMpp = live.height != null ? live.height * 0.00144 : null;
+  const magnified = !!(meta?.ok && meta.res && screenMpp && screenMpp < Number(meta.res) * 0.6 && live.pitch < -60);
   let source;
   if (!ui.satellite || sat.status === 'error') source = <><b>{BASE.blueMarble.name}</b> · static composite, ~10 km</>;
   else if (live.height != null && live.height > 400000) source = <><b>{BASE.esri.name}</b> · periodic basemap mosaic, many capture dates</>;
-  else if (meta?.ok) source = <><b>{BASE.esri.name}</b> · captured {meta.date || 'date not reported'}{meta.res ? ` · ${meta.res} m` : ''}{meta.source ? ` · ${meta.source}` : ''}</>;
+  else if (meta?.ok) source = <><b>{BASE.esri.name}</b> · captured {meta.date || 'date not reported'}{meta.res ? ` · ${meta.res} m` : ''}{meta.source ? ` · ${meta.source}` : ''}{magnified ? ' · enlarged beyond the source detail' : ''}</>;
   else source = <><b>{BASE.esri.name}</b> · periodic basemap{meta && !meta.ok ? ' · capture date unavailable here' : ''}</>;
 
   const problem = health.failed[0] || (sat.status === 'error' && { label: 'Satellite imagery', detail: sat.error });
@@ -294,9 +308,7 @@ export default function EarthViewer() {
       <Row label="Terrain" sub={state.terrain?.error || `${TERRAIN.name} · elevation ${TERRAIN.resolution}`} tag="Static" on={ui.terrain} st={state.terrain?.status} onToggle={() => setUi((u) => ({ ...u, terrain: !u.terrain }))}/>
       <Row label="Labels" sub="Countries, borders, cities and places · Esri" tag="Basemap" on={ui.labels} onToggle={() => setUi((u) => ({ ...u, labels: !u.labels }))}/>
       <Row label="Day / night" sub="Real sun position now, shown from orbit · city lights: NASA" tag="Live" on={ui.daynight} onToggle={() => setUi((u) => ({ ...u, daynight: !u.daynight }))}/>
-      <Row label="3D buildings" tag={HAS_3D ? '3D' : 'Key needed'} disabled={!HAS_3D} on={ui.buildings} st={state.buildings?.status}
-        sub={!HAS_3D ? 'Needs a free Cesium ion token (OSM buildings, or Google photoreal tiles on its free tier) or a Google Maps key. None is configured in this build.'
-          : state.buildings?.error || (state.buildings?.source ? `${state.buildings.source}${state.buildings.source.startsWith('Google') ? ' · replaces the flat imagery while on' : ' · over the satellite imagery'}` : 'Connecting to the 3D source…')}
+      <Row label="3D buildings" tag="Auto" on={ui.buildings} st={state.buildings?.status} sub={buildingsNote(state.buildings)}
         onToggle={() => setUi((u) => ({ ...u, buildings: !u.buildings }))}/>
       <OverlayRow k="clouds" on={ui.clouds} st={state.clouds} onToggle={() => setUi((u) => ({ ...u, clouds: !u.clouds }))}/>
       <OverlayRow k="weather" on={ui.weather} st={state.weather} onToggle={() => setUi((u) => ({ ...u, weather: !u.weather }))}/>
@@ -331,7 +343,8 @@ export default function EarthViewer() {
       <p className="e-source">{source}</p>
       {activeOverlays.map((k) => <p key={k} className="e-source">{OVERLAYS[k].name} · NASA GIBS · {when(state[k].time)} · {cadenceTag[OVERLAYS[k].cadence] || OVERLAYS[k].cadence}</p>)}
       <p className="e-meta">
-        {live.loading > 0 ? <span className="e-loading"><Loader2 size={11} className="spin"/>Loading imagery · {live.loading} tile{live.loading === 1 ? '' : 's'}</span> : <span>Imagery loaded</span>}
+        {live.loading > 0 ? (slowLoad ? <span className="e-loading"><Loader2 size={11} className="spin"/>Sharpening imagery · {live.loading} tile{live.loading === 1 ? '' : 's'}{live.failed ? ' · connection slow, retrying' : ''}</span> : <span>Imagery loaded</span>)
+          : <span>{live.failed ? `Some imagery could not load (${live.failed} tile${live.failed === 1 ? '' : 's'})` : 'Imagery loaded'}</span>}
         <i/>Altitude {fmtAlt(live.height)}
         {live.cursor && <><i/>{fmtLat(live.cursor.lat, 4)} {fmtLon(live.cursor.lon, 4)}</>}
         {live.quality === 'adjusted' && <><i/><span title="This device could not hold a smooth frame rate, so rendering detail was reduced">Quality adjusted for speed</span></>}
@@ -345,6 +358,20 @@ export default function EarthViewer() {
     {fatal && engine && <div className="e-lost" role="alertdialog" aria-label="Graphics problem"><TriangleAlert size={18}/><p>{fatal}</p>
       <button className="e-restart" onClick={() => setEpoch((n) => n + 1)}><RefreshCw size={14}/>Restart the globe</button></div>}
   </div>;
+}
+
+function buildingsNote(b = {}) {
+  if (b.status === 'error') return b.error;
+  if (b.status === 'loading') return 'Connecting to the 3D source…';
+  const d = b.detail;
+  if (!b.source) return 'Appears automatically when zoomed into a city';
+  const base = `${b.source} · appears automatically when zoomed into a city`;
+  if (b.error) return `${base} · ${b.error}`;
+  if (d?.buildings) {
+    const est = d.unmapped ? ` · ${Math.round((d.unmapped / (d.mapped + d.unmapped)) * 100)}% use a default height (not mapped in OSM)` : '';
+    return `${base} · ${d.buildings.toLocaleString('en-US')} loaded${est}${d.capped ? ' · dense tiles are thinned to the largest footprints' : ''}`;
+  }
+  return base;
 }
 
 function Row({ label, sub, tag, on, st, onToggle, radio, disabled }) {
