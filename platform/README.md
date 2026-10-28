@@ -17,6 +17,20 @@ npm run build
 
 ## Current implementation
 
+The Command Center is organised in three layers:
+
+- **Command**: Overview answers what is happening and what needs attention: rules over live signals
+  (API, website, GitHub Actions, Kaggle sync, your deadlines), the current roadmap phase, key metrics and
+  an updates feed (plan decisions, commits, syncs).
+- **Operations**: Projects (roadmap, milestone and tracks parsed from `docs/MASTER_PLAN.md`, your tasks,
+  GitHub issues), Research (results, runs, models, datasets from `evidence/`), Business (repository
+  documents; budget, suppliers and hiring you enter, with one-click import of `bom.csv`).
+- **Technical / Intelligence**: Systems (live health, workflows, failures, deployments) and Assistant
+  (local full-text search and a rule-based "what next"; the AI assistant is planned, not built).
+
+Records you enter are stored in this browser only (`localStorage`), with JSON export/import. The site is
+public, so nothing private is sent anywhere. Moving them to private storage needs sign-in first.
+
 The Command Center is one floating glass window over a WebGL render of Earth (`src/earth/`):
 
 - Imagery: NASA Blue Marble and Earth at Night composites, public domain (see `public/earth/CREDITS.md`).
