@@ -16,6 +16,7 @@ Needs KAGGLE_USERNAME and KAGGLE_KEY. If either is missing it says so and exits 
 import argparse
 import json
 import os
+import subprocess
 import sys
 import tempfile
 from datetime import datetime, timezone
@@ -46,8 +47,10 @@ def read_reports(folder):
     return found
 
 
-def kernel_entry(ref, status_text, reports):
+def kernel_entry(ref, status_text, reports, error=None):
     entry = {"ref": ref, "url": f"https://www.kaggle.com/code/{ref}", "status": rp.parse_status(status_text)}
+    if error:
+        entry["status"], entry["error"] = "UNREACHABLE", error
     entry["report_md"] = reports.get("report.md")
     raw = reports.get("report.json")
     try:
@@ -65,12 +68,25 @@ def build(entries, previous, now):
     return {"changed_at": now.isoformat(timespec="seconds").replace("+00:00", "Z"), **body}
 
 
+def kaggle(*args):
+    done = subprocess.run(["kaggle", *args], capture_output=True, text=True)
+    return done.returncode, (done.stdout or "") + (done.stderr or "")
+
+
+def short_error(text):
+    """Last meaningful line of a Kaggle CLI failure, e.g. '403 Client Error: Forbidden'."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    return (lines[-1] if lines else "kaggle CLI failed with no message")[:200]
+
+
 def fetch(ref):
-    """Status text and kept reports for one notebook (live Kaggle calls)."""
-    status_text = rp.sh(["kaggle", "kernels", "status", ref], check=False)
+    """Status text, kept reports and any error for one notebook (live Kaggle calls)."""
+    code, status_text = kaggle("kernels", "status", ref)
+    if code != 0:
+        return status_text, {}, short_error(status_text)
     with tempfile.TemporaryDirectory(prefix="kaggle-sync-") as tmp:
-        rp.sh(["kaggle", "kernels", "output", ref, "-p", tmp], check=False)
-        return status_text, read_reports(tmp)
+        kaggle("kernels", "output", ref, "-p", tmp)
+        return status_text, read_reports(tmp), None
 
 
 def main(argv=None, environ=None, fetcher=fetch, out_file=OUT_FILE, now=None):
@@ -85,9 +101,10 @@ def main(argv=None, environ=None, fetcher=fetch, out_file=OUT_FILE, now=None):
 
     entries = []
     for ref in kernel_refs(environ):
-        status_text, reports = fetcher(ref)
-        entry = kernel_entry(ref, status_text, reports)
-        print(f"  {ref}: {entry['status']}, report: {'yes' if entry['report_md'] or entry['report_json'] else 'none'}")
+        status_text, reports, error = fetcher(ref)
+        entry = kernel_entry(ref, status_text, reports, error)
+        print(f"  {ref}: {entry['status']}, report: {'yes' if entry['report_md'] or entry['report_json'] else 'none'}"
+              + (f" ({error})" if error else ""))
         entries.append(entry)
 
     out_file = Path(out_file)
