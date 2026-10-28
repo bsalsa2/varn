@@ -168,3 +168,34 @@ kbd { font: 500 12px var(--body); padding: 1px 5px; border-radius: 5px; backgrou
   .clock { min-width: 64px; font-size: 13px; }
   .perf { display: none; }
 }
+
+/* Satellite view */
+.sky canvas.sat-map, .sky canvas.sat-globe { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.sky canvas.sat-globe { transition: opacity .2s linear; pointer-events: none; }
+.sky canvas[hidden] { display: none; }
+.sky canvas.stage.over-map { background: transparent; touch-action: none; }
+.sat-panel { left: 20px; bottom: 96px; width: 340px; padding: 14px 16px; z-index: 10; display: flex; flex-direction: column; gap: 10px; }
+.sat-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fog); }
+.sat-head h2 { margin: 0 6px 0 0; font: 600 15px var(--display); color: var(--bone); letter-spacing: .02em; }
+.sat-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--fog); opacity: .6; }
+.sat-dot.ok { background: #9DB4A2; opacity: 1; box-shadow: 0 0 0 3px rgba(157,180,162,.18); }
+.sat-dot.bad { background: var(--amber); opacity: 1; }
+.sat-seg, .sat-date, .sat-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.sat-date .num { min-width: 92px; text-align: center; font-size: 13px; }
+.sat-src { margin: 0; font-size: 12px; color: var(--fog); }
+.sat-src b { color: var(--bone); font-weight: 600; }
+.sat-facts { margin: 0; display: grid; gap: 0; border-top: 1px solid rgba(167,179,189,.14); }
+.sat-facts div { display: grid; grid-template-columns: 70px 1fr; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(167,179,189,.1); font-size: 12px; }
+.sat-facts dt { color: var(--fog); opacity: .8; }
+.sat-facts dd { margin: 0; color: var(--bone); }
+.sat-facts small { color: var(--fog); }
+.sat-hint { margin: 0; font-size: 11.5px; color: var(--fog); opacity: .85; }
+.sat-credit { position: fixed; left: 22px; bottom: 8px; z-index: 9; margin: 0; max-width: 330px; text-align: left; font-size: 10px; line-height: 1.3; color: rgba(244,243,239,.72); text-shadow: 0 1px 4px rgba(0,0,0,.9); pointer-events: none; }
+@media (min-width: 760px) and (max-width: 1180px) { .sat-panel { width: 300px; } }
+@media (min-width: 760px) and (max-height: 860px) { .sat-facts div:nth-child(n+3) { display: none; } }
+@media (max-width: 759px) {
+  .sat-panel { left: 12px; right: 12px; bottom: auto; top: 172px; width: auto; padding: 8px 10px; gap: 6px; }
+  .sat-head, .sat-facts, .sat-hint, .sat-src, .sat-actions { display: none; }
+  .sat-credit { left: 14px; right: 14px; max-width: none; top: 226px; bottom: auto; font-size: 9px; }
+  .sky[data-view="sat"] .sky-panel { max-height: 24vh; }
+}

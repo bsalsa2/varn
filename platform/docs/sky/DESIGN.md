@@ -11,6 +11,8 @@
 9. Motion: one rAF loop drawing a single canvas; React re-renders at ~10 Hz for readouts. Pauses when hidden; drops refraction, grain and trail density if frames exceed 20 ms for 2 s.
 10. Fallbacks: no backdrop-filter → frosted solid; reduced motion / transparency / more contrast → solid panels, no springs, no specular.
 
+11. Satellite view (`V` cycles views): a descent from orbit (the Command Center's planet shader, NASA Blue Marble) hands over at z≈5 to tiled imagery: Sentinel-2 cloudless 2016 by EOX (CC BY 4.0) for detail, NASA GIBS VIIRS true colour for a chosen UTC day (real clouds), swipe-compare and a Shift loupe. Rings and scale bar are true ground distance; tracks stay bearings. The sun marker is the real sun from the site now. The site is a public demo location (Mojave Air & Space Port) until a real one is chosen; `?site=lat,lon` overrides it. Tiles load in the viewer's browser; nothing is proxied or stored.
+
 ## REAL data format
 
 `platform/public/data/sightings.json` (not committed): an array, or `{ "sightings": [...] }`, of rows

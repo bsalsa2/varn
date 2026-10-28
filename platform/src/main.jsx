@@ -284,9 +284,15 @@ function System({ api, check, earth, sync }) {
 function EvidenceText({ src, highlight }) {
   const text = EVIDENCE[src] ?? '';
   const firstHit = useRef(null);
-  useEffect(() => { firstHit.current?.scrollIntoView({ block: 'center' }); }, [src, highlight]);
+  const pre = useRef(null);
+  // Scroll only the evidence box itself; scrollIntoView would also scroll overflow-hidden
+  // ancestors (the full-screen window) and shift the whole interface.
+  useEffect(() => {
+    const box = pre.current, hit = firstHit.current;
+    if (box) box.scrollTop = hit ? Math.max(0, hit.offsetTop - box.clientHeight / 2) : 0;
+  }, [src, highlight]);
   let marked = false;
-  return <pre className="evidence">{text.split('\n').map((line, i) => {
+  return <pre className="evidence" ref={pre}>{text.split('\n').map((line, i) => {
     const hit = highlight && line.includes(highlight);
     const ref = hit && !marked ? (marked = true, firstHit) : undefined;
     return <span key={i} ref={ref} className={cx('ev-line', hit && 'hit')}><span className="ev-n">{i + 1}</span>{line || ' '}</span>;
@@ -295,7 +301,7 @@ function EvidenceText({ src, highlight }) {
 
 function Inspector({ item, onClose }) {
   const ref = useRef(null);
-  useEffect(() => { ref.current?.focus(); }, [item]);
+  useEffect(() => { ref.current?.focus({ preventScroll: true }); }, [item]);
   if (!item) return null;
   let title, body, src;
   if (item.type === 'kaggle') { const k = item.kernel;
@@ -340,7 +346,7 @@ function Palette({ open, onClose, go, actions }) {
     ...ROUTES.map((r) => ({ id: r.id, label: r.label, hint: `Go · ${r.key}`, icon: r.icon, run: () => go(r.id) })),
     ...actions,
   ].filter((x) => x.label.toLowerCase().includes(q.toLowerCase())), [q, actions, go]);
-  useEffect(() => { if (open) { setQ(''); setI(0); setTimeout(() => input.current?.focus(), 0); } }, [open]);
+  useEffect(() => { if (open) { setQ(''); setI(0); setTimeout(() => input.current?.focus({ preventScroll: true }), 0); } }, [open]);
   useEffect(() => setI(0), [q]);
   if (!open) return null;
   const run = (x) => { onClose(); x.run(); };

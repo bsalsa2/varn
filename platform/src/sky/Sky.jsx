@@ -3,12 +3,23 @@ import { generateScene, stateAt, summarize, sampleTrack, LABELS } from './sim.js
 import { normalizeSightings } from './data.js';
 import { drawFrame, KIND_STYLE, glyph } from './render.js';
 import { Glass, refractionSupported, useSpring } from './Glass.jsx';
+import { SatelliteMap, LAYERS, latestDay, shiftDay } from './satellite.js';
+import { metersPerPixel, sunAt, fmtLat, fmtLon, fmtDistance } from './geo.js';
 import './sky.css';
 
 const SPEEDS = [1, 4, 16];
 const KIND_ORDER = { drone: 0, unknown: 1, unmatched: 2, matched: 3 };
 const params = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
 const SEED = Number(params.get('seed')) || 1729;
+// The satellite view is centred on a public demo location until a real node position is chosen.
+// Override with ?site=lat,lon. Never publish a real node's exact coordinates on this public site.
+const SITE = (() => {
+  const m = /^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/.exec(params.get('site') || '');
+  if (m) return { lat: +m[1], lon: +m[2], name: 'Custom site (from URL)', demo: false };
+  return { lat: 35.0594, lon: -118.1517, name: 'Mojave Air & Space Port, CA', demo: true };
+})();
+const VIEWS = ['dome', 'plan', 'sat'];
+const VIEW_NAME = { dome: 'Sky dome', plan: 'Plan', sat: 'Satellite' };
 
 const pad = (n) => String(Math.floor(n)).padStart(2, '0');
 const tPlus = (s) => `T+${pad(s / 60)}:${pad(s % 60)}`;
@@ -61,7 +72,7 @@ function writeNote(mode, id, v) { try { localStorage.setItem(noteKey(mode, id), 
 
 export default function Sky() {
   const [mode, setMode] = useState(params.get('mode') === 'real' ? 'real' : 'sim');
-  const [view, setView] = useState(params.get('view') === 'plan' ? 'plan' : 'dome');
+  const [view, setView] = useState(VIEWS.includes(params.get('view')) ? params.get('view') : 'dome');
   const simScene = useMemo(() => generateScene(SEED), []);
   const [real, setReal] = useState({ status: 'idle', scene: null });
   const scene = mode === 'sim' ? simScene : real.scene;
@@ -84,8 +95,27 @@ export default function Sky() {
   const refract = canRefract && quality === 'high';
 
   const canvasRef = useRef(null), hitsRef = useRef([]), searchRef = useRef(null);
+  const satMapRef = useRef(null), satGlobeRef = useRef(null), satRef = useRef(null);
+  const [satUi, setSatUi] = useState({ layer: 'detail', compare: false, date: latestDay(), cursor: null });
+  const drag = useRef(null);
+  const sunRef = useRef({ at: -Infinity, value: null });
   const live = useRef({});
   live.current = { scene, view, mode, selectedId, hoverId, quality, playing, speed, prefs };
+
+  // Satellite view: built the first time it is opened, then kept (tiles stay cached).
+  useEffect(() => {
+    if (view !== 'sat') return;
+    if (!satRef.current) {
+      satRef.current = new SatelliteMap({ mapCanvas: satMapRef.current, globeCanvas: satGlobeRef.current, site: SITE, reducedMotion: prefs.reducedMotion });
+      satRef.current.descend();
+    }
+    satRef.current.dirty = true;
+  }, [view]); // eslint-disable-line
+  useEffect(() => () => satRef.current?.dispose(), []);
+  useEffect(() => {
+    const m = satRef.current; if (!m) return;
+    m.layer = satUi.layer; m.compare = satUi.compare; m.date = satUi.date; m.dirty = true;
+  }, [satUi.layer, satUi.compare, satUi.date]);
 
   // REAL mode: read the local file once; honest empty state if it is missing or empty.
   useEffect(() => {
@@ -117,7 +147,16 @@ export default function Sky() {
       if (ema > 20) { slowSince ||= now; if (now - slowSince > 2000 && L.quality === 'high') { setQuality('low'); perf.quality = 'low'; } } else slowSince = 0;
       const d = cv.width / innerWidth; ctx.setTransform(d, 0, 0, d, 0, 0);
       const visible = sc ? stateAt(sc, tRef.current) : [];
-      const out = drawFrame(ctx, { w: innerWidth, h: innerHeight, dpr: d, scene: sc, t: tRef.current, visible, selectedId: L.selectedId, hoverId: L.hoverId, quality: L.quality, mode: L.mode, view: L.view, now, reducedMotion: L.prefs.reducedMotion });
+      let sat = null;
+      const sm = satRef.current;
+      if (L.view === 'sat' && sm) {
+        sm.frame(now, innerWidth, innerHeight, d);
+        if (now - sunRef.current.at > 30000) sunRef.current = { at: now, value: sunAt(SITE.lat, SITE.lon) };
+        sat = { site: sm.toScreen(SITE.lat, SITE.lon, innerWidth, innerHeight), mpp: metersPerPixel(sm.cam.lat, sm.cam.zoom), sun: sunRef.current.value,
+          globe: sm.globeVisible ?? 0, compare: sm.compare, divider: sm.divider, date: sm.date,
+          siteLabel: SITE.demo ? 'DEMO SITE · NOT A VARN NODE' : 'SITE', showTracks: L.mode === 'sim' && !!sc?.node };
+      }
+      const out = drawFrame(ctx, { w: innerWidth, h: innerHeight, dpr: d, scene: sc, t: tRef.current, visible, selectedId: L.selectedId, hoverId: L.hoverId, quality: L.quality, mode: L.mode, view: L.view, now, reducedMotion: L.prefs.reducedMotion, sat });
       hitsRef.current = out.hits;
       frames++; perf.frames++; perf.frameMs = +ema.toFixed(2);
       if (now - fpsT > 1000) { perf.fps = Math.round((frames * 1000) / (now - fpsT)); frames = 0; fpsT = now; }
@@ -175,7 +214,9 @@ export default function Sky() {
       else if (e.key === '/') { e.preventDefault(); if (searchRef.current) searchRef.current.focus(); else { setSelectedId(null); setFocusSearch(true); } }
       else if (e.key === 'ArrowRight' || e.key === '.') step(1);
       else if (e.key === 'ArrowLeft' || e.key === ',') step(-1);
-      else if (e.key === 'v') setView((v) => (v === 'dome' ? 'plan' : 'dome'));
+      else if (e.key === 'v') setView((v) => VIEWS[(VIEWS.indexOf(v) + 1) % VIEWS.length]);
+      else if (view === 'sat' && satRef.current && (e.key === '+' || e.key === '=' || e.key === '-')) satRef.current.zoomAt(e.key === '-' ? -0.5 : 0.5, innerWidth / 2, innerHeight / 2, innerWidth, innerHeight);
+      else if (view === 'sat' && satRef.current && e.key === '0') satRef.current.recenter();
     };
     addEventListener('keydown', onKey); return () => removeEventListener('keydown', onKey);
   });
@@ -186,12 +227,64 @@ export default function Sky() {
     for (const h of hitsRef.current) { const d = (h.x - e.clientX) ** 2 + (h.y - e.clientY) ** 2; if (d < bd) { bd = d; best = h.id; } }
     return best;
   };
-  const onCanvasMove = (e) => { const id = pick(e); setHoverId(id); e.currentTarget.style.cursor = id ? 'pointer' : 'default'; };
-  const onCanvasClick = (e) => { const id = pick(e); setSelectedId(id); };
+  const onCanvasMove = (e) => {
+    const sm = view === 'sat' ? satRef.current : null;
+    if (sm) {
+      const dr = drag.current;
+      if (dr) {
+        if (dr.kind === 'divider') { sm.divider = Math.max(0.05, Math.min(0.95, e.clientX / innerWidth)); sm.dirty = true; return; }
+        if (Math.hypot(e.clientX - dr.x0, e.clientY - dr.y0) > 4) dr.moved = true;
+        sm.panBy(e.clientX - dr.x, e.clientY - dr.y); dr.x = e.clientX; dr.y = e.clientY; return;
+      }
+      const ll = sm.toLatLon(e.clientX, e.clientY, innerWidth, innerHeight);
+      setSatUi((u) => ({ ...u, cursor: ll }));
+      if (e.shiftKey && !prefs.reducedMotion) { sm.loupe = { x: e.clientX, y: e.clientY }; sm.dirty = true; } else if (sm.loupe) { sm.loupe = null; sm.dirty = true; }
+      const nearDivider = sm.compare && Math.abs(e.clientX - innerWidth * sm.divider) < 14;
+      const id = pick(e); setHoverId(id);
+      e.currentTarget.style.cursor = id ? 'pointer' : nearDivider ? 'ew-resize' : 'grab';
+      return;
+    }
+    const id = pick(e); setHoverId(id); e.currentTarget.style.cursor = id ? 'pointer' : 'default';
+  };
+  const onCanvasDown = (e) => {
+    const sm = view === 'sat' ? satRef.current : null; if (!sm || e.button !== 0) return;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    const kind = sm.compare && Math.abs(e.clientX - innerWidth * sm.divider) < 14 ? 'divider' : 'pan';
+    drag.current = { kind, x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, moved: kind === 'divider' };
+    if (kind === 'pan') e.currentTarget.style.cursor = 'grabbing';
+  };
+  const onCanvasUp = (e) => { const dr = drag.current; drag.current = null; if (dr?.moved) e.currentTarget.dataset.dragged = '1'; };
+  const onCanvasClick = (e) => {
+    if (e.currentTarget.dataset.dragged) { delete e.currentTarget.dataset.dragged; return; }
+    const id = pick(e); setSelectedId(id);
+  };
+  const onCanvasWheel = (e) => {
+    const sm = view === 'sat' ? satRef.current : null; if (!sm) return;
+    sm.zoomAt(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0022), e.clientX, e.clientY, innerWidth, innerHeight);
+  };
+  const onCanvasDouble = (e) => { const sm = view === 'sat' ? satRef.current : null; if (sm) sm.zoomAt(1, e.clientX, e.clientY, innerWidth, innerHeight); };
+  // The wheel listener must be non-passive to stop the page from scrolling.
+  useEffect(() => {
+    const cv = canvasRef.current; if (!cv) return undefined;
+    const stop = (e) => { if (live.current.view === 'sat') e.preventDefault(); };
+    cv.addEventListener('wheel', stop, { passive: false });
+    return () => cv.removeEventListener('wheel', stop);
+  }, []);
+  useEffect(() => {
+    const up = (e) => { if (e.key === 'Shift' && satRef.current?.loupe) { satRef.current.loupe = null; satRef.current.dirty = true; } };
+    addEventListener('keyup', up); return () => removeEventListener('keyup', up);
+  }, []);
 
   const commands = useMemo(() => {
     const c = [
-      { name: `Switch to ${view === 'dome' ? 'plan' : 'dome'} view`, hint: 'V', run: () => setView(view === 'dome' ? 'plan' : 'dome') },
+      ...VIEWS.filter((v) => v !== view).map((v) => ({ name: `Switch to ${VIEW_NAME[v]} view`, hint: 'V', run: () => setView(v) })),
+      ...(view === 'sat' ? [
+        { name: 'Satellite: replay descent from orbit', hint: 'imagery', run: () => satRef.current?.descend() },
+        { name: 'Satellite: recentre on site', hint: '0', run: () => satRef.current?.recenter() },
+        { name: 'Satellite: Sentinel-2 detail layer', hint: 'imagery', run: () => setSatUi((u) => ({ ...u, layer: 'detail', compare: false })) },
+        { name: 'Satellite: NASA VIIRS daily layer', hint: 'imagery', run: () => setSatUi((u) => ({ ...u, layer: 'today', compare: false })) },
+        { name: 'Satellite: swipe-compare layers', hint: 'imagery', run: () => setSatUi((u) => ({ ...u, compare: true })) },
+      ] : []),
       { name: `Switch to ${mode === 'sim' ? 'REAL' : 'SIM'} mode`, hint: 'mode', run: () => { setMode(mode === 'sim' ? 'real' : 'sim'); setReal((r) => (r.status === 'missing' ? { status: 'idle', scene: null } : r)); } },
       { name: playing ? 'Pause' : 'Play', hint: 'Space', run: () => setPlaying(!playing) },
       ...SPEEDS.map((s) => ({ name: `Speed ×${s}`, hint: 'time', run: () => setSpeed(s) })),
@@ -205,10 +298,14 @@ export default function Sky() {
   const modeTag = mode === 'sim' ? 'SIM' : 'REAL';
   const matchedNow = counts.matched;
 
-  return <main className="sky" data-quality={quality} data-mode={mode} aria-label="VARN Sky">
+  return <main className="sky" data-quality={quality} data-mode={mode} data-view={view} aria-label="VARN Sky">
     {mode === 'sim' && <div className="sim-strap" role="status">SIMULATION: not real detections</div>}
-    <canvas ref={canvasRef} className="stage" onPointerMove={onCanvasMove} onPointerLeave={() => setHoverId(null)} onClick={onCanvasClick}
-      role="img" aria-label={`${view === 'dome' ? 'All-sky dome' : 'Plan view'}, ${modeTag}: ${counts.total} objects in view, ${matchedNow} matched to ADS-B.`} />
+    <canvas ref={satMapRef} className="sat-map" hidden={view !== 'sat'} aria-hidden="true" />
+    <canvas ref={satGlobeRef} className="sat-globe" hidden={view !== 'sat'} aria-hidden="true" />
+    <canvas ref={canvasRef} className={`stage ${view === 'sat' ? 'over-map' : ''}`} onPointerMove={onCanvasMove} onPointerDown={onCanvasDown} onPointerUp={onCanvasUp}
+      onPointerLeave={() => { setHoverId(null); if (satRef.current?.loupe) { satRef.current.loupe = null; satRef.current.dirty = true; } }}
+      onClick={onCanvasClick} onWheel={onCanvasWheel} onDoubleClick={onCanvasDouble}
+      role="img" aria-label={`${view === 'dome' ? 'All-sky dome' : view === 'plan' ? 'Plan view' : `Satellite view of ${SITE.name}`}, ${modeTag}: ${counts.total} objects in view, ${matchedNow} matched to ADS-B.`} />
 
     <Glass as="header" className="sky-head" refract={refract}>
       <div className="row">
@@ -228,6 +325,7 @@ export default function Sky() {
       <div className="view-toggle" role="group" aria-label="View">
         <button className="chip" aria-pressed={view === 'dome'} onClick={() => setView('dome')}>Sky dome</button>
         <button className="chip" aria-pressed={view === 'plan'} onClick={() => setView('plan')}>Plan</button>
+        <button className="chip" aria-pressed={view === 'sat'} onClick={() => setView('sat')}>Satellite</button>
         <button className="chip kbd" onClick={() => setPalette(true)} aria-label="Open command palette">Commands <kbd>Ctrl K</kbd></button>
       </div>
     </Glass>
@@ -264,6 +362,9 @@ export default function Sky() {
 
     {!empty && <Timeline refract={refract} scene={scene} t={t} playing={playing} speed={speed} onPlay={() => setPlaying((p) => !p)} onSpeed={setSpeed} onStep={step} selectedId={selectedId}
       onScrub={(v) => { tRef.current = v; setTick((x) => x + 1); }} modeTag={modeTag} />}
+
+    {view === 'sat' && <SatPanel refract={refract} ui={satUi} setUi={setSatUi} map={satRef.current} tick={tick} mode={mode} />}
+    {view === 'sat' && <p className="sat-credit">{satUi.compare ? `${LAYERS.detail.credit} · ${LAYERS.today.credit}` : LAYERS[satUi.layer].credit} · Orbit: NASA Blue Marble</p>}
 
     {palette && <Palette refract={refract} commands={commands} onClose={() => setPalette(false)} />}
     {params.has('fps') && <div className="perf num" aria-hidden="true">{window.__varnSky?.fps ?? 0} fps · {quality}</div>}
@@ -363,4 +464,41 @@ function Palette({ commands, onClose, refract }) {
       </ul>
     </Glass>
   </>;
+}
+
+function SatPanel({ ui, setUi, map, refract, mode }) {
+  const st = map?.status();
+  const sun = sunAt(SITE.lat, SITE.lon);
+  const zoom = map?.cam.zoom ?? 0;
+  const mpp = map ? metersPerPixel(map.cam.lat, zoom) : 0;
+  const yesterday = latestDay();
+  const layer = ui.compare ? 'compare' : ui.layer;
+  const imagery = !st ? 'Starting…' : st.globe >= 1 ? 'Orbit · NASA Blue Marble' : st.ok === 0 && st.failed > 0 ? 'Imagery could not load (offline or blocked)'
+    : `${st.ok} tiles${st.loading ? ` · ${st.loading} loading` : ''}${st.failed ? ` · ${st.failed} failed` : ''}`;
+  return <Glass as="section" className="sat-panel" refract={refract} aria-label="Satellite imagery">
+    <div className="sat-head"><h2>Satellite</h2><span className={`sat-dot ${st && st.ok ? 'ok' : st && st.failed && !st.ok ? 'bad' : ''}`} />{imagery}</div>
+    <div className="sat-seg" role="group" aria-label="Imagery layer">
+      {[['detail', 'Detail'], ['today', 'Daily'], ['compare', 'Compare']].map(([id, lbl]) => <button key={id} className="chip" aria-pressed={layer === id}
+        onClick={() => setUi((u) => ({ ...u, layer: id === 'compare' ? u.layer : id, compare: id === 'compare' }))}>{lbl}</button>)}
+    </div>
+    <p className="sat-src">{layer === 'detail' ? <><b>{LAYERS.detail.name}</b> · {LAYERS.detail.when()}</> : layer === 'today' ? <><b>{LAYERS.today.name}</b> · {ui.date}</> : <>Drag the divider: <b>Sentinel-2 2016</b> left, <b>VIIRS {ui.date}</b> right</>}</p>
+    {layer !== 'detail' && <div className="sat-date" role="group" aria-label="VIIRS day">
+      <button className="chip" onClick={() => setUi((u) => ({ ...u, date: shiftDay(u.date, -1) }))} aria-label="Previous day" disabled={ui.date <= shiftDay(yesterday, -60)}>‹</button>
+      <span className="num">{ui.date}</span>
+      <button className="chip" onClick={() => setUi((u) => ({ ...u, date: shiftDay(u.date, 1) }))} aria-label="Next day" disabled={ui.date >= yesterday}>›</button>
+      <button className="chip" onClick={() => setUi((u) => ({ ...u, date: yesterday }))} disabled={ui.date === yesterday}>Latest</button>
+    </div>}
+    <dl className="sat-facts">
+      <div><dt>Site</dt><dd>{SITE.name}{SITE.demo && <small> · demo, not a VARN node</small>}</dd></div>
+      <div><dt>Position</dt><dd className="num">{fmtLat(SITE.lat)} {fmtLon(SITE.lon)}</dd></div>
+      <div><dt>Cursor</dt><dd className="num">{ui.cursor ? `${fmtLat(ui.cursor[0])} ${fmtLon(ui.cursor[1])}` : '—'}</dd></div>
+      <div><dt>Scale</dt><dd className="num">z{zoom.toFixed(1)} · {mpp >= 1 ? `${mpp.toFixed(mpp < 10 ? 1 : 0)} m/px` : `${(mpp * 100).toFixed(0)} cm/px`} · {fmtDistance(mpp * 100)} per 100 px</dd></div>
+      <div><dt>Sun now</dt><dd className="num">{sun.az.toFixed(0)}° az · {sun.el.toFixed(0)}° el{sun.el < 0 ? ' · night at site' : ''}</dd></div>
+    </dl>
+    <div className="sat-actions">
+      <button className="chip" onClick={() => map?.descend()}>Replay descent</button>
+      <button className="chip" onClick={() => map?.recenter()}>Recentre</button>
+    </div>
+    <p className="sat-hint">Drag to pan · scroll to zoom · Shift for a ×4 loupe{mode === 'real' ? ' · real sightings have no location, so no bearings are drawn' : ''}</p>
+  </Glass>;
 }

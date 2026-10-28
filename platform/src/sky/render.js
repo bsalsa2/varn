@@ -1,6 +1,7 @@
 // Canvas renderer for the dome and plan views. Draws one frame from (scene, t); returns hit targets.
 import { domeXY, wrap360 } from './sim.js';
 import { contours } from './terrain.js';
+import { niceDistance, fmtDistance } from './geo.js';
 
 export const C = { charcoal: '#0B0F14', night: '#111820', steel: '#4B5B6B', fog: '#A7B3BD', bone: '#F4F3EF', sage: '#7A8B7E', ink: '#17212B', amber: '#E0A84A' };
 export const KIND_STYLE = {
@@ -72,7 +73,7 @@ export function drawFrame(ctx, f) {
   const { w, h, view } = f;
   const L = layoutFor(w, h);
   const hits = [];
-  if (view === 'plan') drawPlan(ctx, f, L, hits); else drawDome(ctx, f, L, hits);
+  if (view === 'plan') drawPlan(ctx, f, L, hits); else if (view === 'sat') drawSat(ctx, f, L, hits); else drawDome(ctx, f, L, hits);
   if (f.mode === 'sim') watermark(ctx, w, h, L);
   return { hits, layout: L };
 }
@@ -231,5 +232,129 @@ function drawPlan(ctx, f, L, hits) {
   }
   ctx.font = '500 12px Inter, sans-serif'; ctx.fillStyle = rgba(C.fog, 0.9); ctx.textAlign = 'center';
   ctx.fillText('Bearings only: a passive camera measures direction, not distance. Terrain is procedural.', cx, cy + r + 46);
+  ctx.textAlign = 'left';
+}
+
+// Satellite view overlay. The imagery is on its own canvas underneath; this layer is transparent.
+// Rings and the scale bar are true ground distance at the current zoom. Tracks stay bearings:
+// a passive camera knows direction, not distance, so rays end on a fixed on-screen ring.
+function drawSat(ctx, f, L, hits) {
+  const { w, h, scene, t, visible, quality, sat } = f;
+  ctx.clearRect(0, 0, w, h);
+  if (!sat) return;
+  const [sx, sy] = sat.site;
+  const fade = 1 - sat.globe;              // overlays arrive as the globe hands over to the map
+  const rB = Math.min(w, h) * (L.mobile ? 0.26 : 0.27);
+  ctx.save(); ctx.globalAlpha = fade;
+
+  // ground range rings, labelled in true distance
+  const step = niceDistance(sat.mpp, Math.min(w, h) * 0.12);
+  for (let k = 1; k <= 4; k++) {
+    const rr = (step * k) / sat.mpp;
+    if (rr > Math.hypot(w, h)) break;
+    ctx.strokeStyle = rgba(C.bone, k % 2 ? 0.18 : 0.3); ctx.lineWidth = 1; ctx.setLineDash(k % 2 ? [2, 6] : []);
+    ctx.beginPath(); ctx.arc(sx, sy, rr, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    label(ctx, fmtDistance(step * k), sx + rr * 0.707 + 4, sy - rr * 0.707 - 4, 0.8);
+  }
+
+  // node field of view as a ground wedge
+  if (scene?.node && sat.showTracks) {
+    const a0 = (scene.node.boresightAz - scene.node.fov / 2 - 90) * D2R, a1 = (scene.node.boresightAz + scene.node.fov / 2 - 90) * D2R;
+    const far = Math.hypot(w, h);
+    const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, far * 0.6);
+    g.addColorStop(0, rgba(C.sage, 0.28)); g.addColorStop(1, rgba(C.sage, 0));
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.arc(sx, sy, far, a0, a1); ctx.closePath(); ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = rgba(C.sage, 0.75); ctx.setLineDash([5, 6]); ctx.lineWidth = 1.2;
+    for (const a of [a0, a1]) { ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + far * Math.cos(a), sy + far * Math.sin(a)); ctx.stroke(); }
+    ctx.setLineDash([]);
+  }
+
+  // bearing ring with azimuth ticks
+  ctx.strokeStyle = rgba(C.bone, 0.5); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(sx, sy, rB, 0, Math.PI * 2); ctx.stroke();
+  for (let a = 0; a < 360; a += 10) {
+    const major = a % 30 === 0, s = Math.sin(a * D2R), c = Math.cos(a * D2R);
+    ctx.strokeStyle = rgba(C.bone, major ? 0.75 : 0.35);
+    ctx.beginPath(); ctx.moveTo(sx + rB * s, sy - rB * c); ctx.lineTo(sx + (rB - (major ? 9 : 5)) * s, sy - (rB - (major ? 9 : 5)) * c); ctx.stroke();
+  }
+  ctx.font = '600 14px "Space Grotesk", Inter, sans-serif'; ctx.textAlign = 'center';
+  for (const [lbl, a] of [['N', 0], ['E', 90], ['S', 180], ['W', 270]]) {
+    const x = sx + (rB + 18) * Math.sin(a * D2R), y = sy - (rB + 18) * Math.cos(a * D2R) + 5;
+    ctx.fillStyle = 'rgba(11,15,20,0.55)'; ctx.beginPath(); ctx.arc(x, y - 5, 11, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = C.bone; ctx.fillText(lbl, x, y);
+  }
+  ctx.textAlign = 'left';
+
+  // the sun, where it really is from the site right now
+  if (sat.sun) {
+    const a = sat.sun.az * D2R, x = sx + (rB + 40) * Math.sin(a), y = sy - (rB + 40) * Math.cos(a);
+    const up = sat.sun.el > 0;
+    ctx.strokeStyle = rgba(C.amber, up ? 0.5 : 0.25); ctx.setLineDash([1, 4]);
+    ctx.beginPath(); ctx.moveTo(sx + rB * Math.sin(a), sy - rB * Math.cos(a)); ctx.lineTo(x, y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = up ? C.amber : 'rgba(0,0,0,0)'; ctx.strokeStyle = C.amber; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); up ? ctx.fill() : ctx.stroke();
+    for (let k = 0; k < 8; k++) { const b = k * Math.PI / 4; ctx.beginPath(); ctx.moveTo(x + 8 * Math.cos(b), y + 8 * Math.sin(b)); ctx.lineTo(x + 11 * Math.cos(b), y + 11 * Math.sin(b)); ctx.stroke(); }
+    label(ctx, `SUN ${sat.sun.az.toFixed(0)}° / ${sat.sun.el.toFixed(0)}°${up ? '' : ' (below horizon)'}`, x + 15, y + 4, 0.95);
+  }
+
+  // tracks: bearing rays from the node, glyphs on the ring, recent bearings as an arc trail
+  if (sat.showTracks) {
+    const len = quality === 'low' ? 30 : 50, stp = quality === 'low' ? 2 : 0.5;
+    for (const v of visible) {
+      const st = KIND_STYLE[v.track.kind], em = emphasis(f, v.track.id);
+      const dim = f.selectedId && em === 0 ? 0.45 : 1;
+      const s = Math.sin(v.az * D2R), c = Math.cos(v.az * D2R);
+      const grad = ctx.createLinearGradient(sx, sy, sx + rB * s, sy - rB * c);
+      grad.addColorStop(0, rgba(st.color, 0)); grad.addColorStop(1, rgba(st.color, (em ? 0.95 : 0.6) * dim));
+      ctx.strokeStyle = grad; ctx.lineWidth = em ? 2 : 1.3;
+      ctx.beginPath(); ctx.moveTo(sx + 14 * s, sy - 14 * c); ctx.lineTo(sx + rB * s, sy - rB * c); ctx.stroke();
+      const trail = trailFor(v.track, t, len, stp);
+      for (let i = 1; i < trail.length; i++) {
+        const a = (i / trail.length) ** 1.6, rr = rB + 6;
+        ctx.strokeStyle = rgba(st.color, a * 0.9 * dim); ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.moveTo(sx + rr * Math.sin(trail[i - 1].az * D2R), sy - rr * Math.cos(trail[i - 1].az * D2R)); ctx.lineTo(sx + rr * Math.sin(trail[i].az * D2R), sy - rr * Math.cos(trail[i].az * D2R)); ctx.stroke();
+      }
+      const x = sx + (rB + 6) * s, y = sy - (rB + 6) * c;
+      drawMarker(ctx, f, v, x, y, st, em, dim);
+      hits.push({ id: v.track.id, x, y });
+    }
+  }
+
+  // the site
+  const pulse = f.reducedMotion ? 0 : (f.now / 2200) % 1;
+  ctx.strokeStyle = rgba(C.bone, 0.5 * (1 - pulse)); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(sx, sy, 8 + pulse * 26, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = C.bone; ctx.beginPath(); ctx.arc(sx, sy, 4.5, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(11,15,20,0.8)'; ctx.lineWidth = 2; ctx.stroke();
+  label(ctx, sat.siteLabel, sx + 14, sy + 18, 1, true);
+
+  // swipe-compare divider
+  if (sat.compare) {
+    const x = Math.round(w * sat.divider);
+    ctx.fillStyle = rgba(C.bone, 0.9); ctx.fillRect(x - 0.75, 0, 1.5, h);
+    ctx.fillStyle = 'rgba(11,15,20,0.75)'; ctx.strokeStyle = rgba(C.bone, 0.9); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.roundRect(x - 15, h / 2 - 22, 30, 44, 15); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = C.bone; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('‹ ›', x, h / 2 + 4);
+    ctx.font = '500 11px "DM Mono", monospace';
+    label(ctx, 'SENTINEL-2 · 2016', x - 12, 96, 0.9, false, 'right');
+    label(ctx, `VIIRS · ${sat.date}`, x + 12, 96, 0.9);
+    ctx.textAlign = 'left';
+  }
+
+  // scale bar
+  const barM = niceDistance(sat.mpp, 120), barPx = barM / sat.mpp;
+  const bx = L.mobile ? 16 : 24, by = h - (L.mobile ? 150 : 108);
+  ctx.fillStyle = 'rgba(11,15,20,0.6)'; ctx.fillRect(bx - 8, by - 20, barPx + 16, 30);
+  ctx.fillStyle = C.bone; ctx.fillRect(bx, by, barPx, 2); ctx.fillRect(bx, by - 5, 1.5, 7); ctx.fillRect(bx + barPx - 1.5, by - 5, 1.5, 7);
+  ctx.font = '500 11px "DM Mono", monospace'; ctx.fillText(fmtDistance(barM), bx, by - 8);
+  ctx.restore();
+}
+
+function label(ctx, text, x, y, alpha = 1, strong = false, align = 'left') {
+  ctx.font = `${strong ? 600 : 500} 11px "DM Mono", ui-monospace, monospace`;
+  ctx.textAlign = align;
+  const m = ctx.measureText(text).width, x0 = align === 'right' ? x - m : x;
+  ctx.fillStyle = 'rgba(11,15,20,0.62)'; ctx.fillRect(x0 - 5, y - 12, m + 10, 17);
+  ctx.fillStyle = rgba(C.bone, alpha); ctx.fillText(text, x, y);
   ctx.textAlign = 'left';
 }

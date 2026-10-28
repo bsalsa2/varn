@@ -136,7 +136,7 @@ kbd { font: 500 10.5px/1 var(--mono); color: var(--ink-3); border: 1px solid var
 .pill.on { color: var(--ink-1); }
 .mode-work .pill, .mode-inspect .pill { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(255, 255, 255, .04); }
 
-.stage { position: relative; z-index: 1; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; transition: margin-right 520ms var(--ease);
+.stage { position: relative; z-index: 1; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
   scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.14) transparent; }
 /* Entrance animations fill backwards only: a held opacity/transform would make the element a
    backdrop root and quietly switch off the blur of any glass inside it. */
@@ -300,11 +300,9 @@ tr:hover .src, .tl-card:hover .src { color: var(--ink-2); }
 .ev-n { text-align: right; padding-right: 12px; color: rgba(117, 131, 143, .6); user-select: none; }
 .ev-line.hit { color: var(--ink-1); background: linear-gradient(90deg, rgba(157, 180, 162, .16), rgba(157, 180, 162, .04)); box-shadow: inset 2px 0 0 var(--ok); }
 
-/* Wide panes make room for the inspector instead of covering the content. */
-@media (min-width: 1360px) {
-  .mode-inspect .stage { margin-right: 450px; }
-  .mode-inspect .callout { display: none; }
-}
+/* Wide panes make room for the inspector. The change is instant: an animated reflow re-wraps
+   text mid-transition and reads as the interface jumping. */
+@media (min-width: 1360px) { .mode-inspect .stage { margin-right: 452px; } .mode-inspect .callout { display: none; } }
 .mode-inspect .table .bar-col, .mode-inspect .table .src-col { display: none; }
 
 /* ── Command menu ──────────────────────────────────── */
