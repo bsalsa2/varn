@@ -50,6 +50,33 @@ never answers switches itself off and says so.
 
 Keys and tokens go in Cloudflare Pages environment variables, never in the repository.
 
+## Sharpness and realism
+
+- **Full device resolution.** The globe renders at the screen's real pixel density (capped at 2×), not
+  CSS pixels, with anti-aliasing and a tighter tile-detail target; this was the main source of soft imagery.
+- **Faster loading when zooming quickly.** Tile requests to Esri, NASA and AWS run in parallel (36, 24 and
+  24 per host), the tile cache is larger, neighbouring tiles are preloaded, terrain is decoded in worker
+  threads, and the view repaints every time the tile queue changes. Until a sharp tile arrives, the best
+  tile already loaded stays on screen.
+- **Real imagery depth.** Esri imagery is requested down to its service's own zoom levels (up to 21). Where
+  Esri has no data at a depth it returns an identical "not yet available" tile; those are discarded so the
+  sharpest real tile stays visible, never a grey placeholder. Resolution is limited by what Esri holds for
+  that place: about 0.3–1 m in many cities, coarser elsewhere.
+- **Relief shading.** Mountains are shaded from the elevation data (lit from the north-west, soft shadows,
+  stronger from orbit), so terrain looks solid under the imagery. It follows the Terrain toggle.
+- **Camera.** Search and locate arrive angled and centred, like Google Earth; diving in with the scroll wheel
+  eases the view toward the horizon near the ground; there are tilt and north-up buttons.
+
+### Google-Earth-style 3D cities (optional, needs a key)
+
+True photorealistic 3D buildings use Google Photorealistic 3D Tiles. They need a Google Maps Platform key
+with billing enabled (usage-based pricing: check Google's current prices before enabling) or a Cesium ion
+token. Neither is set, so the **3D buildings** layer shows as unavailable. To turn it on, add
+`VITE_GOOGLE_MAPS_API_KEY` (restrict it to this site's referrer and set a quota) in the Pages environment
+and redeploy. Google requires its own geocoder and attribution while these tiles are shown; both are handled.
+With `VITE_CESIUM_ION_TOKEN` the viewer also uses Cesium World Terrain. These keys are client-side by design,
+so restrict and cap them.
+
 ## Controls
 
 Drag to rotate, scroll or pinch to zoom, right-drag or Ctrl-drag to tilt. `/` search, `L` layers,

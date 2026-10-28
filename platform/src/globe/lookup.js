@@ -1,3 +1,5 @@
+import { GoogleGeocoderService, Rectangle, Cartographic, Math as CMath } from 'cesium';
+
 // Search and point lookups: coordinates parsed locally; places from OpenStreetMap Nominatim
 // (on submit only, as its usage policy requires); imagery capture dates from Esri's World
 // Imagery metadata service.
@@ -24,6 +26,21 @@ export async function searchPlaces(q, signal) {
     name: r.display_name, type: r.type, lat: +r.lat, lon: +r.lon,
     bbox: r.boundingbox ? r.boundingbox.map(Number) : null,        // [south, north, west, east]
   }));
+}
+
+/** Google geocoding, required by Google's terms whenever their 3D tiles are on screen. */
+export async function searchGoogle(q, key) {
+  const deg = CMath.toDegrees;
+  const rows = await new GoogleGeocoderService({ key }).geocode(q);
+  return rows.slice(0, 6).map((r) => {
+    const d = r.destination;
+    if (d instanceof Rectangle) {
+      const c = Rectangle.center(d);
+      return { name: r.displayName, type: '', lat: deg(c.latitude), lon: deg(c.longitude), bbox: [deg(d.south), deg(d.north), deg(d.west), deg(d.east)] };
+    }
+    const c = Cartographic.fromCartesian(d);
+    return { name: r.displayName, type: '', lat: deg(c.latitude), lon: deg(c.longitude), bbox: null };
+  });
 }
 
 /**

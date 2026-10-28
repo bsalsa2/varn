@@ -8,8 +8,10 @@ const withKey = (url) => (ARCGIS_KEY ? `${url}${url.includes('?') ? '&' : '?'}to
 export const BASE = {
   esri: {
     name: 'Esri World Imagery',
+    service: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+    token: ARCGIS_KEY || undefined,
     url: withKey('https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
-    maximumLevel: 19,
+    maximumLevel: 21,   // deeper than most coverage; tiles Esri has no data for are discarded and the sharper ancestor stays
     credit: 'Esri, Maxar, Earthstar Geographics, and the GIS User Community',
     cadence: 'Periodic basemap mosaic; each area has its own capture date',
     resolution: '~0.3–1 m in many cities, 10–15 m elsewhere',
@@ -21,6 +23,13 @@ export const BASE = {
     cadence: 'Static composite',
     resolution: '~10 km',
   },
+};
+
+// Optional upgrades. Each needs a key that costs money or limits use, so they stay off unless
+// the key is set in the Cloudflare Pages environment. See platform/README.md.
+export const UPGRADES = {
+  googleKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+  ionToken: import.meta.env.VITE_CESIUM_ION_TOKEN || '',
 };
 
 export const LABELS = {
