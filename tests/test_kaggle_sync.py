@@ -17,7 +17,7 @@ T2 = datetime(2026, 10, 27, 18, 0, tzinfo=timezone.utc)
 
 
 def fake(status, reports):
-    return lambda ref: (f'{ref} has status "KernelWorkerStatus.{status}"', reports)
+    return lambda ref: (f'{ref} has status "KernelWorkerStatus.{status}"', reports, None)
 
 
 def run(out, fetcher, now, env=ENV):
@@ -62,6 +62,15 @@ class KaggleSyncTests(unittest.TestCase):
         entry = ks.kernel_entry("a/b", "status RUNNING", {"report.json": "{nope"})
         self.assertIsNone(entry["report_json"])
         self.assertEqual(entry["status"], "RUNNING")
+
+    def test_error_is_recorded(self):
+        run(self.out, lambda ref: ("", {}, "403 Client Error: Forbidden"), T1)
+        first = json.loads(self.out.read_text())["kernels"][0]
+        self.assertEqual(first["status"], "UNREACHABLE")
+        self.assertEqual(first["error"], "403 Client Error: Forbidden")
+
+    def test_short_error(self):
+        self.assertEqual(ks.short_error("Traceback...\n\nkaggle.rest.ApiException: (404)\n"), "kaggle.rest.ApiException: (404)")
 
     def test_reads_nested_reports(self):
         with tempfile.TemporaryDirectory() as tmp:

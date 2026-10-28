@@ -72,8 +72,8 @@ function useKaggleSync() {
   }, []);
   return sync;
 }
-const KAGGLE_TONE = (status) => status === 'COMPLETE' ? 'online' : /RUNNING|QUEUED/.test(status) ? 'checking' : /ERROR|CANCEL/.test(status) ? 'offline' : 'idle';
-const KAGGLE_LABEL = (status) => ({ COMPLETE: 'Complete', RUNNING: 'Running', QUEUED: 'Queued', ERROR: 'Error', UNKNOWN: 'Unknown' }[status] ?? status.toLowerCase().replace(/_/g, ' '));
+const KAGGLE_TONE = (status) => status === 'COMPLETE' ? 'online' : /RUNNING|QUEUED/.test(status) ? 'checking' : /ERROR|CANCEL|UNREACHABLE/.test(status) ? 'offline' : 'idle';
+const KAGGLE_LABEL = (status) => ({ COMPLETE: 'Complete', RUNNING: 'Running', QUEUED: 'Queued', ERROR: 'Error', UNKNOWN: 'Unknown', UNREACHABLE: 'Unreachable' }[status] ?? status.toLowerCase().replace(/_/g, ' '));
 const syncedWhen = (iso) => iso ? iso.replace('T', ' ').replace('Z', ' UTC') : '—';
 
 function Mark() {
@@ -200,7 +200,7 @@ function KaggleBlock({ sync, open }) {
     {sync.state === 'ready' ? <div className="kernels">{sync.data.kernels.map((k) => <button key={k.ref} className="kernel" onClick={() => open({ type: 'kaggle', kernel: k, changedAt: sync.data.changed_at })}>
       <span className="mono kernel-ref">{k.ref}</span>
       <span className={cx('chip', k.status === 'COMPLETE' && 'ok')}><Signal state={KAGGLE_TONE(k.status)}/>{KAGGLE_LABEL(k.status)}</span>
-      <span className="kernel-note">{k.report_md ? 'Report available' : 'No report in output'}</span>
+      <span className="kernel-note">{k.error ? `Kaggle said: ${k.error}` : k.report_md ? 'Report available' : 'No report in output'}</span>
       <ArrowUpRight size={15} className="card-arrow"/>
     </button>)}</div>
       : <p className="empty-line">{sync.state === 'loading' ? 'Loading…' : sync.state === 'error' ? 'The synced file could not be read.' : 'Not synced yet. Run “Kaggle sync” once from the repository’s Actions tab.'}</p>}
@@ -304,6 +304,7 @@ function Inspector({ item, onClose }) {
         <button className="icon-btn" onClick={onClose} aria-label="Close panel"><X size={16}/></button></header>
       <dl className="facts">
         <div><dt>Status</dt><dd><Signal state={KAGGLE_TONE(k.status)}/>{KAGGLE_LABEL(k.status)}</dd></div>
+        {k.error && <div><dt>Error</dt><dd className="mono">{k.error}</dd></div>}
         <div><dt>Last change</dt><dd className="mono">{syncedWhen(item.changedAt)}</dd></div>
         <div><dt>Notebook</dt><dd><a className="link" href={k.url} target="_blank" rel="noreferrer">Open on Kaggle <ArrowUpRight size={12}/></a></dd></div>
       </dl>

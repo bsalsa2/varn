@@ -228,6 +228,7 @@ tr:hover .src, .tl-card:hover .src { color: var(--ink-2); }
 .kernel:hover .card-arrow { color: var(--ink-1); }
 .kernel-ref { font-size: 13px; color: var(--ink-1); }
 .kernel .chip { grid-column: 2; grid-row: 1; }
+.kernel .chip.offline-tone { color: var(--alert); }
 .kernel-note { font-size: 12.5px; color: var(--ink-3); }
 .empty-line { margin-top: 16px !important; padding: 16px 18px !important; border-radius: 12px; border: 1px dashed var(--line-strong); color: var(--ink-2); font-size: 13px; }
 .mono-title { font-family: var(--mono) !important; font-size: 17px !important; letter-spacing: -0.01em !important; }
