@@ -1,6 +1,8 @@
-# VARN Systems Platform
+# VARN Command Center
 
-A separate Operations Command Center frontend for VARN. The existing public landing page in `web/` is intentionally untouched.
+An interactive 3D Earth: real satellite imagery, terrain and selectable Earth-observation layers,
+built with [CesiumJS](https://cesium.com/platform/cesiumjs/) (Apache-2.0). The public site in
+`web/` (tryvarn.com) is separate and untouched.
 
 ## Run locally
 
@@ -15,47 +17,44 @@ npm run dev
 npm run build
 ```
 
-## Current implementation
+The build copies Cesium's runtime assets (workers, textures) into `dist/cesium`. Cloudflare Pages:
+root directory `platform`, build command `npm run build`, output `dist`.
 
-The Command Center is organised in three layers:
+## Data sources
 
-- **Command**: Overview answers what is happening and what needs attention: rules over live signals
-  (API, website, GitHub Actions, Kaggle sync, your deadlines), the current roadmap phase, key metrics and
-  an updates feed (plan decisions, commits, syncs).
-- **Operations**: Projects (roadmap, milestone and tracks parsed from `docs/MASTER_PLAN.md`, your tasks,
-  GitHub issues), Research (results, runs, models, datasets from `evidence/`), Business (repository
-  documents; budget, suppliers and hiring you enter, with one-click import of `bom.csv`).
-- **Technical / Intelligence**: Systems (live health, workflows, failures, deployments) and Assistant
-  (local full-text search and a rule-based "what next"; the AI assistant is planned, not built).
+| Layer | Provider | Updates | Resolution | Key? |
+|---|---|---|---|---|
+| Satellite | Esri World Imagery | Periodic basemap; each area has its own capture date, shown from Esri's imagery metadata at the view centre and on click | ~0.3–1 m in many cities, coarser elsewhere | Not required today; see licensing |
+| Fallback base | NASA Blue Marble (bundled) | Static | ~10 km | No |
+| Terrain | AWS Terrain Tiles (Terrarium) | Static | ~30 m on land | No |
+| Labels | Esri World Boundaries and Places | Periodic | — | Not required today |
+| Day / night | Sun position computed in the browser; city lights NASA Earth at Night (bundled) | Live sun | — | No |
+| Clouds | NASA GIBS, VIIRS / MODIS corrected-reflectance true colour | Daily (latest available day shown) | ~250–375 m | No |
+| Weather | NASA GIBS, GPM IMERG precipitation rate | Half-hourly, a few hours behind | ~10 km | No |
+| Fires / Vegetation / Night lights | NASA GIBS (VIIRS thermal anomalies, MODIS NDVI, VIIRS Day/Night Band) | Daily / 8-day | 250–750 m | No |
+| Search | OpenStreetMap Nominatim (on submit only) | — | — | No |
 
-Records you enter are stored in this browser only (`localStorage`), with JSON export/import. The site is
-public, so nothing private is sent anywhere. Moving them to private storage needs sign-in first.
+GIBS layer names change over time, so each layer lists candidates; the viewer requests one tile per
+candidate and date and only shows a layer, with its real date, once data comes back. A layer that
+never answers switches itself off and says so.
 
-The Command Center is one floating glass window over a WebGL render of Earth (`src/earth/`):
+### Licensing and keys
 
-- Imagery: NASA Blue Marble and Earth at Night composites, public domain (see `public/earth/CREDITS.md`).
-  Rendered by a single fragment shader; no 3D library. Sun position is computed for the current UTC time
-  (`src/earth/sun.js`); the view is a slow camera drift. Nothing on the planet is live data.
-- The workspace pane is clear on Overview and frosts over on other pages. Rows open an inspector that shows
-  the exact lines of the evidence file a number came from (`evidence/*.md`, imported raw).
-- Models and Datasets are read from the reports (`src/records.js`); there is no registry yet.
-- Runs shows Kaggle notebook status and reports from `public/data/kaggle.json`, written by the
-  Kaggle sync workflow (`training/automation/kaggle_sync.py`). Until it has run, the page says so.
-- ⌘K / Ctrl K opens a command menu; keys 1–6 switch pages; Esc closes panels.
-- Falls back to a static still when WebGL 2 is unavailable, and to a plain dark background if imagery fails.
-  `prefers-reduced-motion` stops the drift, parallax and entrance animations.
+- **Esri** basemaps answer without a key at the moment, but Esri's terms expect an ArcGIS account for
+  production and commercial use. ArcGIS Location Platform has a free tier. Put a key in the Pages
+  environment as `VITE_ARCGIS_API_KEY` (restrict it to the site's referrer); it is a client-side key by
+  design.
+- **Cesium ion** (Cesium World Terrain, Bing aerial, 3D buildings) is not used. Its free Community plan
+  is non-commercial; commercial use is a paid plan. `VITE_CESIUM_ION_TOKEN` is read if set.
+- NASA data is public domain; attribution is shown in the credits line.
 
-- Responsive operations dashboard with working section navigation.
-- Basic API health check against `https://varn-api.varnlabs.workers.dev/health`.
-- Explicit empty states for models, experiments, datasets, activity, and unconfigured services.
-- No fabricated telemetry, model records, or historical events.
-- Results page shows evaluation numbers hand-copied from Kaggle reports. Every value comes from a file in `evidence/`; nothing is fetched or computed.
-- Reduced-motion support and responsive mobile navigation.
+Keys and tokens go in Cloudflare Pages environment variables, never in the repository.
 
-## Not implemented yet
+## Controls
 
-Authentication, persistence, model registration, evaluation ingestion, dataset management, and operational telemetry are not implemented. The API currently exposes only basic service status. Do not put private data or credentials into this public prototype.
+Drag to rotate, scroll or pinch to zoom, right-drag or Ctrl-drag to tilt. `/` search, `L` layers,
+`H` whole Earth, `Esc` close. Click the ground to inspect coordinates, elevation and imagery date.
 
-## Cloudflare Pages deployment
+## Sky view
 
-Create a separate Pages project connected to this repository. Set the project root directory to `platform`, build command to `npm run build`, and output directory to `dist`. This does not require changing the existing landing-page deployment configuration. Check current account limits before creating resources; do not add a payment method or enable paid services.
+The detector's all-sky view is still available at `#sky`.
