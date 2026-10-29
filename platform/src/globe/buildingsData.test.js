@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { decodeBuildings, heightOf, tileOf, tileCentre, shade, MAX_PER_TILE } from './buildingsData.js';
+import { decodeBuildings, parseColour, wallColour, heightOf, tileOf, tileCentre, shade, MAX_PER_TILE } from './buildingsData.js';
 import { encodeBuildingTile } from './mvtFixture.js';
 
 const sq = (x, y, s) => [[x, y], [x + s, y], [x + s, y + s], [x, y + s]];
@@ -59,4 +59,18 @@ test('shade is deterministic, bounded and varies', () => {
   const a = shade('x:0', 10), b = shade('x:0', 10), c = shade('y:1', 10);
   assert.deepEqual(a, b); assert.notDeepEqual(a, c);
   [...a, ...c, ...shade('z', 400)].forEach((v) => assert.ok(v > 0.4 && v < 1));
+});
+
+test('building colours: hex and names parse, junk is ignored, extremes are tamed, decode carries the tag', () => {
+  assert.deepEqual(parseColour('#ff0000'), [1, 0, 0]);
+  assert.deepEqual(parseColour('#fff'), [1, 1, 1]);
+  assert.equal(parseColour('beige').length, 3);
+  assert.equal(parseColour('teal-ish'), null);
+  assert.equal(parseColour(null), null);
+  const lum = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  assert.ok(lum(wallColour({ id: 'a', height: 10, colour: '#ffffff' })) <= 0.86);
+  assert.ok(lum(wallColour({ id: 'a', height: 10, colour: '#000000' })) >= 0.2);
+  assert.deepEqual(wallColour({ id: 'a', height: 10, colour: 'nonsense' }), shade('a', 10));
+  const r = decodeBuildings(encodeBuildingTile([{ id: 1, rings: [sq(100, 100, 200)], props: { render_height: 20, colour: '#a0522d' } }]), T);
+  assert.equal(r.buildings[0].colour, '#a0522d');
 });

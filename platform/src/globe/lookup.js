@@ -73,3 +73,12 @@ function toDate(v) {
   const t = Date.parse(s);
   return Number.isNaN(t) ? null : new Date(t).toISOString().slice(0, 10);
 }
+
+/** What is at a point: OpenStreetMap's reverse geocoder (called once per click, as its usage policy asks). null = nothing there. */
+export async function reversePlace(lat, lon, signal) {
+  const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&addressdetails=1&lat=${lat.toFixed(6)}&lon=${lon.toFixed(6)}`;
+  const res = await fetch(url, { signal, headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error(`Place lookup answered HTTP ${res.status}`);
+  const j = await res.json();
+  return j.error ? null : j;
+}

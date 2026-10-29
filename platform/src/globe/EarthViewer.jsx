@@ -5,7 +5,10 @@ import { Layers, Plus, Minus, Globe2, LocateFixed, Search, X, Copy, Loader2, Nav
 import { BASE, TERRAIN, OVERLAYS, UPGRADES } from './sources.js';
 import { createEngine, reduceMotion } from './engine.js';
 import { createLive } from './live.js';
-import { parseCoords, searchPlaces, searchGoogle, imageryMetadata } from './lookup.js';
+import { parseCoords, searchPlaces, searchGoogle, imageryMetadata, reversePlace } from './lookup.js';
+import { placeFrom, sunState } from './inspect.js';
+import { describeAge } from './freshness.js';
+import { subsolarPoint } from '../earth/sun.js';
 import { runChecks, summarize } from './diagnostics.js';
 import * as feeds from './feeds.js';
 import Terminal from './Terminal.jsx';
@@ -20,7 +23,8 @@ function fmtAlt(m) {
   if (m >= 1000) return `${(m / 1000).toFixed(1)} km`;
   return `${Math.round(m)} m`;
 }
-const cadenceTag = { daily: 'Daily', 'half-hourly': 'Every 30 min', '8-day composite': '8-day' };
+// Tags describe how often the SOURCE produces data. How old the data on screen is gets its own line (describeAge).
+const cadenceTag = { daily: 'Daily', 'half-hourly': '30-min data', '8-day composite': '8-day' };
 const idle = createLive({ height: null, heading: 0, pitch: -90, loading: 0, cursor: null, quality: 'full', failed: 0 });
 const when = (t) => (t.length > 10 ? t.replace('T', ' ').replace('Z', ' UTC') : t);
 
@@ -109,9 +113,10 @@ export default function EarthViewer() {
   }, [engine, ui.eo]);
 
   /* ── map markers: earthquakes and fire incidents (real feeds; nothing is drawn unless data came back) ── */
+  const autoQuakes = useRef(false);                           // true only while the markers are the panel's 24 h / M2.5+ set
   const plot = useCallback((name, items) => {
     engRef.current?.setMarkers(name, items, feeds.styleFor);
-    setMarkers((m) => ({ ...m, [name]: items?.length || 0 }));
+    setMarkers((m) => ({ ...m, [name]: items?.length || 0, [`${name}At`]: items?.length ? Date.now() : null }));
   }, []);
   useEffect(() => { setMarkers({ quakes: 0, incidents: 0 }); }, [engine]);
 
@@ -129,10 +134,20 @@ export default function EarthViewer() {
   }, [engine, ui.eo, plot, flash]);
 
   const toggleQuakes = useCallback(() => {
-    if (markers.quakes) { plot('quakes', null); return; }
-    feeds.fetchQuakes({ window: 'day', minMag: 2.5 }).then((r) => { plot('quakes', r.items); if (!r.items.length) flash('USGS reports no earthquakes of M2.5 or more in the past 24 hours.'); })
+    if (markers.quakes) { autoQuakes.current = false; plot('quakes', null); return; }
+    feeds.fetchQuakes({ window: 'day', minMag: 2.5 }).then((r) => { autoQuakes.current = true; plot('quakes', r.items); if (!r.items.length) flash('USGS reports no earthquakes of M2.5 or more in the past 24 hours.'); })
       .catch((e) => flash(`Earthquakes unavailable: ${e.message}`));
   }, [markers.quakes, plot, flash]);
+  // The USGS feed itself updates about every minute; this view re-reads it every 5 minutes while the panel's set is showing.
+  useEffect(() => {
+    if (!markers.quakes) return undefined;
+    const id = setInterval(() => {
+      if (!autoQuakes.current) return;
+      feeds.clearFeedCache();
+      feeds.fetchQuakes({ window: 'day', minMag: 2.5 }).then((r) => { if (autoQuakes.current) plot('quakes', r.items); }).catch(() => {});
+    }, 300000);
+    return () => clearInterval(id);
+  }, [markers.quakes, plot]);
 
   /* ── connection checks: a quick one at startup, a full one on demand ── */
   const test = useCallback(async (deep) => {
@@ -145,15 +160,16 @@ export default function EarthViewer() {
   useEffect(() => { if (!engine) return undefined; const t = setTimeout(() => test(false), 2500); return () => clearTimeout(t); }, [engine, test]);
   const health = useMemo(() => summarize(checks.list), [checks.list]);
 
-  /* ── click inspector: imagery date at the point ── */
+  /* ── click inspector: place name and imagery date for the clicked point (each asked once per click) ── */
+  const pickKey = pick && !pick.marker ? `${pick.lat},${pick.lon}` : null;
   useEffect(() => {
-    if (!pick || pick.meta !== 'loading') return undefined;
-    const ctl = new AbortController();
-    imageryMetadata(pick.lat, pick.lon, ctl.signal)
-      .then((m) => setPick((p) => (p && p.lat === pick.lat ? { ...p, meta: m || 'none' } : p)))
-      .catch((e) => { if (e.name !== 'AbortError') setPick((p) => (p && p.lat === pick.lat ? { ...p, meta: 'error' } : p)); });
+    if (!pickKey) return undefined;
+    const ctl = new AbortController(), [lat, lon] = pickKey.split(',').map(Number);
+    const patch = (o) => setPick((p) => (p && !p.marker && p.lat === lat && p.lon === lon ? { ...p, ...o } : p));
+    imageryMetadata(lat, lon, ctl.signal).then((m) => patch({ meta: m || 'none' })).catch((e) => { if (e.name !== 'AbortError') patch({ meta: 'error' }); });
+    reversePlace(lat, lon, ctl.signal).then((r) => patch({ place: placeFrom(r) })).catch((e) => { if (e.name !== 'AbortError') patch({ place: 'error' }); });
     return () => ctl.abort();
-  }, [pick]);
+  }, [pickKey]);
 
   /* ── actions ── */
   const tilted = live.pitch > -75;
@@ -210,7 +226,7 @@ export default function EarthViewer() {
       engine: {
         view: () => engRef.current?.view() ?? { height: null, heading: 0, pitch: -90, loading: 0, failed: 0, quality: 'full', centre: null, sun: { lat: 0, lon: 0 } },
         flyToPlace: E('flyToPlace'), home: E('home'), tilt: E('tilt'), northUp: E('northUp'), markerCount: E('markerCount', 0),
-        setMarkers: (name, items, style) => plot(name, items),
+        setMarkers: (name, items) => { if (name === 'quakes') autoQuakes.current = false; plot(name, items); },
       },
       layers: {
         list: layerRows,
@@ -304,15 +320,15 @@ export default function EarthViewer() {
 
     {panel && <section id="e-layers" className="e-layers glassy" aria-label="Layers">
       <header><h2>Layers</h2><button className="e-x" onClick={() => setPanel(false)} aria-label="Close layers"><X size={14}/></button></header>
-      <Row label="Satellite" sub={sat.status === 'error' ? sat.error : 'Esri World Imagery · basemap, updated periodically'} tag="Basemap" on={ui.satellite} st={sat.status} onToggle={() => setUi((u) => ({ ...u, satellite: !u.satellite }))}/>
+      <Row label="Satellite" sub={sat.status === 'error' ? sat.error : 'Esri World Imagery · a mosaic of many capture dates, updated periodically'} tag="Basemap" on={ui.satellite} st={sat.status} onToggle={() => setUi((u) => ({ ...u, satellite: !u.satellite }))}/>
       <Row label="Terrain" sub={state.terrain?.error || `${TERRAIN.name} · elevation ${TERRAIN.resolution}`} tag="Static" on={ui.terrain} st={state.terrain?.status} onToggle={() => setUi((u) => ({ ...u, terrain: !u.terrain }))}/>
       <Row label="Labels" sub="Countries, borders, cities and places · Esri" tag="Basemap" on={ui.labels} onToggle={() => setUi((u) => ({ ...u, labels: !u.labels }))}/>
-      <Row label="Day / night" sub="Real sun position now, shown from orbit · city lights: NASA" tag="Live" on={ui.daynight} onToggle={() => setUi((u) => ({ ...u, daynight: !u.daynight }))}/>
+      <Row label="Day / night" sub="Sun position from your clock, refreshed each minute · city lights are a static NASA composite" tag="Real time" on={ui.daynight} onToggle={() => setUi((u) => ({ ...u, daynight: !u.daynight }))}/>
       <Row label="3D buildings" tag="Auto" on={ui.buildings} st={state.buildings?.status} sub={buildingsNote(state.buildings)}
         onToggle={() => setUi((u) => ({ ...u, buildings: !u.buildings }))}/>
       <OverlayRow k="clouds" on={ui.clouds} st={state.clouds} onToggle={() => setUi((u) => ({ ...u, clouds: !u.clouds }))}/>
       <OverlayRow k="weather" on={ui.weather} st={state.weather} onToggle={() => setUi((u) => ({ ...u, weather: !u.weather }))}/>
-      <Row label="Earthquakes" sub={markers.quakes ? `${markers.quakes} plotted · USGS, past 24 h, M2.5+ · click a marker for details` : 'USGS Earthquake Hazards Program · past 24 h, M2.5+'} tag="Live" on={markers.quakes > 0} onToggle={toggleQuakes}/>
+      <Row label="Earthquakes" sub={markers.quakes ? `${markers.quakes} plotted · USGS · fetched ${new Date(markers.quakesAt || Date.now()).toISOString().slice(11, 16)} UTC${autoQuakes.current ? ' · refreshes every 5 min' : ''} · click a marker` : 'USGS Earthquake Hazards Program · past 24 h, M2.5+, re-read every 5 min'} tag="Snapshot" on={markers.quakes > 0} onToggle={toggleQuakes}/>
       <div className="e-sub">Earth observation</div>
       {['fires', 'vegetation', 'nightLights'].map((k) => <OverlayRow key={k} k={k} on={ui.eo === k} st={state[k]} radio extra={k === 'fires' && markers.incidents ? `${markers.incidents} EONET incident marker${markers.incidents === 1 ? '' : 's'}` : ''}
         onToggle={() => setUi((u) => ({ ...u, eo: u.eo === k ? null : k }))}/>)}
@@ -327,23 +343,16 @@ export default function EarthViewer() {
 
     {pick?.marker && <MarkerPop pick={pick} onClose={() => setPick(null)}/>}
 
-    {pick && !pick.marker && <div className="e-pop glassy" style={{ left: Math.min(pick.x + 14, innerWidth - 300), top: Math.min(pick.y + 14, innerHeight - 200) }} role="dialog" aria-label="Location">
-      <header><strong>Location</strong><button className="e-x" onClick={() => setPick(null)} aria-label="Close"><X size={13}/></button></header>
-      <dl>
-        <div><dt>Latitude</dt><dd>{fmtLat(pick.lat, 6)}</dd></div>
-        <div><dt>Longitude</dt><dd>{fmtLon(pick.lon, 6)}</dd></div>
-        {ui.terrain && <div><dt>Elevation</dt><dd>{Math.round(pick.height)} m <small>(terrain model)</small></dd></div>}
-        {ui.satellite && <div><dt>Imagery</dt><dd>{pick.meta === 'loading' ? 'Checking capture date…' : pick.meta === 'error' || pick.meta === 'none' ? 'Capture date not available' : <>{pick.meta.date || 'date n/a'}{pick.meta.res ? ` · ${pick.meta.res} m` : ''}{pick.meta.source ? ` · ${pick.meta.source}` : ''}</>}</dd></div>}
-      </dl>
-      <button className="e-copy" onClick={() => { navigator.clipboard?.writeText(`${pick.lat.toFixed(6)}, ${pick.lon.toFixed(6)}`).then(() => flash('Coordinates copied'), () => flash('Clipboard blocked by the browser')); }}><Copy size={12}/>Copy coordinates</button>
-    </div>}
+    {pick && !pick.marker && <InspectPanel pick={pick} terrain={ui.terrain} satellite={ui.satellite} onClose={() => setPick(null)}
+      onCopy={() => navigator.clipboard?.writeText(`${pick.lat.toFixed(6)}, ${pick.lon.toFixed(6)}`).then(() => flash('Coordinates copied'), () => flash('Clipboard blocked by the browser'))}
+      onZoom={() => { engine?.flyToPlace(pick.lat, pick.lon, Math.max(1500, (live.height || 20000) * 0.25)); setPick(null); }}/>}
 
     <footer className="e-status">
       {problem && <p className="e-warn"><TriangleAlert size={12}/>{problem.label} is not reachable{problem.detail ? `: ${problem.detail}` : ''}. Open Layers › Connections.</p>}
       <p className="e-source">{source}</p>
-      {activeOverlays.map((k) => <p key={k} className="e-source">{OVERLAYS[k].name} · NASA GIBS · {when(state[k].time)} · {cadenceTag[OVERLAYS[k].cadence] || OVERLAYS[k].cadence}</p>)}
+      {activeOverlays.map((k) => <p key={k} className="e-source">{OVERLAYS[k].name} · NASA GIBS · {when(state[k].time)} ({describeAge(state[k].time)}) · {cadenceTag[OVERLAYS[k].cadence] || OVERLAYS[k].cadence}</p>)}
       <p className="e-meta">
-        {live.loading > 0 ? (slowLoad ? <span className="e-loading"><Loader2 size={11} className="spin"/>Sharpening imagery · {live.loading} tile{live.loading === 1 ? '' : 's'}{live.failed ? ' · connection slow, retrying' : ''}</span> : <span>Imagery loaded</span>)
+        {live.loading > 0 ? (slowLoad ? <span className="e-loading"><Loader2 size={11} className="spin"/>Sharpening imagery · {live.loading} tile{live.loading === 1 ? '' : 's'}{live.failed ? ` · ${live.failed} could not load` : ''}</span> : <span>Imagery loaded</span>)
           : <span>{live.failed ? `Some imagery could not load (${live.failed} tile${live.failed === 1 ? '' : 's'})` : 'Imagery loaded'}</span>}
         <i/>Altitude {fmtAlt(live.height)}
         {live.cursor && <><i/>{fmtLat(live.cursor.lat, 4)} {fmtLon(live.cursor.lon, 4)}</>}
@@ -385,8 +394,24 @@ function Row({ label, sub, tag, on, st, onToggle, radio, disabled }) {
 function OverlayRow({ k, on, st = {}, onToggle, radio, extra }) {
   const o = OVERLAYS[k];
   const sub = st.status === 'error' && !on ? st.error : st.status === 'loading' ? 'Finding the latest available data…'
-    : `${o.name} · NASA GIBS · ${o.resolution}${st.time ? ` · ${when(st.time)}` : ''}${extra ? ` · ${extra}` : ''}`;
+    : `${o.name} · NASA GIBS · ${o.resolution} · ${st.time ? `newest ${when(st.time)} (${describeAge(st.time)})` : o.schedule}${extra ? ` · ${extra}` : ''}`;
   return <Row label={o.label} sub={sub} tag={cadenceTag[o.cadence] || o.cadence} on={on} st={on ? st.status : undefined} onToggle={onToggle} radio={radio}/>;
+}
+
+function InspectPanel({ pick, terrain, satellite, onClose, onCopy, onZoom }) {
+  const place = pick.place, sun = sunState(pick.lat, pick.lon, subsolarPoint(), Date.now());
+  const title = place === undefined ? 'Locating…' : place?.title || 'Open water or remote area';
+  const m = pick.meta;
+  return <div className="e-pop e-inspect glassy" style={{ left: Math.max(8, Math.min(pick.x + 14, innerWidth - 310)), top: Math.max(8, Math.min(pick.y + 14, innerHeight - 290)) }} role="dialog" aria-label="Location details">
+    <header><div><strong>{title}</strong>{place?.subtitle && <small>{place.subtitle}</small>}</div><button className="e-x" onClick={onClose} aria-label="Close"><X size={13}/></button></header>
+    <dl>
+      <div><dt>Position</dt><dd>{fmtLat(pick.lat, 5)} {fmtLon(pick.lon, 5)}</dd></div>
+      {terrain && <div><dt>Elevation</dt><dd>{Math.round(pick.height)} m <small>terrain model</small></dd></div>}
+      {satellite && <div><dt>Imagery</dt><dd>{m === 'loading' ? 'Checking…' : m === 'error' || m === 'none' ? 'Capture date not reported here' : <>{m.date || 'date not reported'}{m.res ? ` · ${m.res} m` : ''}</>}</dd></div>}
+      <div><dt>Sun</dt><dd>{sun.phase}, {sun.elevation.toFixed(0)}° <small>solar time {sun.solarTime}</small></dd></div>
+    </dl>
+    <footer><button className="e-copy" onClick={onCopy}><Copy size={12}/>Copy</button><button className="e-copy" onClick={onZoom}><Plus size={12}/>Zoom here</button></footer>
+  </div>;
 }
 
 const safeUrl = (u) => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : null; } catch { return null; } };

@@ -53,7 +53,8 @@ const GIBS = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best';
 export const GIBS_CREDIT = 'NASA EOSDIS Global Imagery Browse Services (GIBS)';
 export const OVERLAYS = {
   clouds: {
-    label: 'Clouds', name: 'Daily satellite view', cadence: 'daily', lookback: 4, alpha: 0.55,
+    label: 'Clouds', name: 'Daily satellite view', cadence: 'daily', lookback: 4, alpha: 0.6, blend: { minFactor: 0.3, from: 30e3, to: 700e3, nightAlpha: 0.3 },
+    schedule: 'One true-colour composite per day; the newest one is usually 1–2 days old.',
     resolution: '~250–375 m', note: 'True colour as the satellite saw it that day, so clouds are real. Swaths have gaps near the equator.',
     candidates: [
       ['VIIRS_NOAA20_CorrectedReflectance_TrueColor', 9, 'jpg'],
@@ -62,7 +63,8 @@ export const OVERLAYS = {
     ],
   },
   weather: {
-    label: 'Weather', name: 'Precipitation rate (IMERG)', cadence: 'half-hourly', lookback: 12, alpha: 0.85,
+    label: 'Weather', name: 'Precipitation rate (IMERG)', cadence: 'half-hourly', lookback: 12, alpha: 0.75, blend: { minFactor: 0.55, from: 20e3, to: 400e3 },
+    schedule: 'A new rain-rate estimate every 30 minutes, published about 3–4 hours after it was observed.',
     resolution: '~10 km', note: 'NASA GPM IMERG early run: satellite-estimated rain and snow rate, published a few hours after the fact.',
     candidates: [
       ['IMERG_Precipitation_Rate', 6, 'png'],
@@ -72,6 +74,7 @@ export const OVERLAYS = {
   },
   fires: {
     label: 'Fires', name: 'Active fires and thermal anomalies', cadence: 'daily', lookback: 3, alpha: 1, group: 'eo',
+    schedule: 'Detections are grouped by day; the newest day available is usually yesterday.',
     sparse: true, probe: [3, 4, 3],                         // Africa/Middle East: some detections nearly every day
     resolution: '375 m detections', note: 'Satellite thermal anomalies. A detection is a hot pixel, not a confirmed fire. Each is only a pixel or two wide: zoom in to a region to see them.',
     candidates: [
@@ -82,7 +85,8 @@ export const OVERLAYS = {
     ],
   },
   vegetation: {
-    label: 'Vegetation', name: 'Vegetation index (NDVI)', cadence: '8-day composite', lookback: 20, alpha: 0.75, group: 'eo',
+    label: 'Vegetation', name: 'Vegetation index (NDVI)', cadence: '8-day composite', lookback: 20, alpha: 0.5, group: 'eo', blend: { minFactor: 0.5, from: 30e3, to: 500e3, nightAlpha: 0.5 }, saturation: 0.85,
+    schedule: 'One vegetation composite per 8-day period, so it can be a week or more old.',
     resolution: '~250 m', note: 'MODIS NDVI: greener means denser, healthier vegetation.',
     candidates: [
       ['MODIS_Terra_NDVI_8Day', 9, 'png'],
@@ -91,7 +95,8 @@ export const OVERLAYS = {
     ],
   },
   nightLights: {
-    label: 'Night lights', name: 'Night-time lights (VIIRS Day/Night Band)', cadence: 'daily', lookback: 4, alpha: 0.9, group: 'eo',
+    label: 'Night lights', name: 'Night-time lights (VIIRS Day/Night Band)', cadence: 'daily', lookback: 4, alpha: 0.9, group: 'eo', blend: { minFactor: 0.6, from: 30e3, to: 500e3 },
+    schedule: 'One observation per night; the newest is usually 1–2 days old.',
     resolution: '~750 m', note: 'Light at night as observed that night; moonlit clouds also appear.',
     candidates: [
       ['VIIRS_SNPP_DayNightBand_ENCC', 8, 'png'],
@@ -147,3 +152,5 @@ export async function resolveOverlay(key, signal) {
   }
   return null;
 }
+
+export { describeAge } from './freshness.js';

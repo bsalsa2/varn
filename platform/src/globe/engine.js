@@ -31,19 +31,40 @@ export const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)')
 
 export const homeView = () => ({ lon: subsolarPoint().lon - 58, lat: 16, height: 21000000 });
 
-/** Cesium never retries a failed tile unless asked, so one dropped request would leave a soft patch for good. */
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const FAIL_WINDOW_MS = 60000;
+
+/**
+ * Transient tile failures should not leave soft patches. Each request is retried with a growing
+ * pause (a dropped packet or a 5xx often clears within a second), 4xx answers are not retried,
+ * and only a tile that still fails after every attempt counts as failed, for one minute.
+ */
 function armRetry(provider, stats) {
+  const orig = provider.requestImage?.bind(provider);
+  if (orig) {
+    provider.requestImage = async (x, y, level, request) => {
+      for (let attempt = 0; ; attempt++) {
+        try { return await orig(x, y, level, request); }
+        catch (e) {
+          const code = e?.statusCode;
+          if (attempt >= 2 || (code >= 400 && code < 500 && code !== 408 && code !== 429)) throw e;
+          await sleep(350 * 2 ** attempt + Math.random() * 150);
+        }
+      }
+    };
+  }
   provider.errorEvent?.addEventListener((err) => {
-    if ((err.timesRetried ?? 0) < 3) err.retry = true; else stats.failed++;
+    if ((err.timesRetried ?? 0) < 1) err.retry = true; else stats.failedAt.push(Date.now());
   });
 }
+const recentFailures = (stats) => { const t = Date.now() - FAIL_WINDOW_MS; stats.failedAt = stats.failedAt.filter((x) => x > t); return stats.failedAt.length; };
 
 export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveStart, onViewChange }) {
   const params = new URLSearchParams(location.search);
   const fixedQuality = params.has('fixed') || params.has('debug');
   const dpr = window.devicePixelRatio || 1;
   const live = createLive({ height: null, heading: 0, pitch: -90, lat: 0, lon: 0, loading: 0, cursor: null, quality: 'full', failed: 0 });
-  const stats = { failed: 0 };
+  const stats = { failedAt: [] };
   const layers = {};
   const want = { satellite: true, terrain: true, labels: false, daynight: true, clouds: false, weather: false, eo: null, buildings: true };
 
@@ -97,7 +118,32 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
     globe.nightFadeInDistance = 2e10;
     updateFades();
   }
+  /* ── overlays: altitude-aware blending and soft fade in/out, so satellite detail stays natural underneath ── */
+  const OVERLAY_KEYS = ['clouds', 'weather', 'fires', 'vegetation', 'nightLights'];
+  const fades = {};
+  function overlayAlpha(key) {
+    const l = layers[key]; if (!l) return;
+    const o = OVERLAYS[key], b = o.blend, h = camera.positionCartographic.height;
+    const f = b ? b.minFactor + (1 - b.minFactor) * smooth(b.from, b.to, h) : 1;        // coarse 250 m–10 km data must not wash out sharp close-ups
+    l.alpha = o.alpha * f * (fades[key]?.v ?? 1);
+  }
+  function fadeOverlay(key, to) {
+    const l = layers[key]; if (!l) return;
+    const f = fades[key] ||= { v: l.show ? 1 : 0, raf: 0 };
+    if (f.to === to && (f.raf || (to === 1) === l.show)) return;
+    f.to = to; cancelAnimationFrame(f.raf);
+    if (to > 0) l.show = true;
+    const from = f.v, t0 = performance.now(), dur = reduceMotion() ? 0 : 450;
+    const step = (now) => {
+      const t = dur ? Math.min(1, (now - t0) / dur) : 1;
+      f.v = from + (to - from) * t; overlayAlpha(key); scene.requestRender();
+      if (t < 1) f.raf = requestAnimationFrame(step); else { f.raf = 0; if (to === 0 && !widget.isDestroyed()) l.show = false; }
+    };
+    step(t0);
+  }
+
   function updateFades() {
+    OVERLAY_KEYS.forEach(overlayAlpha);
     if (!layers.night) return;
     const h = camera.positionCartographic.height;
     const a = want.daynight ? smooth(2e6, 9e6, h) : 0;
@@ -124,7 +170,8 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
   const offChanged = camera.changed.addEventListener(readCamera);
   // Repaint whenever the tile queue changes: in request-render mode the last sharp tiles could
   // otherwise arrive after the final frame and leave the view soft.
-  const offLoad = globe.tileLoadProgressEvent.addEventListener((n) => { live.set({ loading: n, failed: stats.failed }); scene.requestRender(); });
+  const offLoad = globe.tileLoadProgressEvent.addEventListener((n) => { live.set({ loading: n, failed: recentFailures(stats) }); scene.requestRender(); });
+  const failTimer = setInterval(() => { const f = recentFailures(stats); if (f !== live.get().failed) live.set({ failed: f }); }, 5000);
   const offStart = camera.moveStart.addEventListener(() => onMoveStart?.());
   let diving = false, autoTilted = false, metaTimer = 0;
   const screenCentre = () => new Cartesian2(scene.canvas.clientWidth / 2, scene.canvas.clientHeight / 2);
@@ -381,9 +428,9 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
   function setOverlay(key, on) {
     if (key === 'clouds' || key === 'weather') want[key] = on; else want.eo = on ? key : (want.eo === key ? null : want.eo);
     // Only one earth-observation layer at a time: hide the others.
-    for (const k of ['fires', 'vegetation', 'nightLights']) if (layers[k]) layers[k].show = want.eo === k;
+    for (const k of ['fires', 'vegetation', 'nightLights']) if (layers[k] && k !== key) fadeOverlay(k, want.eo === k ? 1 : 0);
     const have = layers[key];
-    if (have) have.show = on;
+    if (have) fadeOverlay(key, on ? 1 : 0);
     if (!on) { onLayer?.(key, { status: 'off' }); aborters[key]?.abort(); layers[`${key}Pending`] = false; }
     if (on && !have && !layers[`${key}Pending`]) {
       layers[`${key}Pending`] = true;
@@ -397,10 +444,12 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
         const p = new UrlTemplateImageryProvider({ url: gibsUrl(found.id, found.level, found.ext, found.time), maximumLevel: found.level, credit: new Credit(GIBS_CREDIT) });
         armRetry(p, stats);
         const layer = widget.imageryLayers.addImageryProvider(p);
-        layer.alpha = o.alpha;
+        layer.alpha = 0; layer.show = false;
         if (key === 'clouds') { layer.brightness = 1.05; layer.contrast = 1.15; }
-        layers[key] = layer;
-        layer.show = overlayWanted(key);                       // the user may have switched it off while it was loading
+        if (o.saturation) layer.saturation = o.saturation;
+        if (o.blend?.nightAlpha != null) { layer.dayAlpha = 1; layer.nightAlpha = o.blend.nightAlpha; }
+        layers[key] = layer; fades[key] = { v: 0, raf: 0 };
+        fadeOverlay(key, overlayWanted(key) ? 1 : 0);          // the user may have switched it off while it was loading
         if (layers.labels) widget.imageryLayers.raiseToTop(layers.labels);
         onLayer?.(key, { status: 'on', time: found.time, id: found.id });
         scene.requestRender();
@@ -441,7 +490,7 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
     tilt(toFlat) { orbitCentre({ pitch: CMath.toRadians(toFlat ? -90 : -45), duration: dur(1.1) }); },
     northUp() { orbitCentre({ heading: 0, duration: dur(0.8) }); },
     destroy() {
-      clearInterval(sunTimer); clearTimeout(metaTimer); cancelAnimationFrame(raf);
+      clearInterval(sunTimer); clearInterval(failTimer); clearTimeout(metaTimer); cancelAnimationFrame(raf);
       removeEventListener('resize', onResize);
       canvas.removeEventListener('webglcontextlost', lost);
       offChanged(); offLoad(); offStart(); offEnd(); offRenderError(); offPost();

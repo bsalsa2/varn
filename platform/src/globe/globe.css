@@ -185,3 +185,12 @@ html, body, #root { margin: 0; height: 100%; background: #05070a; }
 @media (prefers-reduced-motion: reduce) { .earth .t-class i, .earth .t-busy span { animation: none; } .earth .e-term { transition: none; } }
 
 .earth .e-pop a { color: #6ee7a8; text-underline-offset: 2px; }
+
+/* location inspection card */
+.earth .e-inspect { width: 296px; }
+.earth .e-inspect header { align-items: flex-start; }
+.earth .e-inspect header strong { display: block; font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+.earth .e-inspect header small { display: block; margin-top: 2px; font-size: 11.5px; color: var(--dim); font-weight: 400; }
+.earth .e-inspect dd small { color: var(--dim); margin-left: 4px; }
+.earth .e-inspect footer { display: flex; gap: 8px; padding: 2px 12px 12px; }
+.earth .e-inspect footer .e-copy { margin: 0; flex: 1; justify-content: center; }

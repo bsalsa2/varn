@@ -112,6 +112,28 @@ Tab completes, ↑/↓ recalls history, Ctrl+L clears. The command logic is plai
 
 Earthquakes can also be switched on from **Layers › Earthquakes**, and turning on **Fires** plots the EONET incidents next to the satellite detections.
 
+### What the layer labels mean
+
+Labels describe how often the *source* produces data; the layer row and status line also show how old the data on screen actually is.
+
+| Layer | Label | Meaning |
+|---|---|---|
+| Satellite, Labels | Basemap | A mosaic of many capture dates, updated periodically. The inspection card shows the capture date where Esri reports one. |
+| Terrain | Static | Elevation model, not updated. |
+| Day / night | Real time | The sun's position is computed from your clock and refreshed each minute. City lights are a static NASA composite. |
+| Clouds | Daily | One true-colour composite per day; the newest is usually 1–2 days old. |
+| Weather | 30-min data | A rain-rate estimate every 30 minutes, published about 3–4 hours after it was observed, so the newest is never "now". |
+| Fires | Daily | Detections grouped by day; the newest day is usually yesterday. Incident markers (EONET) are a snapshot. |
+| Vegetation | 8-day | One composite per 8-day period, so it can be a week or more old. |
+| Night lights | Daily | One observation per night, usually 1–2 days old. |
+| Earthquakes | Snapshot | The USGS feed updates about every minute; this view re-reads it every 5 minutes and shows when it was fetched. |
+
+### Layer blending and tile reliability
+
+Overlays fade in and out instead of switching, and their opacity eases down as you zoom in (clouds from 0.60 to 0.18, vegetation from 0.50 to 0.25, weather and night lights less), so 250 m–10 km data never washes out sharp close-ups. Night-side clouds and vegetation are dimmed. A failed tile request is retried with growing pauses (not for 4xx answers); only a tile that still fails counts, for one minute, and the sharper parent tile stays on screen meanwhile.
+
+Clicking the globe opens one compact card: place name (OpenStreetMap), position, elevation, imagery capture date and resolution, and the sun's state with solar time. Place lookup runs once per click.
+
 ### About fires
 
 NASA's thermal-anomaly layer is raw satellite hot-pixel detections: each is one or two pixels wide, so from orbit it is nearly invisible and only reads when you zoom to a region. That is why the incident markers exist. EONET lists notable incidents rather than every fire; a detection is not a confirmed fire. The layer finder also treats these mostly-transparent tiles as valid when NASA answers with a small image (an earlier size check wrongly rejected them as "unavailable").

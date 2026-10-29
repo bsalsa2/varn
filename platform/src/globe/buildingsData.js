@@ -71,13 +71,36 @@ export function decodeBuildings(buffer, { z, x, y }) {
       if (outer.length < 3) return;
       out.push({
         id: `${f.id ?? i}:${k}`, outer, holes: rings.slice(1).map(open).filter((r) => r.length >= 3),
-        height, minHeight, mapped, area: ringArea(outer),
+        height, minHeight, mapped, area: ringArea(outer), colour: typeof p.colour === 'string' ? p.colour : null,
       });
     });
   }
   const dropped = Math.max(0, out.length - MAX_PER_TILE);
   if (dropped) out.sort((a, b) => b.area - a.area).length = MAX_PER_TILE;        // keep the biggest footprints
   return { buildings: out, total, dropped };
+}
+
+// OSM `building:colour` is a hex value or one of a few CSS colour names. Anything else is ignored.
+const NAMED = { white: '#f2f0ea', grey: '#9a9a9a', gray: '#9a9a9a', black: '#3a3a3a', red: '#a8453a', brown: '#7b5a45', beige: '#d8c8a8', yellow: '#d9c36a', orange: '#d08a4a',
+  tan: '#cdb48c', cream: '#efe6cf', pink: '#d9a5a5', green: '#6f8f6a', blue: '#6f8fb0', silver: '#c2c4c6', lightgrey: '#c9c9c9', lightgray: '#c9c9c9', darkgrey: '#6a6a6a', darkgray: '#6a6a6a', maroon: '#7a3a35' };
+export function parseColour(value) {
+  if (typeof value !== 'string') return null;
+  const v = value.trim().toLowerCase().replace(/\s+/g, '');
+  const hex = (NAMED[v] || v).match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/);
+  if (!hex) return null;
+  let h = hex[1]; if (h.length === 3) h = [...h].map((c) => c + c).join('');
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
+}
+
+/** Wall colour: the mapped colour if there is one (kept within a sane brightness range), else the neutral shade. */
+export function wallColour(b) {
+  const mapped = parseColour(b.colour);
+  if (!mapped) return shade(b.id, b.height);
+  const n = shade(b.id, b.height);
+  const mix = mapped.map((c, i) => 0.88 * c + 0.12 * n[i]);                  // a touch of variation so a mapped block is not flat
+  const lum = 0.2126 * mix[0] + 0.7152 * mix[1] + 0.0722 * mix[2];
+  const k = lum > 0.85 ? 0.85 / lum : lum < 0.22 ? 0.22 / Math.max(lum, 0.01) : 1;   // pure white blinds, pure black vanishes
+  return mix.map((c) => Math.min(1, c * k));
 }
 
 /** Subtle, deterministic variation so a block does not read as one grey slab. Returns [r,g,b] 0..1. */

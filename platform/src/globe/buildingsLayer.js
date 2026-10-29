@@ -5,7 +5,7 @@ import {
   Cartesian2, Cartesian3, Cartographic, Color, ColorGeometryInstanceAttribute, Credit, EllipsoidTerrainProvider, GeometryInstance, Matrix4,
   PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, Transforms, sampleTerrain, Math as CMath,
 } from 'cesium';
-import { TILEJSON_URL, BUILDING_ZOOM, tileOf, tileCentre, decodeBuildings, shade } from './buildingsData.js';
+import { TILEJSON_URL, BUILDING_ZOOM, tileOf, tileCentre, decodeBuildings, wallColour } from './buildingsData.js';
 
 export const BUILDINGS_FROM_M = 6500;               // buildings appear below this camera height
 const PRELOAD_M = 11000;                            // …and start loading (hidden) a little earlier so they are ready
@@ -80,7 +80,7 @@ export function createBuildings({ scene, globe, camera, creditDisplay, onState }
       if (destroyed || ctl.signal.aborted) return;
       const instances = buildings.map((b, i) => {
         const base = ground[i] - 1;                   // sit 1 m into the ground: hides rounding gaps on slopes
-        const [r, g, bl] = shade(b.id, b.height);
+        const [r, g, bl] = wallColour(b);
         const ring = (pts) => pts.map(([lon, lat]) => Cartesian3.fromDegrees(lon, lat));
         return new GeometryInstance({
           geometry: new PolygonGeometry({
