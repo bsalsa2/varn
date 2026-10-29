@@ -4,7 +4,7 @@ import {
   CesiumWidget, ContextLimits, ImageryLayer, UrlTemplateImageryProvider, SingleTileImageryProvider, ArcGisMapServerImageryProvider,
   EllipsoidTerrainProvider, BoundingSphere, HeadingPitchRange, RequestScheduler, sampleTerrain,
   Cartesian2, Cartesian3, Cartographic, Color, Credit, Ion, JulianDate, Math as CMath, Rectangle,
-  ScreenSpaceEventHandler, ScreenSpaceEventType, createWorldTerrainAsync, createGooglePhotorealistic3DTileset, createOsmBuildingsAsync, GoogleMaps,
+  ScreenSpaceEventHandler, ScreenSpaceEventType, createWorldTerrainAsync, createOsmBuildingsAsync,
   PointPrimitiveCollection, NearFarScalar,
 } from 'cesium';
 import { BASE, LABELS, OVERLAYS, GIBS_CREDIT, UPGRADES, TERRAIN, gibsUrl, resolveOverlay } from './sources.js';
@@ -17,13 +17,12 @@ import { createLive } from './live.js';
 import { subsolarPoint } from '../earth/sun.js';
 
 Ion.defaultAccessToken = UPGRADES.ionToken;
-if (UPGRADES.googleKey) GoogleMaps.defaultApiKey = UPGRADES.googleKey;
 // Tile hosts: enough parallel requests for fast zooms without starving each other.
 Object.assign(RequestScheduler.requestsByServer, {
   'services.arcgisonline.com:443': 32, 'gibs.earthdata.nasa.gov:443': 20, 's3.amazonaws.com:443': 10,
 });
 RequestScheduler.maximumRequests = 60;
-export const HAS_3D = !!(UPGRADES.googleKey || UPGRADES.ionToken);
+export const HAS_3D = !!UPGRADES.ionToken;      // optional free-tier Cesium ion token; the open footprints work without it
 
 const R = 6371000;
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -352,17 +351,13 @@ export function createEngine({ host, credits, onLost, onLayer, onPick, onMoveSta
 
   /**
    * Buildings, best source first:
-   *  1. Photorealistic 3D Tiles (Google, directly or via a Cesium ion token), if configured.
-   *  2. Cesium OSM Buildings (Cesium ion token).
-   *  3. Open data, no key: OpenStreetMap footprints extruded to their mapped heights (buildingsLayer.js).
+   *  Free sources only (this project never uses a paid service):
+   *  1. Cesium OSM Buildings, if a free-tier Cesium ion token is configured.
+   *  2. Open data, no key: OpenStreetMap footprints extruded to their mapped heights (buildingsLayer.js).
    * Only one of them is ever on screen, so geometry is never duplicated.
    */
   async function loadTiles3D() {
     const why = [];
-    try {
-      const ts = await createGooglePhotorealistic3DTileset({ key: UPGRADES.googleKey || undefined, onlyUsingWithGoogleGeocoder: !!UPGRADES.googleKey }, { maximumScreenSpaceError: 8 });
-      return { tileset: ts, source: 'Google Photorealistic 3D Tiles', replacesGlobe: true };
-    } catch (e) { why.push(`Google 3D Tiles: ${e.message || e}`); }
     try { return { tileset: await createOsmBuildingsAsync(), source: 'Cesium OSM Buildings', replacesGlobe: false }; }
     catch (e) { why.push(`OSM Buildings: ${e.message || e}`); }
     throw new Error(why.join(' · '));

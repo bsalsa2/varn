@@ -28,7 +28,6 @@ export const BASE = {
 // Optional upgrades. Each needs a key that costs money or limits use, so they stay off unless
 // the key is set in the Cloudflare Pages environment. See platform/README.md.
 export const UPGRADES = {
-  googleKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
   ionToken: import.meta.env.VITE_CESIUM_ION_TOKEN || '',
 };
 

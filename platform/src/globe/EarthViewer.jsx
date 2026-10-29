@@ -5,7 +5,7 @@ import { Layers, Plus, Minus, Globe2, LocateFixed, Search, X, Copy, Loader2, Nav
 import { BASE, TERRAIN, OVERLAYS, UPGRADES } from './sources.js';
 import { createEngine, reduceMotion } from './engine.js';
 import { createLive } from './live.js';
-import { parseCoords, searchPlaces, searchGoogle, imageryMetadata, reversePlace } from './lookup.js';
+import { parseCoords, searchPlaces, imageryMetadata, reversePlace } from './lookup.js';
 import { placeFrom, sunState } from './inspect.js';
 import { describeAge } from './freshness.js';
 import { subsolarPoint } from '../earth/sun.js';
@@ -196,7 +196,7 @@ export default function EarthViewer() {
     if (c) { setResults(null); engine?.flyToPlace(c.lat, c.lon, 5000); return; }
     setSearching(true); setResults(null);
     try {
-      const rows = UPGRADES.googleKey ? await searchGoogle(text, UPGRADES.googleKey) : await searchPlaces(text);
+      const rows = await searchPlaces(text);
       setResults(rows);
       if (rows.length === 1) choose(rows[0]);
     } catch (err) { setResults([]); flash(`Search failed: ${err.message}`); }
@@ -247,7 +247,7 @@ export default function EarthViewer() {
         },
       },
       feeds,
-      geocode: (text) => (UPGRADES.googleKey ? searchGoogle(text, UPGRADES.googleKey) : searchPlaces(text)),
+      geocode: (text) => searchPlaces(text),
       checks: (deep) => runChecks({ scene: engRef.current?.scene, deep }),
       imagery: (lat, lon) => imageryMetadata(lat, lon),
       select: (item) => { pendingSelect.current = { marker: item, set: item.kind === 'quake' ? 'quakes' : 'incidents' }; },
@@ -299,7 +299,7 @@ export default function EarthViewer() {
         {results && <ul className="e-results" role="listbox">
           {results.length ? results.map((r, i) => <li key={i}><button type="button" onClick={() => choose(r)}><strong>{r.name.split(',')[0]}</strong><small>{r.name.split(',').slice(1).join(',').trim() || r.type}</small></button></li>)
             : <li className="e-none">No places found.</li>}
-          <li className="e-attrib">{UPGRADES.googleKey ? 'Search: Google Geocoding' : 'Search © OpenStreetMap contributors (Nominatim)'}</li>
+          <li className="e-attrib">Search © OpenStreetMap contributors (Nominatim)</li>
         </ul>}
       </form>
     </header>

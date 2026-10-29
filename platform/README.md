@@ -1,5 +1,7 @@
 # VARN Command Center
 
+> **Policy: this project uses free sources only.** No paid API, no billed key, no subscription: nothing here may cost money. Paid options (for example Google Photorealistic 3D Tiles) were deliberately removed so a key cannot be added by accident.
+
 An interactive 3D Earth: real satellite imagery, terrain and selectable Earth-observation layers,
 built with [CesiumJS](https://cesium.com/platform/cesiumjs/) (Apache-2.0). The public site in
 `web/` (tryvarn.com) is separate and untouched.
@@ -67,16 +69,6 @@ Keys and tokens go in Cloudflare Pages environment variables, never in the repos
 - **Camera.** Search and locate arrive angled and centred, like Google Earth; diving in with the scroll wheel
   eases the view toward the horizon near the ground; there are tilt and north-up buttons.
 
-### Google-Earth-style 3D cities (optional, needs a key)
-
-True photorealistic 3D buildings use Google Photorealistic 3D Tiles. They need a Google Maps Platform key
-with billing enabled (usage-based pricing: check Google's current prices before enabling) or a Cesium ion
-token. Neither is set, so the **3D buildings** layer shows as unavailable. To turn it on, add
-`VITE_GOOGLE_MAPS_API_KEY` (restrict it to this site's referrer and set a quota) in the Pages environment
-and redeploy. Google requires its own geocoder and attribution while these tiles are shown; both are handled.
-With `VITE_CESIUM_ION_TOKEN` the viewer also uses Cesium World Terrain. These keys are client-side by design,
-so restrict and cap them.
-
 ## Smoothness, brightness and connection checks
 
 - **No UI churn while the globe moves.** The camera, cursor and tile-queue readouts live in a small store that notifies React at most ~8×/s, so panning and zooming never re-render the interface.
@@ -140,13 +132,12 @@ NASA's thermal-anomaly layer is raw satellite hot-pixel detections: each is one 
 
 ### 3D buildings
 
-On by default and automatic: nothing is drawn from orbit or at regional scale; buildings grow out of the ground once the camera is below about 6.5 km. Only one source is ever on screen, chosen in this order:
+On by default and automatic: nothing is drawn from orbit or at regional scale; buildings grow out of the ground once the camera is below about 6.5 km. Only one source is ever on screen:
 
 | # | Source | Needs | Cost | What you see |
 |---|---|---|---|---|
-| 1 | Google Photorealistic 3D Tiles (directly with `VITE_GOOGLE_MAPS_API_KEY`, or through Cesium ion with `VITE_CESIUM_ION_TOKEN`) | a key | Google key: billed Google Maps Platform account. Cesium ion community tier: free, personal / non-commercial use, capped at about 1,000 root tiles a month (check cesium.com/pricing) | photogrammetry, replaces the flat globe while on |
-| 2 | Cesium OSM Buildings (ion token) | ion token | free tier | extruded OSM buildings |
-| 3 | **Open footprints (the default)**: OpenStreetMap buildings from OpenFreeMap vector tiles, extruded in the existing Cesium scene (`buildingsLayer.js`, `buildingsData.js`) | nothing | free, no key | plain extruded footprints |
+| 1 | Cesium OSM Buildings, only if you set `VITE_CESIUM_ION_TOKEN` | a free Cesium ion account (no card) | free tier | extruded OSM buildings |
+| 2 | **Open footprints (the default)**: OpenStreetMap buildings from OpenFreeMap vector tiles, extruded in the existing Cesium scene (`buildingsLayer.js`, `buildingsData.js`) | nothing | free, no key | plain extruded footprints |
 
 What the default source is and is not: footprints plus a height in metres, from OSM `height` or `building:levels` tags (and `min_height` for overhangs). There are no roof shapes and no facade detail, and buildings are not photogrammetry. Many buildings are not mapped with a height and use a plain low default; the Layers panel states what share of the loaded buildings that is. Coverage is wherever OSM has buildings, which is dense and well-mapped in most large cities and thin elsewhere. Dense tiles are thinned to their largest 4,500 footprints; at most 20 tiles / 40,000 buildings stay in memory. Where there is no data, nothing is drawn. Heights are placed on the same terrain data the globe uses.
 
