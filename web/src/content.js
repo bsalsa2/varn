@@ -18,9 +18,9 @@ import { CONTACT_EMAIL, FORM_ENDPOINT } from './config.js';
 
 export const content = {
   meta: {
-    title: 'Varn | Watch the sky',
+    title: 'Varn Labs: camera-based sky observation research prototype',
     description:
-      'A research prototype exploring a camera-based approach to observing and logging objects in the sky. Recorded-video evaluation only. Physical hardware validation pending.',
+      'A research prototype exploring a camera-based way to observe and log objects in the sky. Evaluated on recorded video only; hardware validation pending.',
     // The primary domain. Every build (GitHub Pages and any mirror) points
     // canonical links and share images here; set SITE_URL to override.
     url: process.env.SITE_URL || 'https://tryvarn.com/',
@@ -501,7 +501,7 @@ export const content = {
   // ABOUT PAGE (about.html)
   about: {
     title: 'About',
-    description: 'About VARN: who is building it, and what it is and is not.',
+    description: 'About Varn Labs: who is building Varn, a passive camera-based sky observation research prototype, and what it is and is not. Not a product, not deployed.',
     kicker: 'About',
     heading: 'Who is building this',
     scopeHeading: 'What VARN is, and is not',
@@ -571,7 +571,7 @@ export const content = {
   contact: {
     kicker: 'Contact',
     title: 'Contact',
-    description: 'Questions about Varn? Send a message to Varn Labs.',
+    description: 'Questions about the Varn research prototype, its hardware or its code? Send a message to Varn Labs and get a reply by email.',
     heading: 'Questions about Varn?',
     intro: 'Ask about the project, the hardware, or the code. I read every message.',
     email: CONTACT_EMAIL,
@@ -618,6 +618,8 @@ export const content = {
   // Update the date whenever you change this page.
   privacy: {
     title: 'Privacy policy',
+    // Search-result snippet only (the page itself shows the intro below).
+    description: 'Privacy policy for the Varn website: no accounts, cookies or ads. The contact form sends only what you type, through a form service.',
     updated: 'October 21, 2026',
     intro: `This site has no accounts, cookies, ads, or trackers. Reading it sends nothing about you anywhere. The contact form sends only what you type in it, and goes through a form service (see Contact form below).`,
     // Used instead of intro when the visit counter is on.

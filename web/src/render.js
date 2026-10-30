@@ -473,6 +473,30 @@ const LEGACY_HASHES = ['story', 'labels', 'results', 'limits', 'how', 'mount', '
 const legacyRedirect = () =>
   `<script>(function(){var k=${JSON.stringify(LEGACY_HASHES)},g=function(){var h=location.hash.slice(1);if(h==='build'){location.replace('./about.html#build');}else if(k.indexOf(h)>-1){location.replace('./research.html#'+h);}};g();addEventListener('hashchange',g);})();</script>`;
 
+// Organization + WebSite markup, home page only. Deliberately no address,
+// phone or location: the project has none to give.
+const structuredData = (c) => {
+  const { url } = c.meta;
+  const org = new URL('#organization', url).href;
+  const data = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': org,
+        name: 'Varn Labs',
+        url,
+        logo: new URL('icon-512.png', url).href,
+        sameAs: ['https://github.com/bsalsa2/varn'],
+        description: c.meta.description,
+      },
+      { '@type': 'WebSite', '@id': new URL('#website', url).href, name: 'Varn Labs', url, publisher: { '@id': org } },
+    ],
+  };
+  // "<" is escaped so no value can ever close the script tag early.
+  return `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
+};
+
 export function renderHead(c) {
   const { title, description, url } = c.meta;
   const image = new URL('og-image.png', url).href;
@@ -495,6 +519,7 @@ export function renderHead(c) {
     <meta name="twitter:title" content="${esc(title)}" />
     <meta name="twitter:description" content="${esc(description)}" />
     <meta name="twitter:image" content="${esc(image)}" />
+    ${structuredData(c)}
     ${legacyRedirect()}`;
 }
 
@@ -1017,7 +1042,7 @@ export function renderPrivacyHead(c) {
   const url = new URL('privacy.html', c.meta.url).href;
   return `${counter(c)}
     <title>${esc(c.privacy.title)} | Varn</title>
-    <meta name="description" content="${esc(c.privacy.intro)}" />
+    <meta name="description" content="${esc(c.privacy.description)}" />
     <link rel="canonical" href="${esc(url)}" />`;
 }
 
