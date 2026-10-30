@@ -12,6 +12,7 @@
     "models": "node scripts/build-models.mjs",
     "prebuild": "npm run check && npm run models",
     "build": "vite build",
+    "postbuild": "node scripts/build-sitemap.mjs",
     "check:dist": "node scripts/check-dist.mjs",
     "preview": "vite preview"
   },

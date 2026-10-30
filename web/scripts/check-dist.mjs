@@ -1,5 +1,7 @@
 // Checks the built site (web/dist): every file a page or script points at
-// exists, and every in-page link lands on a real id. Run after `npm run build`.
+// exists, every in-page link lands on a real id, and the search basics hold
+// (sitemap, one h1, short descriptions, canonical addresses). Run after
+// `npm run build`.
 //
 // Why: `vite preview` answers unknown paths with index.html, so a missing
 // asset can pass every local test and still 404 on a real static host (that is
@@ -7,6 +9,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { content } from '../src/content.js';
 
 const dist = resolve(dirname(fileURLToPath(import.meta.url)), '..', process.argv[2] || 'dist');
 if (!existsSync(dist)) {
@@ -62,8 +65,72 @@ for (const f of ['models/pantilt.bin', 'models/pantilt-still.webp']) {
   if (!existsSync(join(dist, f))) problems.push(`${f} is missing from the build`);
 }
 
+// ---- search basics
+const base = content.meta.url;
+const rel = (p) => relative(dist, p).split('\\').join('/');
+// Where a page is expected to live on the site: index.html is the root.
+const expectedUrl = (p) => (rel(p) === 'index.html' ? new URL(base).href : new URL(rel(p), base).href);
+const attr = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
+const unescape = (v) => v.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+
+for (const page of pages) {
+  const html = readFileSync(page, 'utf8');
+  const h1s = (html.match(/<h1[\s>]/g) || []).length;
+  if (h1s !== 1) bad(page, `has ${h1s} <h1> elements, expected exactly 1`);
+
+  const desc = html.match(/<meta[^>]*\bname="description"[^>]*>/)?.[0];
+  if (desc) {
+    const len = unescape(attr(desc, 'content') || '').length;
+    if (len > 160) bad(page, `meta description is ${len} characters, the limit is 160`);
+  }
+
+  const canon = html.match(/<link[^>]*\brel="canonical"[^>]*>/)?.[0];
+  if (canon) {
+    const href = unescape(attr(canon, 'href') || '');
+    if (href !== expectedUrl(page)) bad(page, `canonical is "${href}", expected "${expectedUrl(page)}"`);
+  }
+
+  // Organization / WebSite markup belongs on the home page only, and must parse.
+  const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+  if (rel(page) !== 'index.html' && ld.length) bad(page, 'has JSON-LD, which is meant for the home page only');
+  if (rel(page) === 'index.html') {
+    if (ld.length !== 1) bad(page, `has ${ld.length} JSON-LD blocks, expected 1`);
+    else {
+      try {
+        const types = JSON.parse(ld[0][1])['@graph'].map((n) => n['@type']);
+        for (const t of ['Organization', 'WebSite']) if (!types.includes(t)) bad(page, `JSON-LD has no ${t}`);
+      } catch (e) {
+        bad(page, `JSON-LD is not valid JSON (${e.message})`);
+      }
+    }
+  }
+}
+
+// Sitemap: exists, and lists only real, indexable pages at their canonical address.
+const sitemapFile = join(dist, 'sitemap.xml');
+if (!existsSync(sitemapFile)) problems.push('sitemap.xml is missing from the build');
+else {
+  const locs = [...readFileSync(sitemapFile, 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  const byUrl = new Map(pages.map((p) => [expectedUrl(p), p]));
+  if (!locs.length) problems.push('sitemap.xml lists no pages');
+  if (new Set(locs).size !== locs.length) problems.push('sitemap.xml lists a page more than once');
+  for (const loc of locs) {
+    const page = byUrl.get(loc);
+    if (!page) problems.push(`sitemap.xml lists ${loc}, which is not a page in the build`);
+    else if (/<meta[^>]*\bname="robots"[^>]*noindex/.test(readFileSync(page, 'utf8'))) bad(page, 'is noindex but listed in sitemap.xml');
+    else if (!/<link[^>]*\brel="canonical"/.test(readFileSync(page, 'utf8'))) bad(page, 'is listed in sitemap.xml but has no canonical link');
+  }
+  for (const f of ['field.html', '404.html']) if (locs.includes(expectedUrl(join(dist, f)))) problems.push(`sitemap.xml must not list ${f}`);
+  // Every page that is not noindex should be in the sitemap.
+  for (const [url, page] of byUrl) {
+    if (!locs.includes(url) && !/<meta[^>]*\bname="robots"[^>]*noindex/.test(readFileSync(page, 'utf8'))) bad(page, 'is indexable but missing from sitemap.xml');
+  }
+}
+const robots = join(dist, 'robots.txt');
+if (!existsSync(robots) || !readFileSync(robots, 'utf8').includes(`Sitemap: ${new URL('sitemap.xml', base).href}`)) problems.push('robots.txt does not point at the sitemap');
+
 if (problems.length) {
   console.error(`check:dist found ${problems.length} problem(s):\n` + problems.map((p) => '  - ' + p).join('\n'));
   process.exit(1);
 }
-console.log(`check:dist: ${pages.length} pages and ${scripts.length} scripts checked, every file and in-page link resolves.`);
+console.log(`check:dist: ${pages.length} pages and ${scripts.length} scripts checked, every file and in-page link resolves, sitemap, h1, description and canonical checks pass.`);
