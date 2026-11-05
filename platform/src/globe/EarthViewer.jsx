@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Math as CMath } from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
-import { Layers, Plus, Minus, Globe2, LocateFixed, Search, X, Copy, Loader2, Navigation2, Box, RefreshCw, TriangleAlert, SquareTerminal } from 'lucide-react';
+import { Layers, Plus, Minus, Globe2, LocateFixed, Search, X, Copy, Loader2, Navigation2, Box, RefreshCw, TriangleAlert, SquareTerminal, ClipboardList } from 'lucide-react';
 import { BASE, TERRAIN, OVERLAYS, UPGRADES } from './sources.js';
 import { createEngine, reduceMotion } from './engine.js';
 import { createLive } from './live.js';
@@ -308,6 +308,7 @@ export default function EarthViewer() {
       <button className={`e-btn ${panel ? 'on' : ''}`} onClick={() => setPanel((v) => !v)} aria-expanded={panel} aria-controls="e-layers" title="Layers (L)">
         <Layers size={17}/>{problem && <i className="e-dot" aria-label="A data source is unreachable"/>}</button>
       <button className={`e-btn ${term ? 'on' : ''}`} onClick={() => setTerm((v) => !v)} aria-pressed={term} title="Terminal (`)" aria-label="Toggle command terminal"><SquareTerminal size={17}/></button>
+      <a className="e-btn" href="#records" title="Records: models, experiments, datasets and results" aria-label="Open Records"><ClipboardList size={17}/></a>
       <span className="e-gap"/>
       <button className="e-btn" onClick={() => engine?.zoom(0.45)} title="Zoom in" aria-label="Zoom in"><Plus size={17}/></button>
       <button className="e-btn" onClick={() => engine?.zoom(2.2)} title="Zoom out" aria-label="Zoom out"><Minus size={17}/></button>

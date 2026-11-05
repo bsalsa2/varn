@@ -1,0 +1,1282 @@
+[
+  {
+    "id": "F-R-v3.pt-T-roboflow-800-mAP50",
+    "text": "On T-roboflow-800, v3 .pt scored 0.853 mAP50.",
+    "source": "S5",
+    "source_line": 34,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-v3.pt-T-roboflow-800-mAP50"
+  },
+  {
+    "id": "F-R-v3.pt-T-roboflow-800-mAP50-drone",
+    "text": "On T-roboflow-800, v3 .pt scored 0.905 mAP50 for the drone class.",
+    "source": "S5",
+    "source_line": 34,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-v3.pt-T-roboflow-800-mAP50-drone"
+  },
+  {
+    "id": "F-R-v3.pt-T-roboflow-800-mAP50-aircraft",
+    "text": "On T-roboflow-800, v3 .pt scored 0.800 mAP50 for the aircraft class.",
+    "source": "S5",
+    "source_line": 34,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-v3.pt-T-roboflow-800-mAP50-aircraft"
+  },
+  {
+    "id": "F-R-v3.pt-T-roboflow-800-mAP50-95",
+    "text": "On T-roboflow-800, v3 .pt scored 0.468 mAP50-95.",
+    "source": "S5",
+    "source_line": 34,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-v3.pt-T-roboflow-800-mAP50-95"
+  },
+  {
+    "id": "F-R-v3ONNX-T-roboflow-800-mAP50",
+    "text": "On T-roboflow-800, v3 ONNX scored 0.831 mAP50.",
+    "source": "S5",
+    "source_line": 35,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-v3ONNX-T-roboflow-800-mAP50"
+  },
+  {
+    "id": "F-R-v3ONNX-T-roboflow-800-mAP50-drone",
+    "text": "On T-roboflow-800, v3 ONNX scored 0.893 mAP50 for the drone class.",
+    "source": "S5",
+    "source_line": 35,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-v3ONNX-T-roboflow-800-mAP50-drone"
+  },
+  {
+    "id": "F-R-v3ONNX-T-roboflow-800-mAP50-aircraft",
+    "text": "On T-roboflow-800, v3 ONNX scored 0.768 mAP50 for the aircraft class.",
+    "source": "S5",
+    "source_line": 35,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-v3ONNX-T-roboflow-800-mAP50-aircraft"
+  },
+  {
+    "id": "F-R-v3ONNX-T-roboflow-800-mAP50-95",
+    "text": "On T-roboflow-800, v3 ONNX scored 0.459 mAP50-95.",
+    "source": "S5",
+    "source_line": 35,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-v3ONNX-T-roboflow-800-mAP50-95"
+  },
+  {
+    "id": "F-R-v3-T-bvd-847-mAP50",
+    "text": "On T-bvd-847, v3 scored 0.255 mAP50.",
+    "source": "S5",
+    "source_line": 36,
+    "test_set_id": "T-bvd-847",
+    "record_id": "R-v3-T-bvd-847-mAP50"
+  },
+  {
+    "id": "F-R-v3-T-bvd-847-precision",
+    "text": "On T-bvd-847, v3 scored 0.344 precision.",
+    "source": "S5",
+    "source_line": 36,
+    "test_set_id": "T-bvd-847",
+    "record_id": "R-v3-T-bvd-847-precision"
+  },
+  {
+    "id": "F-R-v3-T-bvd-847-recall",
+    "text": "On T-bvd-847, v3 scored 0.269 recall.",
+    "source": "S5",
+    "source_line": 36,
+    "test_set_id": "T-bvd-847",
+    "record_id": "R-v3-T-bvd-847-recall"
+  },
+  {
+    "id": "F-R-v3-T-bvd-847-mAP50-95",
+    "text": "On T-bvd-847, v3 scored 0.086 mAP50-95.",
+    "source": "S5",
+    "source_line": 36,
+    "test_set_id": "T-bvd-847",
+    "record_id": "R-v3-T-bvd-847-mAP50-95"
+  },
+  {
+    "id": "F-R-run1-T-roboflow-800-mAP50",
+    "text": "On T-roboflow-800, run1 scored 0.810 mAP50.",
+    "source": "S5",
+    "source_line": 37,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-run1-T-roboflow-800-mAP50"
+  },
+  {
+    "id": "F-R-run1-T-bvd-847-mAP50",
+    "text": "On T-bvd-847, run1 scored 0.761 mAP50.",
+    "source": "S5",
+    "source_line": 37,
+    "test_set_id": "T-bvd-847",
+    "record_id": "R-run1-T-bvd-847-mAP50"
+  },
+  {
+    "id": "F-R-run2-T-roboflow-800-mAP50",
+    "text": "On T-roboflow-800, run2 scored 0.831 mAP50.",
+    "source": "S5",
+    "source_line": 38,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-run2-T-roboflow-800-mAP50"
+  },
+  {
+    "id": "F-R-run2-T-bvd-847-mAP50",
+    "text": "On T-bvd-847, run2 scored 0.812 mAP50.",
+    "source": "S5",
+    "source_line": 38,
+    "test_set_id": "T-bvd-847",
+    "record_id": "R-run2-T-bvd-847-mAP50"
+  },
+  {
+    "id": "F-R-run3-T-roboflow-800-mAP50",
+    "text": "On T-roboflow-800, run3 scored 0.834 mAP50.",
+    "source": "S5",
+    "source_line": 39,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-run3-T-roboflow-800-mAP50"
+  },
+  {
+    "id": "F-R-run3-T-roboflow-800-mAP50-drone",
+    "text": "On T-roboflow-800, run3 scored 0.883 mAP50 for the drone class.",
+    "source": "S5",
+    "source_line": 39,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-run3-T-roboflow-800-mAP50-drone"
+  },
+  {
+    "id": "F-R-run3-T-roboflow-800-mAP50-aircraft",
+    "text": "On T-roboflow-800, run3 scored 0.785 mAP50 for the aircraft class.",
+    "source": "S5",
+    "source_line": 39,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-run3-T-roboflow-800-mAP50-aircraft"
+  },
+  {
+    "id": "F-R-run3-T-bvd-847-mAP50",
+    "text": "On T-bvd-847, run3 scored 0.798 mAP50.",
+    "source": "S5",
+    "source_line": 39,
+    "test_set_id": "T-bvd-847",
+    "record_id": "R-run3-T-bvd-847-mAP50"
+  },
+  {
+    "id": "F-R-run3-T-bvd-847-precision",
+    "text": "On T-bvd-847, run3 scored 0.765 precision.",
+    "source": "S5",
+    "source_line": 39,
+    "test_set_id": "T-bvd-847",
+    "record_id": "R-run3-T-bvd-847-precision"
+  },
+  {
+    "id": "F-R-run3-T-bvd-847-recall",
+    "text": "On T-bvd-847, run3 scored 0.711 recall.",
+    "source": "S5",
+    "source_line": 39,
+    "test_set_id": "T-bvd-847",
+    "record_id": "R-run3-T-bvd-847-recall"
+  },
+  {
+    "id": "F-R-run4-T-roboflow-800-mAP50",
+    "text": "On T-roboflow-800, run4 scored 0.801 mAP50.",
+    "source": "S5",
+    "source_line": 40,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-run4-T-roboflow-800-mAP50"
+  },
+  {
+    "id": "F-R-run4-T-roboflow-800-mAP50-drone",
+    "text": "On T-roboflow-800, run4 scored 0.847 mAP50 for the drone class.",
+    "source": "S5",
+    "source_line": 40,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-run4-T-roboflow-800-mAP50-drone"
+  },
+  {
+    "id": "F-R-run4-T-roboflow-800-mAP50-aircraft",
+    "text": "On T-roboflow-800, run4 scored 0.754 mAP50 for the aircraft class.",
+    "source": "S5",
+    "source_line": 40,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-run4-T-roboflow-800-mAP50-aircraft"
+  },
+  {
+    "id": "F-R-v3-T-svan-1195-mAP50",
+    "text": "On T-svan-1195, v3 scored 0.063 mAP50.",
+    "source": "S5",
+    "source_line": 40,
+    "test_set_id": "T-svan-1195",
+    "record_id": "R-v3-T-svan-1195-mAP50"
+  },
+  {
+    "id": "F-R-run4-T-svan-1195-mAP50",
+    "text": "On T-svan-1195, run4 scored 0.648 mAP50.",
+    "source": "S5",
+    "source_line": 40,
+    "test_set_id": "T-svan-1195",
+    "record_id": "R-run4-T-svan-1195-mAP50"
+  },
+  {
+    "id": "F-R-run5-T-roboflow-800-mAP50",
+    "text": "On T-roboflow-800, run5 scored 0.797 mAP50.",
+    "source": "S5",
+    "source_line": 41,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-run5-T-roboflow-800-mAP50"
+  },
+  {
+    "id": "F-R-run5-T-roboflow-800-mAP50-drone",
+    "text": "On T-roboflow-800, run5 scored 0.846 mAP50 for the drone class.",
+    "source": "S5",
+    "source_line": 41,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-run5-T-roboflow-800-mAP50-drone"
+  },
+  {
+    "id": "F-R-run5-T-roboflow-800-mAP50-aircraft",
+    "text": "On T-roboflow-800, run5 scored 0.748 mAP50 for the aircraft class.",
+    "source": "S5",
+    "source_line": 41,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "R-run5-T-roboflow-800-mAP50-aircraft"
+  },
+  {
+    "id": "F-R-v3-T-svan-897-mAP50",
+    "text": "On T-svan-897, v3 scored 0.079 mAP50.",
+    "source": "S5",
+    "source_line": 41,
+    "test_set_id": "T-svan-897",
+    "record_id": "R-v3-T-svan-897-mAP50"
+  },
+  {
+    "id": "F-R-run5-T-svan-897-mAP50",
+    "text": "On T-svan-897, run5 scored 0.736 mAP50.",
+    "source": "S5",
+    "source_line": 41,
+    "test_set_id": "T-svan-897",
+    "record_id": "R-run5-T-svan-897-mAP50"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), v3 had \"false drone on aircraft clips\" in 2.6% of frames.",
+    "source": "S6",
+    "source_line": 46,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run3 had \"false drone on aircraft clips\" in 6.0% of frames.",
+    "source": "S6",
+    "source_line": 46,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), v3 had \"no aircraft box on aircraft clips\" in 63.9% of frames.",
+    "source": "S6",
+    "source_line": 46,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run3 had \"no aircraft box on aircraft clips\" in 72.1% of frames.",
+    "source": "S6",
+    "source_line": 46,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), v3 had \"false aircraft on drone clips\" in 14.8% of frames.",
+    "source": "S6",
+    "source_line": 46,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run3 had \"false aircraft on drone clips\" in 12.9% of frames.",
+    "source": "S6",
+    "source_line": 46,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), v3 had \"no drone box on drone clips\" in 91.6% of frames.",
+    "source": "S6",
+    "source_line": 46,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run3 had \"no drone box on drone clips\" in 94.1% of frames.",
+    "source": "S6",
+    "source_line": 46,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run4-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run4 had \"false drone on aircraft clips\" in 4.8% of frames.",
+    "source": "S6",
+    "source_line": 47,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run4-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run4-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run4 had \"no aircraft box on aircraft clips\" in 46.9% of frames.",
+    "source": "S6",
+    "source_line": 47,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run4-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run4-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run4 had \"false aircraft on drone clips\" in 27.6% of frames.",
+    "source": "S6",
+    "source_line": 47,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run4-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run4-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run4 had \"no drone box on drone clips\" in 90.2% of frames.",
+    "source": "S6",
+    "source_line": 47,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run4-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run5 had \"false drone on aircraft clips\" in 4.1% of frames.",
+    "source": "S6",
+    "source_line": 48,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run5-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run5 had \"no aircraft box on aircraft clips\" in 48.6% of frames.",
+    "source": "S6",
+    "source_line": 48,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run5-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run5 had \"false aircraft on drone clips\" in 29.5% of frames.",
+    "source": "S6",
+    "source_line": 48,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run5-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35",
+    "text": "On T-clips-42 (confidence 0.35), run5 had \"no drone box on drone clips\" in 92.5% of frames.",
+    "source": "S6",
+    "source_line": 48,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run5-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-military_drone-false-aircraft-confidence-0.35",
+    "text": "On T-clips-42-military_drone (confidence 0.35), v3 had \"false aircraft\" in 17.6% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_drone",
+    "record_id": "R-v3-T-clips-42-military_drone-false-aircraft-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-military_drone-false-aircraft-confidence-0.35",
+    "text": "On T-clips-42-military_drone (confidence 0.35), run5 had \"false aircraft\" in 38.4% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_drone",
+    "record_id": "R-run5-T-clips-42-military_drone-false-aircraft-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-military_drone-no-drone-box-confidence-0.35",
+    "text": "On T-clips-42-military_drone (confidence 0.35), v3 had \"no drone box\" in 89.5% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_drone",
+    "record_id": "R-v3-T-clips-42-military_drone-no-drone-box-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-military_drone-no-drone-box-confidence-0.35",
+    "text": "On T-clips-42-military_drone (confidence 0.35), run5 had \"no drone box\" in 93.7% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_drone",
+    "record_id": "R-run5-T-clips-42-military_drone-no-drone-box-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-military_aircraft-false-drone-confidence-0.35",
+    "text": "On T-clips-42-military_aircraft (confidence 0.35), v3 had \"false drone\" in 3.5% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_aircraft",
+    "record_id": "R-v3-T-clips-42-military_aircraft-false-drone-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-military_aircraft-false-drone-confidence-0.35",
+    "text": "On T-clips-42-military_aircraft (confidence 0.35), run5 had \"false drone\" in 5.6% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_aircraft",
+    "record_id": "R-run5-T-clips-42-military_aircraft-false-drone-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-military_aircraft-no-aircraft-box-confidence-0.35",
+    "text": "On T-clips-42-military_aircraft (confidence 0.35), v3 had \"no aircraft box\" in 63.1% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_aircraft",
+    "record_id": "R-v3-T-clips-42-military_aircraft-no-aircraft-box-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-military_aircraft-no-aircraft-box-confidence-0.35",
+    "text": "On T-clips-42-military_aircraft (confidence 0.35), run5 had \"no aircraft box\" in 44.7% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_aircraft",
+    "record_id": "R-run5-T-clips-42-military_aircraft-no-aircraft-box-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-airplane-false-drone-confidence-0.35",
+    "text": "On T-clips-42-airplane (confidence 0.35), v3 had \"false drone\" in 0.0% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-airplane",
+    "record_id": "R-v3-T-clips-42-airplane-false-drone-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-airplane-false-drone-confidence-0.35",
+    "text": "On T-clips-42-airplane (confidence 0.35), run5 had \"false drone\" in 0.0% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-airplane",
+    "record_id": "R-run5-T-clips-42-airplane-false-drone-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-airplane-no-aircraft-box-confidence-0.35",
+    "text": "On T-clips-42-airplane (confidence 0.35), v3 had \"no aircraft box\" in 65.9% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-airplane",
+    "record_id": "R-v3-T-clips-42-airplane-no-aircraft-box-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-airplane-no-aircraft-box-confidence-0.35",
+    "text": "On T-clips-42-airplane (confidence 0.35), run5 had \"no aircraft box\" in 59.9% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-airplane",
+    "record_id": "R-run5-T-clips-42-airplane-no-aircraft-box-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-drone-false-aircraft-confidence-0.35",
+    "text": "On T-clips-42-drone (confidence 0.35), v3 had \"false aircraft\" in 11.8% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-drone",
+    "record_id": "R-v3-T-clips-42-drone-false-aircraft-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-drone-false-aircraft-confidence-0.35",
+    "text": "On T-clips-42-drone (confidence 0.35), run5 had \"false aircraft\" in 19.6% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-drone",
+    "record_id": "R-run5-T-clips-42-drone-false-aircraft-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-drone-no-drone-box-confidence-0.35",
+    "text": "On T-clips-42-drone (confidence 0.35), v3 had \"no drone box\" in 93.9% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-drone",
+    "record_id": "R-v3-T-clips-42-drone-no-drone-box-confidence-0.35"
+  },
+  {
+    "id": "F-R-run5-T-clips-42-drone-no-drone-box-confidence-0.35",
+    "text": "On T-clips-42-drone (confidence 0.35), run5 had \"no drone box\" in 91.1% of frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-drone",
+    "record_id": "R-run5-T-clips-42-drone-no-drone-box-confidence-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-found-aircraft-threshold-0.25",
+    "text": "On T-clips-42 (threshold 0.25), v3 had \"aircraft found\" in 44.2% of frames.",
+    "source": "S7",
+    "source_line": 54,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-found-aircraft-threshold-0.25"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.25",
+    "text": "On T-clips-42 (threshold 0.25), v3 had \"aircraft mislabeled only\" in 6.8% of frames.",
+    "source": "S7",
+    "source_line": 54,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.25"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-found-drone-threshold-0.25",
+    "text": "On T-clips-42 (threshold 0.25), v3 had \"drone found\" in 12.9% of frames.",
+    "source": "S7",
+    "source_line": 54,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-found-drone-threshold-0.25"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-mislabeled-only-drone-threshold-0.25",
+    "text": "On T-clips-42 (threshold 0.25), v3 had \"drone mislabeled only\" in 19.5% of frames.",
+    "source": "S7",
+    "source_line": 54,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.25"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-rough-score-threshold-0.25",
+    "text": "On T-clips-42 (threshold 0.25), v3 scored +0.154 rough score.",
+    "source": "S7",
+    "source_line": 54,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-rough-score-threshold-0.25"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-found-aircraft-threshold-0.35",
+    "text": "On T-clips-42 (threshold 0.35), v3 had \"aircraft found\" in 36.1% of frames.",
+    "source": "S7",
+    "source_line": 55,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-found-aircraft-threshold-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.35",
+    "text": "On T-clips-42 (threshold 0.35), v3 had \"aircraft mislabeled only\" in 2.4% of frames.",
+    "source": "S7",
+    "source_line": 55,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-found-drone-threshold-0.35",
+    "text": "On T-clips-42 (threshold 0.35), v3 had \"drone found\" in 8.2% of frames.",
+    "source": "S7",
+    "source_line": 55,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-found-drone-threshold-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-mislabeled-only-drone-threshold-0.35",
+    "text": "On T-clips-42 (threshold 0.35), v3 had \"drone mislabeled only\" in 13.8% of frames.",
+    "source": "S7",
+    "source_line": 55,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-rough-score-threshold-0.35",
+    "text": "On T-clips-42 (threshold 0.35), v3 scored +0.141 rough score.",
+    "source": "S7",
+    "source_line": 55,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-rough-score-threshold-0.35"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-found-aircraft-threshold-0.5",
+    "text": "On T-clips-42 (threshold 0.5), v3 had \"aircraft found\" in 25.5% of frames.",
+    "source": "S7",
+    "source_line": 56,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-found-aircraft-threshold-0.5"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.5",
+    "text": "On T-clips-42 (threshold 0.5), v3 had \"aircraft mislabeled only\" in 0.6% of frames.",
+    "source": "S7",
+    "source_line": 56,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.5"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-found-drone-threshold-0.5",
+    "text": "On T-clips-42 (threshold 0.5), v3 had \"drone found\" in 5.5% of frames.",
+    "source": "S7",
+    "source_line": 56,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-found-drone-threshold-0.5"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-mislabeled-only-drone-threshold-0.5",
+    "text": "On T-clips-42 (threshold 0.5), v3 had \"drone mislabeled only\" in 7.9% of frames.",
+    "source": "S7",
+    "source_line": 56,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.5"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-rough-score-threshold-0.5",
+    "text": "On T-clips-42 (threshold 0.5), v3 scored +0.112 rough score.",
+    "source": "S7",
+    "source_line": 56,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-rough-score-threshold-0.5"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-found-aircraft-threshold-0.65",
+    "text": "On T-clips-42 (threshold 0.65), v3 had \"aircraft found\" in 9.0% of frames.",
+    "source": "S7",
+    "source_line": 57,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-found-aircraft-threshold-0.65"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.65",
+    "text": "On T-clips-42 (threshold 0.65), v3 had \"aircraft mislabeled only\" in 0.3% of frames.",
+    "source": "S7",
+    "source_line": 57,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.65"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-found-drone-threshold-0.65",
+    "text": "On T-clips-42 (threshold 0.65), v3 had \"drone found\" in 1.6% of frames.",
+    "source": "S7",
+    "source_line": 57,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-found-drone-threshold-0.65"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-mislabeled-only-drone-threshold-0.65",
+    "text": "On T-clips-42 (threshold 0.65), v3 had \"drone mislabeled only\" in 2.0% of frames.",
+    "source": "S7",
+    "source_line": 57,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.65"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-rough-score-threshold-0.65",
+    "text": "On T-clips-42 (threshold 0.65), v3 scored +0.041 rough score.",
+    "source": "S7",
+    "source_line": 57,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-rough-score-threshold-0.65"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-found-aircraft-threshold-0.8",
+    "text": "On T-clips-42 (threshold 0.8), v3 had \"aircraft found\" in 1.6% of frames.",
+    "source": "S7",
+    "source_line": 58,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-found-aircraft-threshold-0.8"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.8",
+    "text": "On T-clips-42 (threshold 0.8), v3 had \"aircraft mislabeled only\" in 0.0% of frames.",
+    "source": "S7",
+    "source_line": 58,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.8"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-found-drone-threshold-0.8",
+    "text": "On T-clips-42 (threshold 0.8), v3 had \"drone found\" in 0.3% of frames.",
+    "source": "S7",
+    "source_line": 58,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-found-drone-threshold-0.8"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-mislabeled-only-drone-threshold-0.8",
+    "text": "On T-clips-42 (threshold 0.8), v3 had \"drone mislabeled only\" in 0.4% of frames.",
+    "source": "S7",
+    "source_line": 58,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.8"
+  },
+  {
+    "id": "F-R-v3-T-clips-42-rough-score-threshold-0.8",
+    "text": "On T-clips-42 (threshold 0.8), v3 scored +0.007 rough score.",
+    "source": "S7",
+    "source_line": 58,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-v3-T-clips-42-rough-score-threshold-0.8"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-found-aircraft-threshold-0.25",
+    "text": "On T-clips-42 (threshold 0.25), run3 had \"aircraft found\" in 37.4% of frames.",
+    "source": "S7",
+    "source_line": 59,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-found-aircraft-threshold-0.25"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.25",
+    "text": "On T-clips-42 (threshold 0.25), run3 had \"aircraft mislabeled only\" in 10.8% of frames.",
+    "source": "S7",
+    "source_line": 59,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.25"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-found-drone-threshold-0.25",
+    "text": "On T-clips-42 (threshold 0.25), run3 had \"drone found\" in 12.5% of frames.",
+    "source": "S7",
+    "source_line": 59,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-found-drone-threshold-0.25"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-mislabeled-only-drone-threshold-0.25",
+    "text": "On T-clips-42 (threshold 0.25), run3 had \"drone mislabeled only\" in 17.2% of frames.",
+    "source": "S7",
+    "source_line": 59,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-mislabeled-only-drone-threshold-0.25"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-rough-score-threshold-0.25",
+    "text": "On T-clips-42 (threshold 0.25), run3 scored +0.110 rough score.",
+    "source": "S7",
+    "source_line": 59,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-rough-score-threshold-0.25"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-found-aircraft-threshold-0.35",
+    "text": "On T-clips-42 (threshold 0.35), run3 had \"aircraft found\" in 27.9% of frames.",
+    "source": "S7",
+    "source_line": 60,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-found-aircraft-threshold-0.35"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.35",
+    "text": "On T-clips-42 (threshold 0.35), run3 had \"aircraft mislabeled only\" in 6.0% of frames.",
+    "source": "S7",
+    "source_line": 60,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.35"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-found-drone-threshold-0.35",
+    "text": "On T-clips-42 (threshold 0.35), run3 had \"drone found\" in 5.7% of frames.",
+    "source": "S7",
+    "source_line": 60,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-found-drone-threshold-0.35"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-mislabeled-only-drone-threshold-0.35",
+    "text": "On T-clips-42 (threshold 0.35), run3 had \"drone mislabeled only\" in 12.7% of frames.",
+    "source": "S7",
+    "source_line": 60,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-mislabeled-only-drone-threshold-0.35"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-rough-score-threshold-0.35",
+    "text": "On T-clips-42 (threshold 0.35), run3 scored +0.074 rough score.",
+    "source": "S7",
+    "source_line": 60,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-rough-score-threshold-0.35"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-found-aircraft-threshold-0.5",
+    "text": "On T-clips-42 (threshold 0.5), run3 had \"aircraft found\" in 16.6% of frames.",
+    "source": "S7",
+    "source_line": 61,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-found-aircraft-threshold-0.5"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.5",
+    "text": "On T-clips-42 (threshold 0.5), run3 had \"aircraft mislabeled only\" in 1.6% of frames.",
+    "source": "S7",
+    "source_line": 61,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.5"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-found-drone-threshold-0.5",
+    "text": "On T-clips-42 (threshold 0.5), run3 had \"drone found\" in 1.1% of frames.",
+    "source": "S7",
+    "source_line": 61,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-found-drone-threshold-0.5"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-mislabeled-only-drone-threshold-0.5",
+    "text": "On T-clips-42 (threshold 0.5), run3 had \"drone mislabeled only\" in 6.3% of frames.",
+    "source": "S7",
+    "source_line": 61,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-mislabeled-only-drone-threshold-0.5"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-rough-score-threshold-0.5",
+    "text": "On T-clips-42 (threshold 0.5), run3 scored +0.049 rough score.",
+    "source": "S7",
+    "source_line": 61,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-rough-score-threshold-0.5"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-found-aircraft-threshold-0.65",
+    "text": "On T-clips-42 (threshold 0.65), run3 had \"aircraft found\" in 6.5% of frames.",
+    "source": "S7",
+    "source_line": 62,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-found-aircraft-threshold-0.65"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.65",
+    "text": "On T-clips-42 (threshold 0.65), run3 had \"aircraft mislabeled only\" in 0.0% of frames.",
+    "source": "S7",
+    "source_line": 62,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.65"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-found-drone-threshold-0.65",
+    "text": "On T-clips-42 (threshold 0.65), run3 had \"drone found\" in 0.0% of frames.",
+    "source": "S7",
+    "source_line": 62,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-found-drone-threshold-0.65"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-mislabeled-only-drone-threshold-0.65",
+    "text": "On T-clips-42 (threshold 0.65), run3 had \"drone mislabeled only\" in 2.5% of frames.",
+    "source": "S7",
+    "source_line": 62,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-mislabeled-only-drone-threshold-0.65"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-rough-score-threshold-0.65",
+    "text": "On T-clips-42 (threshold 0.65), run3 scored +0.020 rough score.",
+    "source": "S7",
+    "source_line": 62,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-rough-score-threshold-0.65"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-found-aircraft-threshold-0.8",
+    "text": "On T-clips-42 (threshold 0.8), run3 had \"aircraft found\" in 2.3% of frames.",
+    "source": "S7",
+    "source_line": 63,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-found-aircraft-threshold-0.8"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.8",
+    "text": "On T-clips-42 (threshold 0.8), run3 had \"aircraft mislabeled only\" in 0.0% of frames.",
+    "source": "S7",
+    "source_line": 63,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.8"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-found-drone-threshold-0.8",
+    "text": "On T-clips-42 (threshold 0.8), run3 had \"drone found\" in 0.0% of frames.",
+    "source": "S7",
+    "source_line": 63,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-found-drone-threshold-0.8"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-mislabeled-only-drone-threshold-0.8",
+    "text": "On T-clips-42 (threshold 0.8), run3 had \"drone mislabeled only\" in 1.0% of frames.",
+    "source": "S7",
+    "source_line": 63,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-mislabeled-only-drone-threshold-0.8"
+  },
+  {
+    "id": "F-R-run3-T-clips-42-rough-score-threshold-0.8",
+    "text": "On T-clips-42 (threshold 0.8), run3 scored +0.006 rough score.",
+    "source": "S7",
+    "source_line": 63,
+    "test_set_id": "T-clips-42",
+    "record_id": "R-run3-T-clips-42-rough-score-threshold-0.8"
+  },
+  {
+    "id": "F-M-v3-status",
+    "text": "v3 has the status \"baseline and default; never replaced\".",
+    "source": "S2",
+    "source_line": 10,
+    "test_set_id": null,
+    "record_id": "M-v3"
+  },
+  {
+    "id": "F-M-run1-status",
+    "text": "run1 has the status \"not promoted\".",
+    "source": "S2",
+    "source_line": 11,
+    "test_set_id": null,
+    "record_id": "M-run1"
+  },
+  {
+    "id": "F-M-run2-status",
+    "text": "run2 has the status \"not promoted\".",
+    "source": "S2",
+    "source_line": 12,
+    "test_set_id": null,
+    "record_id": "M-run2"
+  },
+  {
+    "id": "F-M-run3-status",
+    "text": "run3 has the status \"not promoted after clip check\".",
+    "source": "S2",
+    "source_line": 13,
+    "test_set_id": null,
+    "record_id": "M-run3"
+  },
+  {
+    "id": "F-M-run4-status",
+    "text": "run4 has the status \"not promoted\".",
+    "source": "S2",
+    "source_line": 14,
+    "test_set_id": null,
+    "record_id": "M-run4"
+  },
+  {
+    "id": "F-M-run5-status",
+    "text": "run5 has the status \"not promoted\".",
+    "source": "S2",
+    "source_line": 15,
+    "test_set_id": null,
+    "record_id": "M-run5"
+  },
+  {
+    "id": "F-X-run1-verdict",
+    "text": "The verdict recorded for run1 is \"KEEP v3\".",
+    "source": "S5",
+    "source_line": 37,
+    "test_set_id": null,
+    "record_id": "X-run1"
+  },
+  {
+    "id": "F-X-run2-verdict",
+    "text": "The verdict recorded for run2 is \"KEEP v3 (margin -0.022, limit -0.020)\".",
+    "source": "S5",
+    "source_line": 38,
+    "test_set_id": null,
+    "record_id": "X-run2"
+  },
+  {
+    "id": "F-X-run3-verdict",
+    "text": "The verdict recorded for run3 is \"promote-candidate, then KEEP v3 after the clip check\".",
+    "source": "S5",
+    "source_line": 39,
+    "test_set_id": null,
+    "record_id": "X-run3"
+  },
+  {
+    "id": "F-X-run4-verdict",
+    "text": "The verdict recorded for run4 is \"KEEP v3\".",
+    "source": "S5",
+    "source_line": 40,
+    "test_set_id": null,
+    "record_id": "X-run4"
+  },
+  {
+    "id": "F-X-run5-verdict",
+    "text": "The verdict recorded for run5 is \"KEEP v3\".",
+    "source": "S5",
+    "source_line": 41,
+    "test_set_id": null,
+    "record_id": "X-run5"
+  },
+  {
+    "id": "F-T-roboflow-800-def1",
+    "text": "T-roboflow-800: 800 clean Roboflow validation pictures with 274 drone and 408 aircraft boxes.",
+    "source": "S4",
+    "source_line": 26,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "T-roboflow-800"
+  },
+  {
+    "id": "F-T-roboflow-800-limit1",
+    "text": "T-roboflow-800: Limit: v3 was probably trained on this collection, so it flatters v3.",
+    "source": "S4",
+    "source_line": 26,
+    "test_set_id": "T-roboflow-800",
+    "record_id": "T-roboflow-800"
+  },
+  {
+    "id": "F-T-bvd-847-def1",
+    "text": "T-bvd-847: 847 Bird vs Drone test pictures with 502 drone boxes and no aircraft.",
+    "source": "S4",
+    "source_line": 27,
+    "test_set_id": "T-bvd-847",
+    "record_id": "T-bvd-847"
+  },
+  {
+    "id": "F-T-bvd-847-limit1",
+    "text": "T-bvd-847: Limit: same collection as the training pictures.",
+    "source": "S4",
+    "source_line": 27,
+    "test_set_id": "T-bvd-847",
+    "record_id": "T-bvd-847"
+  },
+  {
+    "id": "F-T-bvd-847-limit2",
+    "text": "T-bvd-847: It has no aircraft boxes, so it cannot test aircraft.",
+    "source": "S4",
+    "source_line": 27,
+    "test_set_id": "T-bvd-847",
+    "record_id": "T-bvd-847"
+  },
+  {
+    "id": "F-T-svan-1195-def1",
+    "text": "T-svan-1195: 1,195 frames from Svanstrom videos held out in run 4.",
+    "source": "S4",
+    "source_line": 28,
+    "test_set_id": "T-svan-1195",
+    "record_id": "T-svan-1195"
+  },
+  {
+    "id": "F-T-svan-1195-limit1",
+    "text": "T-svan-1195: Limit: same drones and sites as training.",
+    "source": "S4",
+    "source_line": 28,
+    "test_set_id": "T-svan-1195",
+    "record_id": "T-svan-1195"
+  },
+  {
+    "id": "F-T-svan-1195-limit2",
+    "text": "T-svan-1195: A different split from T-svan-897 (897 frames), so results on the two sets are not comparable.",
+    "source": "S4",
+    "source_line": 28,
+    "test_set_id": "T-svan-1195",
+    "record_id": "T-svan-1195"
+  },
+  {
+    "id": "F-T-svan-897-def1",
+    "text": "T-svan-897: 897 frames from Svanstrom videos held out in run 5.",
+    "source": "S4",
+    "source_line": 29,
+    "test_set_id": "T-svan-897",
+    "record_id": "T-svan-897"
+  },
+  {
+    "id": "F-T-svan-897-def2",
+    "text": "T-svan-897: This is a different split from T-svan-1195.",
+    "source": "S4",
+    "source_line": 29,
+    "test_set_id": "T-svan-897",
+    "record_id": "T-svan-897"
+  },
+  {
+    "id": "F-T-svan-897-limit1",
+    "text": "T-svan-897: Limit: same drones and sites as training.",
+    "source": "S4",
+    "source_line": 29,
+    "test_set_id": "T-svan-897",
+    "record_id": "T-svan-897"
+  },
+  {
+    "id": "F-T-svan-897-limit2",
+    "text": "T-svan-897: A DIFFERENT split from T-svan-1195 (1,195 frames), so results on the two sets are not comparable.",
+    "source": "S4",
+    "source_line": 29,
+    "test_set_id": "T-svan-897",
+    "record_id": "T-svan-897"
+  },
+  {
+    "id": "F-T-clips-42-def1",
+    "text": "T-clips-42: The 42 readable real clips, 1,701 frames: aircraft clips (19 clips, 703 frames) and drone clips (23 clips, 998 frames).",
+    "source": "S4",
+    "source_line": 30,
+    "test_set_id": "T-clips-42",
+    "record_id": "T-clips-42"
+  },
+  {
+    "id": "F-T-clips-42-limit1",
+    "text": "T-clips-42: 42 clips with per-video labels is a small test.",
+    "source": "S4",
+    "source_line": 30,
+    "test_set_id": "T-clips-42",
+    "record_id": "T-clips-42"
+  },
+  {
+    "id": "F-T-clips-42-limit2",
+    "text": "T-clips-42: A hand-labeled set of boxes from real footage is needed (S8).",
+    "source": "S4",
+    "source_line": 30,
+    "test_set_id": "T-clips-42",
+    "record_id": "T-clips-42"
+  },
+  {
+    "id": "F-T-clips-42-limit3",
+    "text": "T-clips-42: Labels are per video, so frames where the object is out of view or tiny count as misses (S3).",
+    "source": "S4",
+    "source_line": 30,
+    "test_set_id": "T-clips-42",
+    "record_id": "T-clips-42"
+  },
+  {
+    "id": "F-T-clips-42-military_drone-def1",
+    "text": "T-clips-42-military_drone: The military_drone group of T-clips-42: 12 clips, 524 frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_drone",
+    "record_id": "T-clips-42-military_drone"
+  },
+  {
+    "id": "F-T-clips-42-military_drone-limit1",
+    "text": "T-clips-42-military_drone: A group inside T-clips-42: its numbers are not comparable with whole-set numbers or with other groups.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_drone",
+    "record_id": "T-clips-42-military_drone"
+  },
+  {
+    "id": "F-T-clips-42-military_drone-limit2",
+    "text": "T-clips-42-military_drone: Labels are per video, so frames where the object is out of view or tiny count as misses.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_drone",
+    "record_id": "T-clips-42-military_drone"
+  },
+  {
+    "id": "F-T-clips-42-military_aircraft-def1",
+    "text": "T-clips-42-military_aircraft: The military_aircraft group of T-clips-42: 15 clips, 521 frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_aircraft",
+    "record_id": "T-clips-42-military_aircraft"
+  },
+  {
+    "id": "F-T-clips-42-military_aircraft-limit1",
+    "text": "T-clips-42-military_aircraft: A group inside T-clips-42: its numbers are not comparable with whole-set numbers or with other groups.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_aircraft",
+    "record_id": "T-clips-42-military_aircraft"
+  },
+  {
+    "id": "F-T-clips-42-military_aircraft-limit2",
+    "text": "T-clips-42-military_aircraft: Labels are per video, so frames where the object is out of view or tiny count as misses.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-military_aircraft",
+    "record_id": "T-clips-42-military_aircraft"
+  },
+  {
+    "id": "F-T-clips-42-airplane-def1",
+    "text": "T-clips-42-airplane: The airplane group of T-clips-42: 4 clips, 182 frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-airplane",
+    "record_id": "T-clips-42-airplane"
+  },
+  {
+    "id": "F-T-clips-42-airplane-limit1",
+    "text": "T-clips-42-airplane: A group inside T-clips-42: its numbers are not comparable with whole-set numbers or with other groups.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-airplane",
+    "record_id": "T-clips-42-airplane"
+  },
+  {
+    "id": "F-T-clips-42-airplane-limit2",
+    "text": "T-clips-42-airplane: Labels are per video, so frames where the object is out of view or tiny count as misses.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-airplane",
+    "record_id": "T-clips-42-airplane"
+  },
+  {
+    "id": "F-T-clips-42-drone-def1",
+    "text": "T-clips-42-drone: The drone group of T-clips-42: 11 clips, 474 frames.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-drone",
+    "record_id": "T-clips-42-drone"
+  },
+  {
+    "id": "F-T-clips-42-drone-limit1",
+    "text": "T-clips-42-drone: A group inside T-clips-42: its numbers are not comparable with whole-set numbers or with other groups.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-drone",
+    "record_id": "T-clips-42-drone"
+  },
+  {
+    "id": "F-T-clips-42-drone-limit2",
+    "text": "T-clips-42-drone: Labels are per video, so frames where the object is out of view or tiny count as misses.",
+    "source": "S6",
+    "source_line": 49,
+    "test_set_id": "T-clips-42-drone",
+    "record_id": "T-clips-42-drone"
+  },
+  {
+    "id": "F-G-real-sky",
+    "text": "No run on Varn's own camera in a real sky.",
+    "source": "S8",
+    "source_line": 68,
+    "test_set_id": null,
+    "record_id": "G-real-sky"
+  },
+  {
+    "id": "F-G-empty-sky",
+    "text": "False alarms on empty sky have not been measured.",
+    "source": "S8",
+    "source_line": 69,
+    "test_set_id": null,
+    "record_id": "G-empty-sky"
+  },
+  {
+    "id": "F-G-v3-drone-clips",
+    "text": "v3 finds a drone in only about 8% of frames of the real drone clips.",
+    "source": "S8",
+    "source_line": 70,
+    "test_set_id": null,
+    "record_id": "G-v3-drone-clips"
+  },
+  {
+    "id": "F-G-small-distant",
+    "text": "v3 is nearly blind on small, distant objects (0.063 to 0.079 on held-out Svanstrom videos).",
+    "source": "S8",
+    "source_line": 71,
+    "test_set_id": null,
+    "record_id": "G-small-distant"
+  },
+  {
+    "id": "F-G-finetune-mixup",
+    "text": "Three kinds of fine-tune found aircraft in more frames but mixed up drone and aircraft more. v3 stays the default.",
+    "source": "S8",
+    "source_line": 72,
+    "test_set_id": null,
+    "record_id": "G-finetune-mixup"
+  },
+  {
+    "id": "F-G-hypothesis",
+    "text": "Hypothesis, NOT verified: large military unmanned aircraft are called \"aircraft\" because the training drones were small multirotors.",
+    "source": "S8",
+    "source_line": 73,
+    "test_set_id": null,
+    "record_id": "G-hypothesis"
+  },
+  {
+    "id": "F-G-small-test",
+    "text": "42 clips with per-video labels is a small test. A hand-labeled set of boxes from real footage is needed.",
+    "source": "S8",
+    "source_line": 74,
+    "test_set_id": null,
+    "record_id": "G-small-test"
+  }
+]

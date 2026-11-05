@@ -147,6 +147,17 @@ Attribution: © OpenStreetMap contributors, building tiles by OpenFreeMap / Open
 
 Imagery tiles load progressively: the sharper parents stay on screen while finer tiles arrive, with no blank flash. Imagery is never sharpened artificially. When you zoom beyond what the source captured, the status line says "enlarged beyond the source detail". While a zoom is under way the app warms the browser cache with the tiles it is heading toward (under the cursor, low priority, capped), the tile cache holds 900 tiles, failed tiles retry, and the "Sharpening imagery" indicator only appears if loading lasts more than 0.7 s.
 
+## Records (`#records`)
+
+One place where every model, experiment, dataset and result is a record that cites the evidence it came from. Open it from the Records button on the Earth controls or the Records link in Sky.
+
+- **Pages:** Overview (counts, known gaps, latest results), Results (grouped by test set, never ranked across sets), Research (models, experiments, datasets, test sets, each with a detail view), and a ledger viewer (`#records/source/S5/34`).
+- **Evidence:** `evidence/ledger.md` is the only source of truth, copied by hand from Kaggle reports and run logs (see `evidence/README.md`). `src/data/records.json` holds the records; each cites a ledger section and line.
+- **Comparability:** results are comparable only when they share a `test_set_id`. The two Svanstrom held-out sets (`T-svan-1195`, `T-svan-897`) are different test sets.
+- **Guard:** `npm run check:records` runs automatically before `npm run build` and fails if a record lacks a source or caveats, a source is not in the ledger, a value is not in the ledger text (and on the cited line), a number in the prose is not in the cited section, or compared values differ in test set, metric or condition.
+- **Facts for a later "Ask" panel:** `npm run export:facts` writes `src/data/facts.json` (one sentence per fact, with source and test set). Nothing calls a model; the check fails if the file is stale.
+- No network requests are made by Records; it reads only the bundled JSON and ledger.
+
 ## Controls
 
 Drag to rotate, scroll or pinch to zoom, right-drag or Ctrl-drag to tilt. `/` search, `L` layers,

@@ -72,6 +72,8 @@
 .sky .sky-head .row { display: flex; align-items: center; gap: 10px; }
 .sky .sky-head .wordmark { font: 600 15px var(--display); letter-spacing: .14em; }
 .sky .sky-head .wordmark small { color: var(--fog); letter-spacing: .1em; font-weight: 500; margin-left: 6px; }
+.sky .sky-head .rec-link { margin-left: 14px; font: 500 12px var(--display); letter-spacing: .08em; color: var(--fog); text-decoration: none; padding: 3px 8px; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(244,243,239,.14); }
+.sky .sky-head .rec-link:hover { color: var(--bone); }
 .sky .mode-pill { margin-left: auto; display: inline-flex; border-radius: 999px; padding: 2px; background: rgba(11,15,20,.7); box-shadow: inset 0 0 0 1px rgba(244,243,239,.14); }
 .sky .mode-pill button { border: 0; background: none; padding: 3px 10px; border-radius: 999px; font: 600 12px var(--display); letter-spacing: .08em; color: var(--fog); cursor: pointer; }
 .sky .mode-pill button[aria-pressed="true"] { background: var(--bone); color: var(--charcoal); }
