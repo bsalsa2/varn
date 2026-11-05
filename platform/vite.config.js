@@ -26,8 +26,11 @@ function cesiumAssets() {
   };
 }
 
-export default defineConfig({
+// The private assistant is compiled in only with `--mode private` (npm run dev:private / build:private).
+// Every other mode pins the flag to "0", so a stray environment variable cannot switch it on in a normal build.
+export default defineConfig(({ mode }) => ({
   plugins: [react(), cesiumAssets()],
   base: '/',
   build: { chunkSizeWarningLimit: 6000 },
-});
+  define: { 'import.meta.env.VITE_PRIVATE_ASK': JSON.stringify(mode === 'private' ? '1' : '0') },
+}));

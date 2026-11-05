@@ -1,0 +1,27 @@
+# varn-ask: the private VARN assistant API. A NEW Worker; it does not replace varn-api.
+# Free plan only: Workers AI (10,000 Neurons/day), SQLite-backed Durable Objects, no KV, no paid add-ons.
+name = "varn-ask"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# Don't keep request logs: questions must not be stored.
+[observability]
+enabled = false
+
+[ai]
+binding = "AI"
+
+[[durable_objects.bindings]]
+name = "LIMITER"
+class_name = "Limiter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Limiter"]
+
+[vars]
+ALLOWED_ORIGINS = "https://varn-command-center.pages.dev,http://localhost:5173"
+DAILY_QUESTION_CAP = "60"
+NEURON_BUDGET = "8000"
+
+# Secrets (never in this file):  ASK_PASSWORD_HASH, ASK_SESSION_SECRET  (see worker/README.md)

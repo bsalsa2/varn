@@ -158,6 +158,10 @@ One place where every model, experiment, dataset and result is a record that cit
 - **Facts for a later "Ask" panel:** `npm run export:facts` writes `src/data/facts.json` (one sentence per fact, with source and test set). Nothing calls a model; the check fails if the file is stale.
 - No network requests are made by Records; it reads only the bundled JSON and ledger.
 
+## Ask (private assistant)
+
+A glass chat panel (Ctrl+J) that can brief you on what is on screen, answer from the app's own data and facts with sources, and turn plain English into view-only terminal commands that you approve with one click. It is **private**: it exists only in builds made with `npm run dev:private` / `npm run build:private`, talks to a separate login-protected Worker (`worker/`, see `worker/README.md`), and a normal `npm run build` contains none of it (the build fails if it does). It never sends feed titles or coordinates to the model. It is detection and research only.
+
 ## Controls
 
 Drag to rotate, scroll or pinch to zoom, right-drag or Ctrl-drag to tilt. `/` search, `L` layers,
