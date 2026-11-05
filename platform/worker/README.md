@@ -97,3 +97,4 @@ This site is **separate from the public site and not linked from it**. Cloudflar
 - PBKDF2 uses 100,000 iterations, the most the Workers runtime accepts as far as I know; the docs I could search did not state the limit. Use a long passphrase.
 - Free-plan limits come from Cloudflare's pricing pages as of this build; check the Workers AI dashboard for real Neuron use.
 
+
