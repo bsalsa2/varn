@@ -90,3 +90,13 @@ test('make_password_hash: never writes the password anywhere and does not echo i
   assert.match(src, /isTTY/);                          // refuses piped input
   assert.doesNotMatch(src, /\$\{\s*(a|b|password|buf)\s*\}/);   // the password variables are never interpolated into output
 });
+
+test('make_password_hash: the command-line part really runs (it used to do nothing on Windows) and refuses piped input', async () => {
+  const { spawnSync } = await import('node:child_process');
+  const r = spawnSync(process.execPath, [new URL('../tools/make_password_hash.mjs', import.meta.url).pathname], { input: 'x\n', encoding: 'utf8' });
+  assert.equal(r.status, 1); assert.match(r.stderr, /Run this in a terminal/);
+  assert.equal(r.stdout, '');
+  const src = fs.readFileSync(new URL('../tools/make_password_hash.mjs', import.meta.url), 'utf8').replace(/^\s*\/\/.*$/gm, '');
+  assert.doesNotMatch(src, /file:\/\/\$\{process\.argv/);          // the comparison that never matched on Windows
+  assert.match(src, /pathToFileURL\(path\.resolve\(process\.argv\[1\]\)\)/);
+});

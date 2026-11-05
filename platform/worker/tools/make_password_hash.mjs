@@ -2,6 +2,8 @@
 // Run locally:  node platform/worker/tools/make_password_hash.mjs
 // Reads a password without echoing it (at least 14 characters, typed twice), then prints ASK_PASSWORD_HASH and a new
 // ASK_SESSION_SECRET. The password is never written to a file, a log, a command line or the clipboard.
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { hashPassword, MAX_ITERATIONS, b64u } from '../src/auth.js';
 
 export const MIN_LENGTH = 14;
@@ -32,7 +34,8 @@ function readHidden(prompt) {
   });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Compare as file URLs: `file://${argv[1]}` never matches on Windows (C:\... vs file:///C:/...), which made this script do nothing there.
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   try {
     const a = await readHidden(`New password (min ${MIN_LENGTH} characters, not shown): `);
     const problem = checkPolicy(a);

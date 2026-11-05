@@ -2,7 +2,7 @@
 // Run automatically after `npm run build`. Private builds go to dist-private/ and are never checked here.
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const MARKERS = [
   'varn-ask', '/v1/ask', '/v1/login', 'VITE_ASK_URL', 'VITE_PRIVATE_ASK', 'propose_command', 'get_quake_summary', 'search_facts',
@@ -24,7 +24,8 @@ export function scan(dir) {
   return hits;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Compare as file URLs so this also runs on Windows (a plain `file://${argv[1]}` comparison never matches there).
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const dist = path.resolve(root, process.argv[2] || 'dist');
   if (!fs.existsSync(dist)) { console.error(`check-no-ask: ${dist} does not exist; build first`); process.exit(1); }
