@@ -2,7 +2,7 @@
 // Every example uses the Worker's own prompt (prepare), its own tools (TOOLS) and is checked by its own answer checker
 // (verifyAnswer), so the model is only ever shown correct, verifiable behaviour.
 import { mulberry32 } from '../../src/sky/sim.js';
-import { prepare } from '../src/ask.js';
+import { prepare, toolCallMessage, toolResultMessage } from '../src/ask.js';
 import { TOOLS, TOOL_SPECS, validateLive } from '../src/live.js';
 import { validateCommands, LAYERS } from '../src/allowlist.js';
 import { verifyAnswer, allowedNumbers, NO_DATA } from '../src/verify.js';
@@ -77,11 +77,10 @@ export function randomLive(r, need = {}) {
 }
 
 /* ---- building one conversation ---- */
-const call = (name, args, id) => ({ role: 'assistant', content: null, tool_calls: [{ id, type: 'function', function: { name, arguments: JSON.stringify(args) } }] });
 const final = (text, sources) => ({ role: 'assistant', content: JSON.stringify({ type: 'answer', text, sources }) });
 
-function context(question, live, facts, history) {
-  const p = prepare({ question, live, facts, history });
+function context(question, live, facts, history, text) {
+  const p = prepare({ question, live, facts, history, text });
   if (p.error) throw new Error(`${p.error}: ${p.detail}`);
   return p;
 }
@@ -116,7 +115,7 @@ function briefingText(pre, r) {
 
 export function makeBriefing(r, facts, pool) {
   const live = randomLive(r, { view: true }); const q = pick(r, pool.brief);
-  const p = context(q, live, facts);
+  const p = context(q, live, facts, undefined, pool.text);
   if (!p.pre.length) return null;
   const { text, sources } = briefingText(p.pre, r);
   const f = final(text, sources); mustVerify(p, q, p.pre, f);
@@ -145,16 +144,16 @@ export function makeToolQA(r, facts, pool, useHeld) {
   const [key, tool, say, must] = pick(r, QA);
   const q = pick(r, useHeld ? held(key) : train(key));
   const live = randomLive(r, { [NEEDS[tool]]: true });
-  const p = context(q, live, facts);
+  const p = context(q, live, facts, undefined, pool.text);
   const res = TOOLS[tool](p.live), id = `call_${int(r, 100, 999)}`;
-  const turns = [call(tool, {}, id), { role: 'tool', tool_call_id: id, name: tool, content: JSON.stringify(res) }];
+  const turns = [toolCallMessage(pool.text, tool, {}, id), toolResultMessage(pool.text, tool, res, id)];
   const text = res.available ? say(res) : null;
   if (!res.available || text === null || (key === 'sun' && !res.sun_state)) { const f = final(NO_DATA, []); mustVerify(p, q, [res], f); return record('tool_qa', p, [...turns, f], { live, question: q, expect: { type: 'answer', exact: NO_DATA } }); }
   const f = final(text, [tool]); mustVerify(p, q, [res], f);
   return record('tool_qa', p, [...turns, f], { live, question: q, expect: { type: 'answer', mustMention: must(res) } });
 }
 
-export function makeFact(r, facts, records, useHeld) {
+export function makeFact(r, facts, records, useHeld, pool) {
   const cands = facts.filter((f) => f.id.startsWith('F-R-') ? true : /-verdict$|-status$|^F-G-|-limit1$/.test(f.id));
   const f = pick(r, cands.filter((x) => isHeldOut(x.id) === !!useHeld));
   if (!f) return null;
@@ -168,23 +167,23 @@ export function makeFact(r, facts, records, useHeld) {
   else q = `What are the limits of ${f.id.replace(/^F-/, '').replace(/-limit1$/, '')}?`;
   if (!q || q.length > 280) return null;
   const live = randomLive(r, {});
-  const p = context(q, live, facts);
+  const p = context(q, live, facts, undefined, pool.text);
   if (!p.picked.some((x) => x.id === f.id)) return null;                       // only teach answers the retrieval actually shows
   const fin = final(f.text, [f.id]); mustVerify(p, q, [], fin);
   return record('fact', p, [fin], { live, question: q, expect: { type: 'answer', source: f.id, mustMention: [] } });
 }
 
 export function makeUnknown(r, facts, pool) {
-  const q = pick(r, pool.unknown); const live = randomLive(r, {}); const p = context(q, live, facts);
+  const q = pick(r, pool.unknown); const live = randomLive(r, {}); const p = context(q, live, facts, undefined, pool.text);
   const f = final(NO_DATA, []); mustVerify(p, q, [], f);
   return record('unknown', p, [f], { live, question: q, expect: { type: 'answer', exact: NO_DATA } });
 }
 export function makeRefusal(r, facts, pool) {
-  const q = pick(r, pool.refuse); const live = randomLive(r, {}); const p = context(q, live, facts);
+  const q = pick(r, pool.refuse); const live = randomLive(r, {}); const p = context(q, live, facts, undefined, pool.text);
   return record('refusal', p, [final(REFUSAL, [])], { live, question: q, expect: { type: 'answer', exact: REFUSAL } });
 }
 export function makeInjection(r, facts, pool) {
-  const q = pick(r, pool.injection); const live = randomLive(r, {}); const p = context(q, live, facts);
+  const q = pick(r, pool.injection); const live = randomLive(r, {}); const p = context(q, live, facts, undefined, pool.text);
   const f = final(NO_DATA, []); mustVerify(p, q, [], f);
   return record('injection', p, [f], { live, question: q, expect: { type: 'answer', exact: NO_DATA } });
 }
@@ -217,8 +216,8 @@ function commandCase(r, pool) {
 export function makeCommand(r, facts, pool, useHeld) {
   const [q, commands, say] = commandCase(r, { held: useHeld });
   const v = validateCommands(commands); if (!v.ok) throw new Error(`bad training command ${commands}: ${v.reason}`);
-  const live = randomLive(r, {}); const p = context(q, live, facts);
-  return record('command', p, [call('propose_command', { commands: v.commands, say }, `call_${int(r, 100, 999)}`)], { live, question: q, expect: { type: 'command', commands: v.commands } });
+  const live = randomLive(r, {}); const p = context(q, live, facts, undefined, pool.text);
+  return record('command', p, [toolCallMessage(pool.text, 'propose_command', { commands: v.commands, say }, `call_${int(r, 100, 999)}`)], { live, question: q, expect: { type: 'command', commands: v.commands } });
 }
 export function makeYes(r, facts, pool, useHeld) {
   const quake = r() < 0.6;
@@ -226,21 +225,21 @@ export function makeYes(r, facts, pool, useHeld) {
   const history = [{ role: 'user', text: pick(r, pool.brief) }, { role: 'assistant', text: `The view shows the whole Earth from about 21000 km up. ${offer}` }];
   const q = pick(r, useHeld ? held('yes') : train('yes')); const live = randomLive(r, {});
   const commands = quake ? ['quakes day', 'go 1'] : ['events all 7', 'go 1'];
-  const p = context(q, live, facts, history);
-  return record('yes', p, [call('propose_command', { commands, say: quake ? 'List todays earthquakes, then fly to the strongest.' : 'List recent events, then fly to the newest.' }, `call_${int(r, 100, 999)}`)], { live, question: q, history, expect: { type: 'command', commands } });
+  const p = context(q, live, facts, history, pool.text);
+  return record('yes', p, [toolCallMessage(pool.text, 'propose_command', { commands, say: quake ? 'List todays earthquakes, then fly to the strongest.' : 'List recent events, then fly to the newest.' }, `call_${int(r, 100, 999)}`)], { live, question: q, history, expect: { type: 'command', commands } });
 }
 
 export const KINDS = [['briefing', 0.30], ['tool_qa', 0.25], ['fact', 0.18], ['command', 0.16], ['unknown', 0.04], ['refusal', 0.03], ['injection', 0.02], ['yes', 0.02]];
 
 /** n conversations. `heldOut: true` builds the evaluation set (held-out paraphrases, places and facts). */
-export function build({ n, seed, facts, records, heldOut = false }) {
-  const r = mulberry32(seed); const pool = {}; for (const k of Object.keys(P)) pool[k] = heldOut ? held(k) : train(k);
+export function build({ n, seed, facts, records, heldOut = false, textProtocol = true }) {
+  const r = mulberry32(seed); const pool = { text: textProtocol }; for (const k of Object.keys(P)) pool[k] = heldOut ? held(k) : train(k);
   const out = [], seen = new Set(); let guard = 0;
   while (out.length < n && guard++ < n * 60) {
     let x = r(), kind = KINDS.find(([, w]) => (x -= w) < 0)?.[0] || 'briefing', ex = null;
     if (kind === 'briefing') ex = makeBriefing(r, facts, pool);
     else if (kind === 'tool_qa') ex = makeToolQA(r, facts, pool, heldOut);
-    else if (kind === 'fact') ex = makeFact(r, facts, records, heldOut);
+    else if (kind === 'fact') ex = makeFact(r, facts, records, heldOut, pool);
     else if (kind === 'command') ex = makeCommand(r, facts, pool, heldOut);
     else if (kind === 'unknown') ex = makeUnknown(r, facts, pool);
     else if (kind === 'refusal') ex = makeRefusal(r, facts, pool);
@@ -249,11 +248,17 @@ export function build({ n, seed, facts, records, heldOut = false }) {
     if (!ex) continue;
     const key = JSON.stringify([ex.question, ex.live, ex.history]);
     if (seen.has(key)) continue;                           // no duplicate conversations
-    seen.add(key); out.push({ id: `${heldOut ? 'e' : 't'}${String(out.length).padStart(5, '0')}`, ...ex });
+    seen.add(key); out.push({ id: `${heldOut ? 'e' : 't'}${String(out.length).padStart(5, '0')}`, textProtocol, ...ex });
   }
   return out;
 }
 
 /** The two files a training run uses: chat records for fine-tuning, in the base model's tool-calling chat format. */
-export const toTrainingRecord = (ex) => ({ messages: ex.messages, tools: TOOLS_FOR_TRAINING, kind: ex.kind });
+export const toTrainingRecord = (ex) => {
+  const trainFrom = 2 + (ex.history?.length || 0);                           // earlier chat history is context, not something to learn to say
+  return ex.textProtocol ? { messages: ex.messages, trainFrom, kind: ex.kind } : { messages: ex.messages, tools: TOOLS_FOR_TRAINING, trainFrom, kind: ex.kind };
+};
 export { isBriefing };
+
+/** The assistant's side of one conversation: everything after the question (tool calls, tool results, final reply). */
+export const goldOf = (ex) => ex.messages.slice(2 + (ex.history?.length || 0));

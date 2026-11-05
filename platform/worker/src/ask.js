@@ -1,5 +1,5 @@
 // One question, start to finish. Pure: the model and the clock are passed in, so tests run it with a fake model.
-import { TOOLS, TOOL_NAMES, validateLive } from './live.js';
+import { TOOLS, TOOL_NAMES, TOOL_SPECS, validateLive } from './live.js';
 import { scoreFacts, SCOPE_FACT, forPrompt } from './facts.js';
 import { validateCommands } from './allowlist.js';
 import { isBriefing } from './intent.js';
@@ -25,13 +25,29 @@ Rules:
 - Varn is detection and research only. Refuse targeting, engagement, jamming, weapons or tracking people.
 Your final message must be only JSON: {"type":"answer","text":"...","sources":["F-... fact ids or tool names"]}. Keep text under 80 words.`;
 
+/** Models without native tool calls (including our own fine-tuned one) ask for a tool with a plain JSON message. */
+export const TEXT_TOOLS = `\nHOW TO ACT (every reply is exactly one JSON object, nothing else):\n- To use a tool: {"type":"tool_call","name":"<tool>","arguments":{...}}. Tool results come back as a message starting TOOL RESULT.\n- To answer: {"type":"answer","text":"...","sources":[...]}.\nTOOLS:\n${TOOL_SPECS.map((t) => `- ${t.name}: ${t.description} Arguments: ${JSON.stringify(t.parameters.properties)}`).join('\n')}`;
+export const toolCallMessage = (text, name, args, id) => (text
+  ? { role: 'assistant', content: JSON.stringify({ type: 'tool_call', name, arguments: args }) }
+  : { role: 'assistant', content: null, tool_calls: [{ id, type: 'function', function: { name, arguments: JSON.stringify(args) } }] });
+export const toolResultMessage = (text, name, result, id) => (text
+  ? { role: 'user', content: `TOOL RESULT ${name}: ${JSON.stringify(result)}` }
+  : { role: 'tool', tool_call_id: id, name, content: JSON.stringify(result) });
+/** Chat history must alternate user/assistant and start with a user message (some chat templates insist on it). */
+export function alternate(history) {
+  const out = [];
+  for (const m of history) { if (!out.length && m.role !== 'user') continue; if (out.length && out.at(-1).role === m.role) out.pop(); out.push(m); }
+  while (out.length && out.at(-1).role === 'user') out.pop();
+  return out;
+}
+
 export const validateQuestion = (q) => (typeof q === 'string' && q.trim().length > 0 && q.length <= MAX_QUESTION && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(q));
 
 const refused = () => ({ type: 'answer', text: REFUSAL, sources: [], refused: true });
 const plain = (text) => ({ type: 'answer', text, sources: [] });
 
 /** Everything needed before the model runs, including the worst-case Neuron estimate the caller reserves. */
-export function prepare({ question, live, facts, history }) {
+export function prepare({ question, live, facts, history, text = false }) {
   if (!validateQuestion(question)) return { error: 'bad_question' };
   const lv = validateLive(live); if (!lv.ok) return { error: 'bad_live', detail: lv.error };
   const hv = validateHistory(history); if (!hv.ok) return { error: 'bad_history', detail: hv.error };
@@ -39,14 +55,16 @@ export function prepare({ question, live, facts, history }) {
   // For a briefing, the code gathers every available summary up front (no extra model steps, no guessing).
   const pre = isBriefing(question) ? ['get_view_state', 'get_quake_summary', 'get_event_summary', 'get_sim_tracks'].map((n) => TOOLS[n](lv.value)).filter((r) => r.available) : [];
   const liveBlock = pre.length ? `\nLIVE DATA (computed in code):\n${JSON.stringify(pre)}` : '';
-  const system = `${SYSTEM}\nFACTS:\n${picked.map((f) => `${f.id}: ${f.text}`).join('\n')}${liveBlock}`;
-  const messages = [{ role: 'system', content: system }, ...hv.value, { role: 'user', content: question.trim() }];
-  return { live: lv.value, picked, pre, history: hv.value, messages, estimate: estimateQuestion(JSON.stringify(messages)) };
+  const system = `${SYSTEM}${text ? TEXT_TOOLS : ''}\nFACTS:\n${picked.map((f) => `${f.id}: ${f.text}`).join('\n')}${liveBlock}`;
+  const hist = alternate(hv.value);
+  const messages = [{ role: 'system', content: system }, ...hist, { role: 'user', content: question.trim() }];
+  return { live: lv.value, picked, pre, history: hist, messages, estimate: estimateQuestion(JSON.stringify(messages)) };
 }
 
 export async function runAsk({ question, live, facts, runModel, history }) {
   if (shouldRefuse(question)) return { response: refused(), neurons: 0 };
-  const p = prepare({ question, live, facts, history });
+  const text = runModel.textProtocol === true;
+  const p = prepare({ question, live, facts, history, text });
   if (p.error) return { error: p.error, detail: p.detail };
 
   const factIds = new Set(p.picked.map((f) => f.id)), toolsUsed = new Set(p.pre.map((r) => r.tool)), results = [...p.pre];
@@ -61,13 +79,17 @@ export async function runAsk({ question, live, facts, runModel, history }) {
     calls++;
     const out = await runModel({ messages });
     lastShape = out.shape || null;
+    if (text && !out.toolCalls.length) {                                // a tool request written as JSON text
+      const t = parseFinal(out.text);
+      if (t?.type === 'tool_call' && typeof t.name === 'string') out.toolCalls = [{ id: `call_${calls}`, name: t.name, arguments: t.arguments && typeof t.arguments === 'object' ? t.arguments : {} }];
+    }
     spent += actualCost({ usage: out.usage, messages, output: out.text + JSON.stringify(out.toolCalls) });
 
     if (out.toolCalls.length) {
       if (steps >= MAX_TOOL_STEPS) return raw('too many tool steps');
       steps++;
       const call = out.toolCalls[0];                                  // one step at a time
-      messages.push({ role: 'assistant', content: null, tool_calls: [{ id: call.id, type: 'function', function: { name: call.name, arguments: JSON.stringify(call.arguments) } }] });
+      messages.push(toolCallMessage(text, call.name, call.arguments, call.id));
       let result;
       if (!TOOL_NAMES.includes(call.name)) result = { error: `unknown tool "${call.name}"` };
       else if (call.name === 'propose_command') {
@@ -89,7 +111,7 @@ export async function runAsk({ question, live, facts, runModel, history }) {
         if (call.name === 'get_sim_tracks' && result.available && result.label === 'SIM') simLabelled = true;
       }
       results.push(result);
-      messages.push({ role: 'tool', tool_call_id: call.id, name: call.name, content: JSON.stringify(result) });
+      messages.push(toolResultMessage(text, call.name, result, call.id));
       continue;
     }
 

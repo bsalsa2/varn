@@ -17,7 +17,7 @@ export async function scoreModel({ cases, makeModel, facts }) {
   const byKind = {}; let pass = 0, raw = 0, plain = 0, calls = 0, neurons = 0;
   const failures = [];
   for (const c of cases) {
-    let n = 0; const m = makeModel(c); const counted = async (a) => { n++; return m(a); };
+    let n = 0; const m = makeModel(c); const counted = Object.assign(async (a) => { n++; return m(a); }, { textProtocol: m.textProtocol });
     const r = await runAsk({ question: c.question, live: c.live, history: c.history, facts, runModel: counted });
     const res = r.response || { type: 'error' };
     const ok = !!r.response && checkCase(c, res);
@@ -34,9 +34,11 @@ export async function scoreModel({ cases, makeModel, facts }) {
 /** A model that replays the gold behaviour of each case. It must score 100%; that proves the test set and scorer are consistent. */
 export const oracle = (c) => {
   const turns = c.gold.filter((m) => m.role === 'assistant'); let i = 0;
-  return async () => {
+  const run = async () => {
     const t = turns[Math.min(i++, turns.length - 1)];
     return t.tool_calls ? { text: '', toolCalls: t.tool_calls.map((x) => ({ id: x.id, name: x.function.name, arguments: JSON.parse(x.function.arguments) })), usage: null }
       : { text: t.content, toolCalls: [], usage: null };
   };
+  run.textProtocol = c.textProtocol === true;                    // gold written in the plain-JSON protocol replays as text
+  return run;
 };

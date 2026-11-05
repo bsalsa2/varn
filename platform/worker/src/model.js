@@ -17,7 +17,22 @@ export function normalise(res) {
   return { text, toolCalls: calls, usage: res?.usage || res?.result?.usage || null, shape };
 }
 
+/** Some chat templates (Mistral v0.2) have no system role: fold the system text into the first user message. */
+export function foldSystem(messages) {
+  if (messages[0]?.role !== 'system') return messages;
+  const [sys, ...rest] = messages; const i = rest.findIndex((m) => m.role === 'user');
+  if (i === -1) return rest;
+  return rest.map((m, k) => (k === i ? { ...m, content: `${sys.content}\n\n${m.content}` } : m));
+}
+
 export function makeRunModel(env) {
+  // Our own fine-tuned model: a LoRA adapter on an open base model, talking in the plain-JSON protocol (no native tools).
+  if (env.ASK_LORA) {
+    const base = env.ASK_BASE_MODEL || '@cf/mistral/mistral-7b-instruct-v0.2-lora';
+    const run = async ({ messages }) => normalise(await env.AI.run(base, { messages: foldSystem(messages), max_tokens: MAX_OUTPUT_TOKENS, temperature: 0, lora: env.ASK_LORA }));
+    run.textProtocol = true;
+    return run;
+  }
   return async function runModel({ messages }) {
     const res = await env.AI.run(MODEL, {
       messages, max_tokens: MAX_OUTPUT_TOKENS, temperature: 0,

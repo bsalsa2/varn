@@ -28,3 +28,27 @@ The test set uses paraphrases, places and facts that never appear in training (a
 4. Compare on the test set. Replace the current model only if ours passes at least as many cases with fewer Neurons.
 
 Open questions to verify before step 3: that adapters are allowed on the Workers Free plan, how the upload works today, and the Neuron price of the chosen base model.
+
+## Our own model (LoRA on Kaggle, served by Workers AI)
+
+**Scope:** the chat assistant only. The drone/aircraft detector is a separate project and nothing here touches it.
+
+**Base model:** `mistralai/Mistral-7B-Instruct-v0.2` (Apache 2.0). It matches Cloudflare's `@cf/mistral/mistral-7b-instruct-v0.2-lora`, which accepts LoRA adapters. Rank 8 keeps the adapter small (limit on that model: rank 8, about 100 MB).
+
+**Protocol:** a custom model has no native tool calling, so it speaks plain JSON: `{"type":"tool_call","name":...,"arguments":...}` or `{"type":"final","text":...,"sources":[...]}`. The Worker converts that (`runModel.textProtocol`) and still runs every check (citations, numbers, command allowlist).
+
+### Steps
+1. `node training/build-dataset.mjs --n 4000 --out training/out --gz` regenerates the data (the committed `training/data/*.gz` is what Kaggle downloads).
+2. `node training/make-notebook.mjs` regenerates `training/kaggle/ask_lora.ipynb`.
+3. Kaggle → Create → Notebook → File → Import → upload `ask_lora.ipynb`. Session options: Accelerator = GPU T4, Internet = on. Run All (about 1 to 2 hours; the free weekly GPU quota applies).
+4. Download `varn-ask-adapter.zip` and `eval_report.json` from the Output tab.
+5. Only switch if `pass_rate` is at least as good as the current Gemma setup.
+
+### Not verified yet (do not assume)
+- Whether LoRA adapters can be uploaded and used on the Workers **Free** plan. If it needs the Paid plan, stop: the rule is free only.
+- The exact upload procedure for adapters (`wrangler ai finetune create`, or the dashboard).
+- Neuron pricing for the Mistral base compared with Gemma (affects the 8,000 daily budget).
+- Whether Hugging Face requires a login for the base weights (the notebook accepts an optional `HF_TOKEN` Kaggle secret).
+
+### Switching on (after the above is confirmed)
+Set Worker vars `ASK_LORA` (the finetune name) and optionally `ASK_BASE_MODEL`. With `ASK_LORA` unset the Worker keeps using Gemma.
