@@ -81,7 +81,7 @@ export const TOOLS = {
   },
   get_sim_tracks(live) {
     const s = live.sim; if (!s) return none('get_sim_tracks', 'The Sky view is not open, so there are no tracks to count.');
-    const by = {}; for (const t of s.tracks) by[t.kind] = (by[t.kind] || 0) + 1;
+    const by = { matched: 0, drone: 0, unmatched: 0, unknown: 0 }; for (const t of s.tracks) by[t.kind] += 1;          // every kind is listed, zeros included
     return {
       tool: 'get_sim_tracks', available: true, label: s.mode, notice: s.mode === 'SIM' ? 'SIM: simulated tracks, not real detections.' : 'REAL: tracks from the local sightings file.',
       total: s.tracks.length, count_by_kind: by, adsb_matched: s.tracks.filter((t) => t.adsb).length,

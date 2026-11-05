@@ -49,7 +49,7 @@ test('tools: counting and arithmetic happen in code', () => {
   const e = TOOLS.get_event_summary(live);
   assert.deepEqual([e.count, e.count_by_category, e.newest_age_hours], [3, { wildfires: 2, volcanoes: 1 }, 2.5]);
   const s = TOOLS.get_sim_tracks(live);
-  assert.deepEqual([s.label, s.total, s.count_by_kind, s.adsb_matched], ['SIM', 4, { matched: 1, drone: 2, unknown: 1 }, 1]);
+  assert.deepEqual([s.label, s.total, s.count_by_kind, s.adsb_matched], ['SIM', 4, { matched: 1, drone: 2, unmatched: 0, unknown: 1 }, 1]);
   assert.match(s.notice, /^SIM/);
   const v = TOOLS.get_view_state(live);
   assert.equal(v.camera_altitude_km, 1234.6); assert.doesNotMatch(JSON.stringify(v), /\blat|\blon/i);

@@ -175,7 +175,7 @@ test('model adapter: reads both documented response shapes', () => {
 
 test('briefing: the code gathers every available summary up front, so one model call is enough and the answer is verified against it', async () => {
   const q = "Brief me on what's on screen";
-  assert.ok(isBriefing(q) && isBriefing('give me an overview') && isBriefing('summarise this') && !isBriefing('fly to Kyiv') && !isBriefing('what did v3 score'));
+  assert.ok(isBriefing(q) && isBriefing('give me an overview') && isBriefing('summarise this') && isBriefing('Status report please') && !isBriefing('fly to Kyiv') && !isBriefing('what did v3 score') && !isBriefing('What is the status of run1?'));
   const p = prepare({ question: q, live: LIVE, facts: FACTS });
   assert.match(p.messages[0].content, /LIVE DATA \(computed in code\)/);
   assert.deepEqual(p.pre.map((r) => r.tool), ['get_view_state', 'get_quake_summary', 'get_event_summary', 'get_sim_tracks']);
@@ -282,4 +282,11 @@ test('memory: history is validated strictly', () => {
   for (const bad of ['x', [{ role: 'system', text: 'x' }], [{ role: 'user', text: '' }], [{ role: 'user', text: 'x'.repeat(301) }], [{ role: 'assistant', text: 'x'.repeat(701) }], [{ role: 'user', text: 'a', extra: 1 }], Array(5).fill({ role: 'user', text: 'a' }), [null]]) assert.equal(validateHistory(bad).ok, false, JSON.stringify(bad).slice(0, 40));
   const p = prepare({ question: 'hi', live: {}, facts: FACTS, history: [{ role: 'user', text: 'a'.repeat(400) }] });
   assert.equal(p.error, 'bad_history');
+});
+
+test('verification: a source written with number-words allows that number', async () => {
+  const f = FACTS.find((x) => x.id === 'F-G-finetune-mixup');
+  assert.match(f.text, /^Three kinds/);
+  const r = await ask([answer('Three kinds of fine-tune found aircraft in more frames but mixed up drone and aircraft more.', [f.id])], 'what happened with the kinds of fine-tune that mixed up drone and aircraft');
+  assert.equal(r.response.type, 'answer');
 });

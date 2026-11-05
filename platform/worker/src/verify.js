@@ -8,7 +8,11 @@ const num = (s) => Number(String(s).replace(/[,%]/g, ''));
 /** Every number that may appear in an answer: those in tool outputs, in the facts shown to the model, and in the question. */
 export function allowedNumbers(...sources) {
   const set = new Set();
-  for (const src of sources) for (const n of numbersIn(typeof src === 'string' ? src : JSON.stringify(src))) set.add(num(n));
+  for (const src of sources) {
+    const text = typeof src === 'string' ? src : JSON.stringify(src);
+    for (const n of numbersIn(text)) set.add(num(n));
+    for (const w of text.toLowerCase().match(/\b[a-z]+\b/g) || []) if (w in WORDS) set.add(WORDS[w]);      // a source that says "Three" allows "three" and 3
+  }
   return set;
 }
 const decimals = (x) => (String(x).split('.')[1] || '').length;

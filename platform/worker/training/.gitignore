@@ -1,0 +1,3 @@
+# Training files are generated (about 20 MB); rebuild them with: node training/build-dataset.mjs
+out/
+out-*/
