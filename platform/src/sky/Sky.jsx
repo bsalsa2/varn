@@ -310,6 +310,7 @@ export default function Sky() {
     <Glass as="header" className="sky-head" refract={refract}>
       <div className="row">
         <a className="wordmark" href="#overview" style={{ color: 'inherit', textDecoration: 'none' }} title="Back to VARN platform">VARN<small>SKY</small></a>
+        <a className="rec-link" href="#records" title="Records: models, experiments, datasets and results">Records</a>
         <div className="mode-pill" role="group" aria-label="Data mode">
           <button aria-pressed={mode === 'sim'} onClick={() => setMode('sim')}>SIM</button>
           <button aria-pressed={mode === 'real'} onClick={() => { setMode('real'); setReal((r) => (r.status === 'missing' ? { status: 'idle', scene: null } : r)); }}>REAL</button>

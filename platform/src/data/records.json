@@ -1,0 +1,3820 @@
+{
+  "ledger": "evidence/ledger.md",
+  "models": [
+    {
+      "id": "M-v3",
+      "kind": "model",
+      "title": "v3 (baseline)",
+      "summary": "Small YOLO model: 3,006,038 parameters, input 960 px. It is the baseline and the default, and has never been replaced. The ONNX export is the file the detector runs.",
+      "source": "S2",
+      "source_line": 10,
+      "attributes": [
+        {
+          "label": "Parameters",
+          "value": "3,006,038"
+        },
+        {
+          "label": "Input size",
+          "value": "960 px"
+        },
+        {
+          "label": "Weights file (v3 best.pt)",
+          "value": "18.4 MB"
+        },
+        {
+          "label": "ONNX export",
+          "value": "11.9 MB"
+        },
+        {
+          "label": "Status",
+          "value": "baseline and default; never replaced"
+        }
+      ],
+      "derived_from": null,
+      "trained_on": [],
+      "caveats": [
+        "The ledger does not list what v3 was trained on.",
+        "v3 was probably trained on the Roboflow collection, so Roboflow scores flatter it (S4)."
+      ],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "M-run1",
+      "kind": "model",
+      "title": "run1 (fine-tune)",
+      "summary": "Fine-tune of v3 on Roboflow and Bird vs Drone pictures. The \"auto\" optimizer ignored the learning rate setting and used AdamW lr 0.001667. Not promoted.",
+      "source": "S2",
+      "source_line": 11,
+      "attributes": [
+        {
+          "label": "Optimizer used",
+          "value": "AdamW lr 0.001667"
+        },
+        {
+          "label": "Backbone frozen",
+          "value": "10 layers"
+        },
+        {
+          "label": "Status",
+          "value": "not promoted"
+        }
+      ],
+      "derived_from": "M-v3",
+      "trained_on": [
+        "D-roboflow",
+        "D-birdvsdrone"
+      ],
+      "caveats": [
+        "Optimizer \"auto\" ignored the learning rate setting, so the run did not use the rate that was set."
+      ]
+    },
+    {
+      "id": "M-run2",
+      "kind": "model",
+      "title": "run2 (fine-tune)",
+      "summary": "Same data as run1, from notebook v10, with an intended AdamW lr 0.0005. Not promoted.",
+      "source": "S2",
+      "source_line": 12,
+      "attributes": [
+        {
+          "label": "Notebook",
+          "value": "v10"
+        },
+        {
+          "label": "Intended optimizer",
+          "value": "AdamW lr 0.0005"
+        },
+        {
+          "label": "Status",
+          "value": "not promoted"
+        }
+      ],
+      "derived_from": "M-v3",
+      "trained_on": [
+        "D-roboflow",
+        "D-birdvsdrone"
+      ],
+      "caveats": [
+        "The optimizer line was not checked, so the learning rate actually used is not confirmed."
+      ]
+    },
+    {
+      "id": "M-run3",
+      "kind": "model",
+      "title": "run3 (fine-tune)",
+      "summary": "Same data and settings name as run2 (ft_lr0.0005_freeze10). Weights ft_best.pt 6.31 MB, ONNX 12.5 MB, exported as varn-ft-2026-10-28. Not promoted after the clip check.",
+      "source": "S2",
+      "source_line": 13,
+      "attributes": [
+        {
+          "label": "Settings name",
+          "value": "ft_lr0.0005_freeze10"
+        },
+        {
+          "label": "Weights (ft_best.pt)",
+          "value": "6.31 MB"
+        },
+        {
+          "label": "ONNX export",
+          "value": "12.5 MB"
+        },
+        {
+          "label": "Export name",
+          "value": "varn-ft-2026-10-28"
+        },
+        {
+          "label": "Status",
+          "value": "not promoted after clip check"
+        }
+      ],
+      "derived_from": "M-v3",
+      "trained_on": [
+        "D-roboflow",
+        "D-birdvsdrone"
+      ],
+      "caveats": [
+        "It was a promote-candidate on the test-picture sets and was not promoted after the clip check (S5)."
+      ],
+      "also_from": [
+        "S5"
+      ]
+    },
+    {
+      "id": "M-run4",
+      "kind": "model",
+      "title": "run4 (fine-tune)",
+      "summary": "Fine-tune on Roboflow plus 3,000 Svanstrom training frames (public domain), split by whole video. Not promoted.",
+      "source": "S2",
+      "source_line": 14,
+      "attributes": [
+        {
+          "label": "Training data",
+          "value": "Roboflow + 3,000 Svanstrom training frames"
+        },
+        {
+          "label": "Split",
+          "value": "split by whole video"
+        },
+        {
+          "label": "Status",
+          "value": "not promoted"
+        }
+      ],
+      "derived_from": "M-v3",
+      "trained_on": [
+        "D-roboflow",
+        "D-svanstrom"
+      ],
+      "caveats": [
+        "Its Svanstrom test frames come from the same drones and sites as training (S4)."
+      ],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "M-run5",
+      "kind": "model",
+      "title": "run5 (fine-tune)",
+      "summary": "Same as run4 with a train, validation and test split by video. Training stopped early after 38 of 126 planned epochs. Not promoted.",
+      "source": "S2",
+      "source_line": 15,
+      "attributes": [
+        {
+          "label": "Split",
+          "value": "train/validation/test split by video"
+        },
+        {
+          "label": "Validation watched",
+          "value": "Roboflow + Svanstrom validation"
+        },
+        {
+          "label": "Patience",
+          "value": "patience 15"
+        },
+        {
+          "label": "Epochs",
+          "value": "38 of 126 planned epochs"
+        },
+        {
+          "label": "Training time",
+          "value": "73.2 min"
+        },
+        {
+          "label": "Best epoch",
+          "value": "best epoch 23"
+        },
+        {
+          "label": "Stopped by",
+          "value": "early stopping (15 epochs without improvement)"
+        },
+        {
+          "label": "Status",
+          "value": "not promoted"
+        }
+      ],
+      "derived_from": "M-run4",
+      "trained_on": [
+        "D-roboflow",
+        "D-svanstrom"
+      ],
+      "caveats": [
+        "Its Svanstrom test frames come from the same drones and sites as training (S4)."
+      ],
+      "also_from": [
+        "S4"
+      ]
+    }
+  ],
+  "experiments": [
+    {
+      "id": "X-score-v3",
+      "title": "Score v3 (no fine-tune)",
+      "summary": "v3 scored as the baseline: the .pt and ONNX files on T-roboflow-800, and v3 on T-bvd-847.",
+      "source": "S5",
+      "source_line": 34,
+      "model_ids": [
+        "M-v3"
+      ],
+      "dataset_ids": [],
+      "test_set_ids": [
+        "T-roboflow-800",
+        "T-bvd-847"
+      ],
+      "verdict": null,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "The ledger does not say which v3 file produced the T-bvd-847 scores."
+      ],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "X-run1",
+      "title": "run1: scored on pictures",
+      "summary": "run1 scored on T-roboflow-800 and T-bvd-847.",
+      "source": "S5",
+      "source_line": 37,
+      "model_ids": [
+        "M-run1"
+      ],
+      "dataset_ids": [
+        "D-roboflow",
+        "D-birdvsdrone"
+      ],
+      "test_set_ids": [
+        "T-roboflow-800",
+        "T-bvd-847"
+      ],
+      "verdict": "KEEP v3.",
+      "caveats": [
+        "Limit: same collection as the training pictures. (T-bvd-847)",
+        "The ledger lists no real-clip result for run1."
+      ],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "X-run2",
+      "title": "run2: scored on pictures",
+      "summary": "run2 scored on T-roboflow-800 and T-bvd-847.",
+      "source": "S5",
+      "source_line": 38,
+      "model_ids": [
+        "M-run2"
+      ],
+      "dataset_ids": [
+        "D-roboflow",
+        "D-birdvsdrone"
+      ],
+      "test_set_ids": [
+        "T-roboflow-800",
+        "T-bvd-847"
+      ],
+      "verdict": "KEEP v3 (margin -0.022, limit -0.020).",
+      "caveats": [
+        "The optimizer line was not checked (S2).",
+        "The ledger lists no real-clip result for run2."
+      ],
+      "also_from": [
+        "S2"
+      ]
+    },
+    {
+      "id": "X-run3",
+      "title": "run3: scored on pictures",
+      "summary": "run3 scored on T-roboflow-800 and T-bvd-847. It was not promoted after the clip check (see the real-clip records).",
+      "source": "S5",
+      "source_line": 39,
+      "model_ids": [
+        "M-run3"
+      ],
+      "dataset_ids": [
+        "D-roboflow",
+        "D-birdvsdrone"
+      ],
+      "test_set_ids": [
+        "T-roboflow-800",
+        "T-bvd-847"
+      ],
+      "verdict": "promote-candidate, then KEEP v3 after the clip check.",
+      "caveats": [
+        "Limit: same collection as the training pictures. (T-bvd-847)"
+      ],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "X-run4",
+      "title": "run4: scored on pictures and held-out frames",
+      "summary": "run4 scored on T-roboflow-800 and, beside v3, on T-svan-1195.",
+      "source": "S5",
+      "source_line": 40,
+      "model_ids": [
+        "M-run4",
+        "M-v3"
+      ],
+      "dataset_ids": [
+        "D-roboflow",
+        "D-svanstrom"
+      ],
+      "test_set_ids": [
+        "T-roboflow-800",
+        "T-svan-1195"
+      ],
+      "verdict": "KEEP v3.",
+      "caveats": [
+        "Limit: same drones and sites as training. (T-svan-1195)"
+      ],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "X-run5",
+      "title": "run5: scored on pictures and held-out frames",
+      "summary": "run5 scored on T-roboflow-800 and, beside v3, on T-svan-897. This is a different split from run4's T-svan-1195.",
+      "source": "S5",
+      "source_line": 41,
+      "model_ids": [
+        "M-run5",
+        "M-v3"
+      ],
+      "dataset_ids": [
+        "D-roboflow",
+        "D-svanstrom"
+      ],
+      "test_set_ids": [
+        "T-roboflow-800",
+        "T-svan-897"
+      ],
+      "verdict": "KEEP v3.",
+      "caveats": [
+        "Limit: same drones and sites as training. (T-svan-897)",
+        "T-svan-897 and T-svan-1195 are different test sets, so run4 and run5 Svanstrom scores are not comparable."
+      ],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "X-clips-compare",
+      "title": "Real-clip check: v3 against run3, run4, run5",
+      "summary": "v3 compared with run3, run4 and run5 on the real clips, as a share of frames at confidence 0.35.",
+      "source": "S6",
+      "source_line": 46,
+      "model_ids": [
+        "M-v3",
+        "M-run3",
+        "M-run4",
+        "M-run5"
+      ],
+      "dataset_ids": [
+        "D-clips"
+      ],
+      "test_set_ids": [
+        "T-clips-42"
+      ],
+      "verdict": null,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "X-clips-groups",
+      "title": "Real-clip check: run5 by clip group",
+      "summary": "v3 and run5 compared inside each clip group of the real clips, at confidence 0.35.",
+      "source": "S6",
+      "source_line": 49,
+      "model_ids": [
+        "M-v3",
+        "M-run5"
+      ],
+      "dataset_ids": [
+        "D-clips"
+      ],
+      "test_set_ids": [
+        "T-clips-42-military_drone",
+        "T-clips-42-military_aircraft",
+        "T-clips-42-airplane",
+        "T-clips-42-drone"
+      ],
+      "verdict": null,
+      "caveats": [
+        "Each group is its own test set; numbers are not comparable across groups.",
+        "Labels are per video, so frames where the object is out of view or tiny count as misses."
+      ],
+      "also_from": [
+        "S3"
+      ]
+    },
+    {
+      "id": "X-threshold",
+      "title": "Threshold check: v3 against the run3 weights",
+      "summary": "v3 and the run3 weights compared on the real clips at thresholds 0.25, 0.35, 0.5, 0.65 and 0.8, as a share of frames.",
+      "source": "S7",
+      "source_line": 54,
+      "model_ids": [
+        "M-v3",
+        "M-run3"
+      ],
+      "dataset_ids": [
+        "D-clips"
+      ],
+      "test_set_ids": [
+        "T-clips-42"
+      ],
+      "verdict": null,
+      "caveats": [
+        "The rough score is a guide, not a verdict.",
+        "Lowest threshold tested was 0.25."
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "D-roboflow",
+      "kind": "dataset",
+      "title": "Roboflow airplane-drone-helicopter v2",
+      "summary": "Roboflow set \"airplane-drone-helicopter\" v2. Of 4,045 validation pictures, 2,426 (60%) were near-copies of training pictures and were dropped, leaving 800 clean pictures for validation. 4,000 pictures were sampled for training.",
+      "source": "S3",
+      "source_line": 19,
+      "attributes": [
+        {
+          "label": "Validation pictures",
+          "value": "4,045"
+        },
+        {
+          "label": "Near-copies dropped",
+          "value": "2,426 (60%)"
+        },
+        {
+          "label": "Clean validation pictures",
+          "value": "800"
+        },
+        {
+          "label": "Sampled for training",
+          "value": "4,000"
+        },
+        {
+          "label": "License",
+          "value": "not checked"
+        }
+      ],
+      "derived_from": null,
+      "caveats": [
+        "License: not checked (S9)."
+      ],
+      "also_from": [
+        "S9"
+      ]
+    },
+    {
+      "id": "D-birdvsdrone",
+      "kind": "dataset",
+      "title": "Bird vs Drone",
+      "summary": "Bird vs Drone (Kaggle), MIT license. 18,323 training pictures, 3,000 sampled. Pictures named DT are drones and BT are birds; birds are used as \"no drone\" examples.",
+      "source": "S3",
+      "source_line": 20,
+      "attributes": [
+        {
+          "label": "License",
+          "value": "MIT license"
+        },
+        {
+          "label": "Training pictures",
+          "value": "18,323 training pictures (3,000 sampled)"
+        },
+        {
+          "label": "Test pictures",
+          "value": "889 test pictures, 847 after removing 42 near-copies"
+        },
+        {
+          "label": "Median drone box",
+          "value": "about 8-9% of the picture"
+        }
+      ],
+      "derived_from": null,
+      "caveats": [
+        "No aircraft labels.",
+        "Test pictures come from the same collection as the training pictures."
+      ]
+    },
+    {
+      "id": "D-svanstrom",
+      "kind": "dataset",
+      "title": "Svanstrom drone-detection dataset",
+      "summary": "Drone-detection-dataset (Svanstrom, Alonso-Fernandez, Englund 2021, \"A Dataset for Multi-Sensor Drone Detection\"), CC0 public domain. 650 videos labeled Airplane, Bird, Drone or Helicopter, with per-frame boxes. Only the visible videos were used.",
+      "source": "S3",
+      "source_line": 21,
+      "attributes": [
+        {
+          "label": "License",
+          "value": "CC0 public domain"
+        },
+        {
+          "label": "Videos",
+          "value": "650 videos (365 infrared, 285 visible)"
+        },
+        {
+          "label": "Labels",
+          "value": "Airplane, Bird, Drone, Helicopter"
+        },
+        {
+          "label": "Used",
+          "value": "Only the visible videos were used"
+        },
+        {
+          "label": "Range",
+          "value": "drones flown within 200 m"
+        },
+        {
+          "label": "Credit",
+          "value": "Svanstrom, Alonso-Fernandez, Englund (2021), \"A Dataset for Multi-Sensor Drone Detection\", Data in Brief"
+        }
+      ],
+      "derived_from": null,
+      "caveats": [
+        "Daylight only; drones flown within 200 m.",
+        "Helicopters were treated as aircraft; bird frames as \"nothing here\"."
+      ],
+      "credit_line": 79,
+      "also_from": [
+        "S9"
+      ]
+    },
+    {
+      "id": "D-clips",
+      "kind": "dataset",
+      "title": "Licensed real clips",
+      "summary": "43 licensed real clips (public domain and CC). One drone clip (drone_11) is a broken file and is skipped, leaving 42 clips and 1,701 frames at one frame per second.",
+      "source": "S3",
+      "source_line": 22,
+      "attributes": [
+        {
+          "label": "Clips",
+          "value": "43 licensed real clips"
+        },
+        {
+          "label": "License",
+          "value": "public domain and CC"
+        },
+        {
+          "label": "Composition",
+          "value": "airplane 4, military_aircraft 15, military_drone 12, drone 12"
+        },
+        {
+          "label": "Readable",
+          "value": "42 clips and 1,701 frames at one frame per second"
+        },
+        {
+          "label": "Skipped",
+          "value": "drone_11"
+        }
+      ],
+      "derived_from": null,
+      "caveats": [
+        "Sources are kept in a private SOURCES_and_LICENSES.csv, which is not in this repository.",
+        "Labels are per video (the clip name), so frames where the object is out of view or tiny count as misses."
+      ]
+    },
+    {
+      "id": "T-roboflow-800",
+      "kind": "test_set",
+      "title": "Roboflow clean validation (800)",
+      "summary": "800 clean Roboflow validation pictures with 274 drone and 408 aircraft boxes.",
+      "source": "S4",
+      "source_line": 26,
+      "attributes": [
+        {
+          "label": "Pictures",
+          "value": "800 clean Roboflow validation pictures"
+        },
+        {
+          "label": "Boxes",
+          "value": "274 drone and 408 aircraft boxes"
+        }
+      ],
+      "derived_from": "D-roboflow",
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3."
+      ]
+    },
+    {
+      "id": "T-bvd-847",
+      "kind": "test_set",
+      "title": "Bird vs Drone test (847)",
+      "summary": "847 Bird vs Drone test pictures with 502 drone boxes and no aircraft.",
+      "source": "S4",
+      "source_line": 27,
+      "attributes": [
+        {
+          "label": "Pictures",
+          "value": "847 Bird vs Drone test pictures"
+        },
+        {
+          "label": "Boxes",
+          "value": "502 drone boxes, no aircraft"
+        }
+      ],
+      "derived_from": "D-birdvsdrone",
+      "caveats": [
+        "Limit: same collection as the training pictures.",
+        "It has no aircraft boxes, so it cannot test aircraft."
+      ]
+    },
+    {
+      "id": "T-svan-1195",
+      "kind": "test_set",
+      "title": "Svanstrom held-out, run 4 (1,195 frames)",
+      "summary": "1,195 frames from Svanstrom videos held out in run 4.",
+      "source": "S4",
+      "source_line": 28,
+      "attributes": [
+        {
+          "label": "Frames",
+          "value": "1,195 frames"
+        }
+      ],
+      "derived_from": "D-svanstrom",
+      "caveats": [
+        "Limit: same drones and sites as training.",
+        "A different split from T-svan-897 (897 frames), so results on the two sets are not comparable."
+      ]
+    },
+    {
+      "id": "T-svan-897",
+      "kind": "test_set",
+      "title": "Svanstrom held-out, run 5 (897 frames)",
+      "summary": "897 frames from Svanstrom videos held out in run 5. This is a different split from T-svan-1195.",
+      "source": "S4",
+      "source_line": 29,
+      "attributes": [
+        {
+          "label": "Frames",
+          "value": "897 frames"
+        }
+      ],
+      "derived_from": "D-svanstrom",
+      "caveats": [
+        "Limit: same drones and sites as training.",
+        "A DIFFERENT split from T-svan-1195 (1,195 frames), so results on the two sets are not comparable."
+      ]
+    },
+    {
+      "id": "T-clips-42",
+      "kind": "test_set",
+      "title": "Real clips (42 clips, 1,701 frames)",
+      "summary": "The 42 readable real clips, 1,701 frames: aircraft clips (19 clips, 703 frames) and drone clips (23 clips, 998 frames).",
+      "source": "S4",
+      "source_line": 30,
+      "attributes": [
+        {
+          "label": "Clips",
+          "value": "42 readable real clips"
+        },
+        {
+          "label": "Frames",
+          "value": "1,701 frames"
+        },
+        {
+          "label": "Aircraft clips",
+          "value": "19 clips, 703 frames"
+        },
+        {
+          "label": "Drone clips",
+          "value": "23 clips, 998 frames"
+        }
+      ],
+      "derived_from": "D-clips",
+      "caveats": [
+        "42 clips with per-video labels is a small test. A hand-labeled set of boxes from real footage is needed (S8).",
+        "Labels are per video, so frames where the object is out of view or tiny count as misses (S3)."
+      ],
+      "also_from": [
+        "S8",
+        "S3"
+      ]
+    },
+    {
+      "id": "T-clips-42-military_drone",
+      "kind": "test_set_slice",
+      "title": "Real clips, group military_drone (12 clips)",
+      "summary": "The military_drone group of T-clips-42: 12 clips, 524 frames.",
+      "source": "S6",
+      "source_line": 49,
+      "attributes": [
+        {
+          "label": "Clips",
+          "value": "military_drone (12 clips)"
+        },
+        {
+          "label": "Frames",
+          "value": "524"
+        }
+      ],
+      "derived_from": "T-clips-42",
+      "caveats": [
+        "A group inside T-clips-42: its numbers are not comparable with whole-set numbers or with other groups.",
+        "Labels are per video, so frames where the object is out of view or tiny count as misses."
+      ],
+      "also_from": [
+        "S3"
+      ]
+    },
+    {
+      "id": "T-clips-42-military_aircraft",
+      "kind": "test_set_slice",
+      "title": "Real clips, group military_aircraft (15 clips)",
+      "summary": "The military_aircraft group of T-clips-42: 15 clips, 521 frames.",
+      "source": "S6",
+      "source_line": 49,
+      "attributes": [
+        {
+          "label": "Clips",
+          "value": "military_aircraft (15 clips)"
+        },
+        {
+          "label": "Frames",
+          "value": "521"
+        }
+      ],
+      "derived_from": "T-clips-42",
+      "caveats": [
+        "A group inside T-clips-42: its numbers are not comparable with whole-set numbers or with other groups.",
+        "Labels are per video, so frames where the object is out of view or tiny count as misses."
+      ],
+      "also_from": [
+        "S3"
+      ]
+    },
+    {
+      "id": "T-clips-42-airplane",
+      "kind": "test_set_slice",
+      "title": "Real clips, group airplane (4 clips)",
+      "summary": "The airplane group of T-clips-42: 4 clips, 182 frames.",
+      "source": "S6",
+      "source_line": 49,
+      "attributes": [
+        {
+          "label": "Clips",
+          "value": "airplane (4 clips)"
+        },
+        {
+          "label": "Frames",
+          "value": "182"
+        }
+      ],
+      "derived_from": "T-clips-42",
+      "caveats": [
+        "A group inside T-clips-42: its numbers are not comparable with whole-set numbers or with other groups.",
+        "Labels are per video, so frames where the object is out of view or tiny count as misses."
+      ],
+      "also_from": [
+        "S3"
+      ]
+    },
+    {
+      "id": "T-clips-42-drone",
+      "kind": "test_set_slice",
+      "title": "Real clips, group drone (11 clips)",
+      "summary": "The drone group of T-clips-42: 11 clips, 474 frames.",
+      "source": "S6",
+      "source_line": 49,
+      "attributes": [
+        {
+          "label": "Clips",
+          "value": "drone (11 clips)"
+        },
+        {
+          "label": "Frames",
+          "value": "474"
+        }
+      ],
+      "derived_from": "T-clips-42",
+      "caveats": [
+        "A group inside T-clips-42: its numbers are not comparable with whole-set numbers or with other groups.",
+        "Labels are per video, so frames where the object is out of view or tiny count as misses."
+      ],
+      "also_from": [
+        "S3"
+      ]
+    }
+  ],
+  "evaluations": [
+    {
+      "id": "R-v3.pt-T-roboflow-800-mAP50",
+      "title": "v3 .pt · mAP50 · T-roboflow-800",
+      "summary": "v3 .pt scored 0.853 mAP50 on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 34,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3."
+      ],
+      "model_id": "M-v3",
+      "variant": ".pt",
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.853",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3.pt-T-roboflow-800-mAP50-drone",
+      "title": "v3 .pt · mAP50 (drone) · T-roboflow-800",
+      "summary": "v3 .pt scored 0.905 mAP50 for the drone class on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 34,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Per-class figure: the ledger lists it beside the mAP50 result and does not define it further."
+      ],
+      "model_id": "M-v3",
+      "variant": ".pt",
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": "drone",
+      "value": "0.905",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3.pt-T-roboflow-800-mAP50-aircraft",
+      "title": "v3 .pt · mAP50 (aircraft) · T-roboflow-800",
+      "summary": "v3 .pt scored 0.800 mAP50 for the aircraft class on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 34,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Per-class figure: the ledger lists it beside the mAP50 result and does not define it further."
+      ],
+      "model_id": "M-v3",
+      "variant": ".pt",
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": "aircraft",
+      "value": "0.800",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3.pt-T-roboflow-800-mAP50-95",
+      "title": "v3 .pt · mAP50-95 · T-roboflow-800",
+      "summary": "v3 .pt scored 0.468 mAP50-95 on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 34,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3."
+      ],
+      "model_id": "M-v3",
+      "variant": ".pt",
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50-95",
+      "class": null,
+      "value": "0.468",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3ONNX-T-roboflow-800-mAP50",
+      "title": "v3 ONNX · mAP50 · T-roboflow-800",
+      "summary": "v3 ONNX scored 0.831 mAP50 on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 35,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Gap versus .pt is padding in scoring, not the export."
+      ],
+      "model_id": "M-v3",
+      "variant": "ONNX",
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.831",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3ONNX-T-roboflow-800-mAP50-drone",
+      "title": "v3 ONNX · mAP50 (drone) · T-roboflow-800",
+      "summary": "v3 ONNX scored 0.893 mAP50 for the drone class on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 35,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Gap versus .pt is padding in scoring, not the export.",
+        "Per-class figure: the ledger lists it beside the mAP50 result and does not define it further."
+      ],
+      "model_id": "M-v3",
+      "variant": "ONNX",
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": "drone",
+      "value": "0.893",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3ONNX-T-roboflow-800-mAP50-aircraft",
+      "title": "v3 ONNX · mAP50 (aircraft) · T-roboflow-800",
+      "summary": "v3 ONNX scored 0.768 mAP50 for the aircraft class on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 35,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Gap versus .pt is padding in scoring, not the export.",
+        "Per-class figure: the ledger lists it beside the mAP50 result and does not define it further."
+      ],
+      "model_id": "M-v3",
+      "variant": "ONNX",
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": "aircraft",
+      "value": "0.768",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3ONNX-T-roboflow-800-mAP50-95",
+      "title": "v3 ONNX · mAP50-95 · T-roboflow-800",
+      "summary": "v3 ONNX scored 0.459 mAP50-95 on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 35,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Gap versus .pt is padding in scoring, not the export."
+      ],
+      "model_id": "M-v3",
+      "variant": "ONNX",
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50-95",
+      "class": null,
+      "value": "0.459",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3-T-bvd-847-mAP50",
+      "title": "v3 · mAP50 · T-bvd-847",
+      "summary": "v3 scored 0.255 mAP50 on T-bvd-847.",
+      "source": "S5",
+      "source_line": 36,
+      "caveats": [
+        "Drone boxes only: this set has 502 drone boxes and no aircraft.",
+        "The ledger does not say whether this v3 score is the .pt or the ONNX file."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-bvd-847",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.255",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3-T-bvd-847-precision",
+      "title": "v3 · precision · T-bvd-847",
+      "summary": "v3 scored 0.344 precision on T-bvd-847.",
+      "source": "S5",
+      "source_line": 36,
+      "caveats": [
+        "Drone boxes only: this set has 502 drone boxes and no aircraft.",
+        "The ledger does not say whether this v3 score is the .pt or the ONNX file."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-bvd-847",
+      "metric_name": "precision",
+      "class": null,
+      "value": "0.344",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3-T-bvd-847-recall",
+      "title": "v3 · recall · T-bvd-847",
+      "summary": "v3 scored 0.269 recall on T-bvd-847.",
+      "source": "S5",
+      "source_line": 36,
+      "caveats": [
+        "Drone boxes only: this set has 502 drone boxes and no aircraft.",
+        "The ledger does not say whether this v3 score is the .pt or the ONNX file."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-bvd-847",
+      "metric_name": "recall",
+      "class": null,
+      "value": "0.269",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3-T-bvd-847-mAP50-95",
+      "title": "v3 · mAP50-95 · T-bvd-847",
+      "summary": "v3 scored 0.086 mAP50-95 on T-bvd-847.",
+      "source": "S5",
+      "source_line": 36,
+      "caveats": [
+        "Drone boxes only: this set has 502 drone boxes and no aircraft.",
+        "The ledger does not say whether this v3 score is the .pt or the ONNX file."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-bvd-847",
+      "metric_name": "mAP50-95",
+      "class": null,
+      "value": "0.086",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-score-v3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run1-T-roboflow-800-mAP50",
+      "title": "run1 · mAP50 · T-roboflow-800",
+      "summary": "run1 scored 0.810 mAP50 on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 37,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3."
+      ],
+      "model_id": "M-run1",
+      "variant": null,
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.810",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run1",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run1-T-bvd-847-mAP50",
+      "title": "run1 · mAP50 · T-bvd-847",
+      "summary": "run1 scored 0.761 mAP50 on T-bvd-847.",
+      "source": "S5",
+      "source_line": 37,
+      "caveats": [
+        "Limit: same collection as the training pictures.",
+        "Drone boxes only: this set has 502 drone boxes and no aircraft."
+      ],
+      "model_id": "M-run1",
+      "variant": null,
+      "test_set_id": "T-bvd-847",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.761",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run1",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run2-T-roboflow-800-mAP50",
+      "title": "run2 · mAP50 · T-roboflow-800",
+      "summary": "run2 scored 0.831 mAP50 on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 38,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3."
+      ],
+      "model_id": "M-run2",
+      "variant": null,
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.831",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run2",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run2-T-bvd-847-mAP50",
+      "title": "run2 · mAP50 · T-bvd-847",
+      "summary": "run2 scored 0.812 mAP50 on T-bvd-847.",
+      "source": "S5",
+      "source_line": 38,
+      "caveats": [
+        "Limit: same collection as the training pictures.",
+        "Drone boxes only: this set has 502 drone boxes and no aircraft."
+      ],
+      "model_id": "M-run2",
+      "variant": null,
+      "test_set_id": "T-bvd-847",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.812",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run2",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run3-T-roboflow-800-mAP50",
+      "title": "run3 · mAP50 · T-roboflow-800",
+      "summary": "run3 scored 0.834 mAP50 on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 39,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.834",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run3-T-roboflow-800-mAP50-drone",
+      "title": "run3 · mAP50 (drone) · T-roboflow-800",
+      "summary": "run3 scored 0.883 mAP50 for the drone class on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 39,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Per-class figure: the ledger lists it beside the mAP50 result and does not define it further."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": "drone",
+      "value": "0.883",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run3-T-roboflow-800-mAP50-aircraft",
+      "title": "run3 · mAP50 (aircraft) · T-roboflow-800",
+      "summary": "run3 scored 0.785 mAP50 for the aircraft class on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 39,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Per-class figure: the ledger lists it beside the mAP50 result and does not define it further."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": "aircraft",
+      "value": "0.785",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run3-T-bvd-847-mAP50",
+      "title": "run3 · mAP50 · T-bvd-847",
+      "summary": "run3 scored 0.798 mAP50 on T-bvd-847.",
+      "source": "S5",
+      "source_line": 39,
+      "caveats": [
+        "Limit: same collection as the training pictures.",
+        "Drone boxes only: this set has 502 drone boxes and no aircraft."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-bvd-847",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.798",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run3-T-bvd-847-precision",
+      "title": "run3 · precision · T-bvd-847",
+      "summary": "run3 scored 0.765 precision on T-bvd-847.",
+      "source": "S5",
+      "source_line": 39,
+      "caveats": [
+        "Limit: same collection as the training pictures.",
+        "Drone boxes only: this set has 502 drone boxes and no aircraft."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-bvd-847",
+      "metric_name": "precision",
+      "class": null,
+      "value": "0.765",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run3-T-bvd-847-recall",
+      "title": "run3 · recall · T-bvd-847",
+      "summary": "run3 scored 0.711 recall on T-bvd-847.",
+      "source": "S5",
+      "source_line": 39,
+      "caveats": [
+        "Limit: same collection as the training pictures.",
+        "Drone boxes only: this set has 502 drone boxes and no aircraft."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-bvd-847",
+      "metric_name": "recall",
+      "class": null,
+      "value": "0.711",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run3",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run4-T-roboflow-800-mAP50",
+      "title": "run4 · mAP50 · T-roboflow-800",
+      "summary": "run4 scored 0.801 mAP50 on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 40,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3."
+      ],
+      "model_id": "M-run4",
+      "variant": null,
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.801",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run4",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run4-T-roboflow-800-mAP50-drone",
+      "title": "run4 · mAP50 (drone) · T-roboflow-800",
+      "summary": "run4 scored 0.847 mAP50 for the drone class on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 40,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Per-class figure: the ledger lists it beside the mAP50 result and does not define it further."
+      ],
+      "model_id": "M-run4",
+      "variant": null,
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": "drone",
+      "value": "0.847",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run4",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run4-T-roboflow-800-mAP50-aircraft",
+      "title": "run4 · mAP50 (aircraft) · T-roboflow-800",
+      "summary": "run4 scored 0.754 mAP50 for the aircraft class on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 40,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Per-class figure: the ledger lists it beside the mAP50 result and does not define it further."
+      ],
+      "model_id": "M-run4",
+      "variant": null,
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": "aircraft",
+      "value": "0.754",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run4",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3-T-svan-1195-mAP50",
+      "title": "v3 · mAP50 · T-svan-1195",
+      "summary": "v3 scored 0.063 mAP50 on T-svan-1195.",
+      "source": "S5",
+      "source_line": 40,
+      "caveats": [
+        "Limit: same drones and sites as training.",
+        "A different split from T-svan-897 (897 frames), so the two sets are not comparable.",
+        "See the open gap on small, distant objects.",
+        "The ledger does not say whether this v3 score is the .pt or the ONNX file."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-svan-1195",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.063",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run4",
+      "compared_with": [],
+      "also_from": [
+        "S4",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run4-T-svan-1195-mAP50",
+      "title": "run4 · mAP50 · T-svan-1195",
+      "summary": "run4 scored 0.648 mAP50 on T-svan-1195.",
+      "source": "S5",
+      "source_line": 40,
+      "caveats": [
+        "Limit: same drones and sites as training.",
+        "A different split from T-svan-897 (897 frames), so the two sets are not comparable."
+      ],
+      "model_id": "M-run4",
+      "variant": null,
+      "test_set_id": "T-svan-1195",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.648",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run4",
+      "compared_with": [
+        "R-v3-T-svan-1195-mAP50"
+      ],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run5-T-roboflow-800-mAP50",
+      "title": "run5 · mAP50 · T-roboflow-800",
+      "summary": "run5 scored 0.797 mAP50 on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 41,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.797",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run5",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run5-T-roboflow-800-mAP50-drone",
+      "title": "run5 · mAP50 (drone) · T-roboflow-800",
+      "summary": "run5 scored 0.846 mAP50 for the drone class on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 41,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Per-class figure: the ledger lists it beside the mAP50 result and does not define it further."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": "drone",
+      "value": "0.846",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run5",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-run5-T-roboflow-800-mAP50-aircraft",
+      "title": "run5 · mAP50 (aircraft) · T-roboflow-800",
+      "summary": "run5 scored 0.748 mAP50 for the aircraft class on T-roboflow-800.",
+      "source": "S5",
+      "source_line": 41,
+      "caveats": [
+        "Limit: v3 was probably trained on this collection, so it flatters v3.",
+        "Per-class figure: the ledger lists it beside the mAP50 result and does not define it further."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-roboflow-800",
+      "metric_name": "mAP50",
+      "class": "aircraft",
+      "value": "0.748",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run5",
+      "compared_with": [],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3-T-svan-897-mAP50",
+      "title": "v3 · mAP50 · T-svan-897",
+      "summary": "v3 scored 0.079 mAP50 on T-svan-897.",
+      "source": "S5",
+      "source_line": 41,
+      "caveats": [
+        "Limit: same drones and sites as training.",
+        "A different split from T-svan-1195 (1,195 frames), so the two sets are not comparable.",
+        "See the open gap on small, distant objects.",
+        "The ledger does not say whether this v3 score is the .pt or the ONNX file."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-svan-897",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.079",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run5",
+      "compared_with": [],
+      "also_from": [
+        "S4",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-svan-897-mAP50",
+      "title": "run5 · mAP50 · T-svan-897",
+      "summary": "run5 scored 0.736 mAP50 on T-svan-897.",
+      "source": "S5",
+      "source_line": 41,
+      "caveats": [
+        "Limit: same drones and sites as training.",
+        "A different split from T-svan-1195 (1,195 frames), so the two sets are not comparable."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-svan-897",
+      "metric_name": "mAP50",
+      "class": null,
+      "value": "0.736",
+      "unit": null,
+      "condition": null,
+      "experiment_id": "X-run5",
+      "compared_with": [
+        "R-v3-T-svan-897-mAP50"
+      ],
+      "also_from": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35",
+      "title": "v3 · false drone on aircraft clips · T-clips-42",
+      "summary": "v3: \"false drone on aircraft clips\" was 2.6% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 46,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test.",
+        "The ledger repeats this v3 figure on the run4 and run5 lines."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "false drone on aircraft clips",
+      "class": null,
+      "value": "2.6%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35",
+      "title": "run3 · false drone on aircraft clips · T-clips-42",
+      "summary": "run3: \"false drone on aircraft clips\" was 6.0% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 46,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "false drone on aircraft clips",
+      "class": null,
+      "value": "6.0%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35",
+      "title": "v3 · no aircraft box on aircraft clips · T-clips-42",
+      "summary": "v3: \"no aircraft box on aircraft clips\" was 63.9% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 46,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test.",
+        "The ledger repeats this v3 figure on the run4 and run5 lines."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "no aircraft box on aircraft clips",
+      "class": null,
+      "value": "63.9%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35",
+      "title": "run3 · no aircraft box on aircraft clips · T-clips-42",
+      "summary": "run3: \"no aircraft box on aircraft clips\" was 72.1% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 46,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "no aircraft box on aircraft clips",
+      "class": null,
+      "value": "72.1%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35",
+      "title": "v3 · false aircraft on drone clips · T-clips-42",
+      "summary": "v3: \"false aircraft on drone clips\" was 14.8% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 46,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test.",
+        "The ledger repeats this v3 figure on the run4 and run5 lines."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "false aircraft on drone clips",
+      "class": null,
+      "value": "14.8%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35",
+      "title": "run3 · false aircraft on drone clips · T-clips-42",
+      "summary": "run3: \"false aircraft on drone clips\" was 12.9% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 46,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "false aircraft on drone clips",
+      "class": null,
+      "value": "12.9%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35",
+      "title": "v3 · no drone box on drone clips · T-clips-42",
+      "summary": "v3: \"no drone box on drone clips\" was 91.6% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 46,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test.",
+        "The ledger repeats this v3 figure on the run4 and run5 lines."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "no drone box on drone clips",
+      "class": null,
+      "value": "91.6%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35",
+      "title": "run3 · no drone box on drone clips · T-clips-42",
+      "summary": "run3: \"no drone box on drone clips\" was 94.1% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 46,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "no drone box on drone clips",
+      "class": null,
+      "value": "94.1%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run4-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35",
+      "title": "run4 · false drone on aircraft clips · T-clips-42",
+      "summary": "run4: \"false drone on aircraft clips\" was 4.8% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 47,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run4",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "false drone on aircraft clips",
+      "class": null,
+      "value": "4.8%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run4-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35",
+      "title": "run4 · no aircraft box on aircraft clips · T-clips-42",
+      "summary": "run4: \"no aircraft box on aircraft clips\" was 46.9% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 47,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run4",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "no aircraft box on aircraft clips",
+      "class": null,
+      "value": "46.9%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run4-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35",
+      "title": "run4 · false aircraft on drone clips · T-clips-42",
+      "summary": "run4: \"false aircraft on drone clips\" was 27.6% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 47,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run4",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "false aircraft on drone clips",
+      "class": null,
+      "value": "27.6%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run4-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35",
+      "title": "run4 · no drone box on drone clips · T-clips-42",
+      "summary": "run4: \"no drone box on drone clips\" was 90.2% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 47,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run4",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "no drone box on drone clips",
+      "class": null,
+      "value": "90.2%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35",
+      "title": "run5 · false drone on aircraft clips · T-clips-42",
+      "summary": "run5: \"false drone on aircraft clips\" was 4.1% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 48,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "false drone on aircraft clips",
+      "class": null,
+      "value": "4.1%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-false-drone-on-aircraft-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35",
+      "title": "run5 · no aircraft box on aircraft clips · T-clips-42",
+      "summary": "run5: \"no aircraft box on aircraft clips\" was 48.6% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 48,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "no aircraft box on aircraft clips",
+      "class": null,
+      "value": "48.6%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-no-aircraft-box-on-aircraft-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35",
+      "title": "run5 · false aircraft on drone clips · T-clips-42",
+      "summary": "run5: \"false aircraft on drone clips\" was 29.5% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 48,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "false aircraft on drone clips",
+      "class": null,
+      "value": "29.5%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-false-aircraft-on-drone-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35",
+      "title": "run5 · no drone box on drone clips · T-clips-42",
+      "summary": "run5: \"no drone box on drone clips\" was 92.5% of frames on T-clips-42 (confidence 0.35).",
+      "source": "S6",
+      "source_line": 48,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "no drone box on drone clips",
+      "class": null,
+      "value": "92.5%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-compare",
+      "compared_with": [
+        "R-v3-T-clips-42-no-drone-box-on-drone-clips-confidence-0.35"
+      ],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-military_drone-false-aircraft-confidence-0.35",
+      "title": "v3 · false aircraft · T-clips-42-military_drone",
+      "summary": "v3: \"false aircraft\" was 17.6% of frames on T-clips-42-military_drone (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42-military_drone",
+      "metric_name": "false aircraft",
+      "class": null,
+      "value": "17.6%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-military_drone-false-aircraft-confidence-0.35",
+      "title": "run5 · false aircraft · T-clips-42-military_drone",
+      "summary": "run5: \"false aircraft\" was 38.4% of frames on T-clips-42-military_drone (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42-military_drone",
+      "metric_name": "false aircraft",
+      "class": null,
+      "value": "38.4%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [
+        "R-v3-T-clips-42-military_drone-false-aircraft-confidence-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-military_drone-no-drone-box-confidence-0.35",
+      "title": "v3 · no drone box · T-clips-42-military_drone",
+      "summary": "v3: \"no drone box\" was 89.5% of frames on T-clips-42-military_drone (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42-military_drone",
+      "metric_name": "no drone box",
+      "class": null,
+      "value": "89.5%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-military_drone-no-drone-box-confidence-0.35",
+      "title": "run5 · no drone box · T-clips-42-military_drone",
+      "summary": "run5: \"no drone box\" was 93.7% of frames on T-clips-42-military_drone (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42-military_drone",
+      "metric_name": "no drone box",
+      "class": null,
+      "value": "93.7%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [
+        "R-v3-T-clips-42-military_drone-no-drone-box-confidence-0.35"
+      ],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-military_aircraft-false-drone-confidence-0.35",
+      "title": "v3 · false drone · T-clips-42-military_aircraft",
+      "summary": "v3: \"false drone\" was 3.5% of frames on T-clips-42-military_aircraft (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42-military_aircraft",
+      "metric_name": "false drone",
+      "class": null,
+      "value": "3.5%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-military_aircraft-false-drone-confidence-0.35",
+      "title": "run5 · false drone · T-clips-42-military_aircraft",
+      "summary": "run5: \"false drone\" was 5.6% of frames on T-clips-42-military_aircraft (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42-military_aircraft",
+      "metric_name": "false drone",
+      "class": null,
+      "value": "5.6%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [
+        "R-v3-T-clips-42-military_aircraft-false-drone-confidence-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-military_aircraft-no-aircraft-box-confidence-0.35",
+      "title": "v3 · no aircraft box · T-clips-42-military_aircraft",
+      "summary": "v3: \"no aircraft box\" was 63.1% of frames on T-clips-42-military_aircraft (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42-military_aircraft",
+      "metric_name": "no aircraft box",
+      "class": null,
+      "value": "63.1%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-military_aircraft-no-aircraft-box-confidence-0.35",
+      "title": "run5 · no aircraft box · T-clips-42-military_aircraft",
+      "summary": "run5: \"no aircraft box\" was 44.7% of frames on T-clips-42-military_aircraft (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42-military_aircraft",
+      "metric_name": "no aircraft box",
+      "class": null,
+      "value": "44.7%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [
+        "R-v3-T-clips-42-military_aircraft-no-aircraft-box-confidence-0.35"
+      ],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-airplane-false-drone-confidence-0.35",
+      "title": "v3 · false drone · T-clips-42-airplane",
+      "summary": "v3: \"false drone\" was 0.0% of frames on T-clips-42-airplane (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42-airplane",
+      "metric_name": "false drone",
+      "class": null,
+      "value": "0.0%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-airplane-false-drone-confidence-0.35",
+      "title": "run5 · false drone · T-clips-42-airplane",
+      "summary": "run5: \"false drone\" was 0.0% of frames on T-clips-42-airplane (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42-airplane",
+      "metric_name": "false drone",
+      "class": null,
+      "value": "0.0%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [
+        "R-v3-T-clips-42-airplane-false-drone-confidence-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-airplane-no-aircraft-box-confidence-0.35",
+      "title": "v3 · no aircraft box · T-clips-42-airplane",
+      "summary": "v3: \"no aircraft box\" was 65.9% of frames on T-clips-42-airplane (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42-airplane",
+      "metric_name": "no aircraft box",
+      "class": null,
+      "value": "65.9%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-airplane-no-aircraft-box-confidence-0.35",
+      "title": "run5 · no aircraft box · T-clips-42-airplane",
+      "summary": "run5: \"no aircraft box\" was 59.9% of frames on T-clips-42-airplane (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42-airplane",
+      "metric_name": "no aircraft box",
+      "class": null,
+      "value": "59.9%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [
+        "R-v3-T-clips-42-airplane-no-aircraft-box-confidence-0.35"
+      ],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-drone-false-aircraft-confidence-0.35",
+      "title": "v3 · false aircraft · T-clips-42-drone",
+      "summary": "v3: \"false aircraft\" was 11.8% of frames on T-clips-42-drone (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42-drone",
+      "metric_name": "false aircraft",
+      "class": null,
+      "value": "11.8%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-drone-false-aircraft-confidence-0.35",
+      "title": "run5 · false aircraft · T-clips-42-drone",
+      "summary": "run5: \"false aircraft\" was 19.6% of frames on T-clips-42-drone (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Wrong-class numbers count a wrong-class box anywhere in the frame, even when the right class also appears.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42-drone",
+      "metric_name": "false aircraft",
+      "class": null,
+      "value": "19.6%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [
+        "R-v3-T-clips-42-drone-false-aircraft-confidence-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-drone-no-drone-box-confidence-0.35",
+      "title": "v3 · no drone box · T-clips-42-drone",
+      "summary": "v3: \"no drone box\" was 93.9% of frames on T-clips-42-drone (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42-drone",
+      "metric_name": "no drone box",
+      "class": null,
+      "value": "93.9%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run5-T-clips-42-drone-no-drone-box-confidence-0.35",
+      "title": "run5 · no drone box · T-clips-42-drone",
+      "summary": "run5: \"no drone box\" was 91.1% of frames on T-clips-42-drone (confidence 0.35).",
+      "source": "S6",
+      "source_line": 49,
+      "caveats": [
+        "Labels are per video, so frames where the object is out of view or tiny count as misses.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run5",
+      "variant": null,
+      "test_set_id": "T-clips-42-drone",
+      "metric_name": "no drone box",
+      "class": null,
+      "value": "91.1%",
+      "unit": "share of frames",
+      "condition": "confidence 0.35",
+      "experiment_id": "X-clips-groups",
+      "compared_with": [
+        "R-v3-T-clips-42-drone-no-drone-box-confidence-0.35"
+      ],
+      "also_from": [
+        "S3",
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-found-aircraft-threshold-0.25",
+      "title": "v3 · found (aircraft) · T-clips-42",
+      "summary": "v3: \"found\" on aircraft clips was 44.2% of frames on T-clips-42 (threshold 0.25).",
+      "source": "S7",
+      "source_line": 54,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "aircraft",
+      "value": "44.2%",
+      "unit": "share of frames",
+      "condition": "threshold 0.25",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.25",
+      "title": "v3 · mislabeled only (aircraft) · T-clips-42",
+      "summary": "v3: \"mislabeled only\" on aircraft clips was 6.8% of frames on T-clips-42 (threshold 0.25).",
+      "source": "S7",
+      "source_line": 54,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "aircraft",
+      "value": "6.8%",
+      "unit": "share of frames",
+      "condition": "threshold 0.25",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-found-drone-threshold-0.25",
+      "title": "v3 · found (drone) · T-clips-42",
+      "summary": "v3: \"found\" on drone clips was 12.9% of frames on T-clips-42 (threshold 0.25).",
+      "source": "S7",
+      "source_line": 54,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "drone",
+      "value": "12.9%",
+      "unit": "share of frames",
+      "condition": "threshold 0.25",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.25",
+      "title": "v3 · mislabeled only (drone) · T-clips-42",
+      "summary": "v3: \"mislabeled only\" on drone clips was 19.5% of frames on T-clips-42 (threshold 0.25).",
+      "source": "S7",
+      "source_line": 54,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "drone",
+      "value": "19.5%",
+      "unit": "share of frames",
+      "condition": "threshold 0.25",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-rough-score-threshold-0.25",
+      "title": "v3 · rough score · T-clips-42",
+      "summary": "v3 scored +0.154 rough score on T-clips-42 (threshold 0.25).",
+      "source": "S7",
+      "source_line": 54,
+      "caveats": [
+        "Rough score is a guide, not a verdict.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "rough score",
+      "class": null,
+      "value": "+0.154",
+      "unit": null,
+      "condition": "threshold 0.25",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-found-aircraft-threshold-0.35",
+      "title": "v3 · found (aircraft) · T-clips-42",
+      "summary": "v3: \"found\" on aircraft clips was 36.1% of frames on T-clips-42 (threshold 0.35).",
+      "source": "S7",
+      "source_line": 55,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "aircraft",
+      "value": "36.1%",
+      "unit": "share of frames",
+      "condition": "threshold 0.35",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.35",
+      "title": "v3 · mislabeled only (aircraft) · T-clips-42",
+      "summary": "v3: \"mislabeled only\" on aircraft clips was 2.4% of frames on T-clips-42 (threshold 0.35).",
+      "source": "S7",
+      "source_line": 55,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "aircraft",
+      "value": "2.4%",
+      "unit": "share of frames",
+      "condition": "threshold 0.35",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-found-drone-threshold-0.35",
+      "title": "v3 · found (drone) · T-clips-42",
+      "summary": "v3: \"found\" on drone clips was 8.2% of frames on T-clips-42 (threshold 0.35).",
+      "source": "S7",
+      "source_line": 55,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "drone",
+      "value": "8.2%",
+      "unit": "share of frames",
+      "condition": "threshold 0.35",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.35",
+      "title": "v3 · mislabeled only (drone) · T-clips-42",
+      "summary": "v3: \"mislabeled only\" on drone clips was 13.8% of frames on T-clips-42 (threshold 0.35).",
+      "source": "S7",
+      "source_line": 55,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "drone",
+      "value": "13.8%",
+      "unit": "share of frames",
+      "condition": "threshold 0.35",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-rough-score-threshold-0.35",
+      "title": "v3 · rough score · T-clips-42",
+      "summary": "v3 scored +0.141 rough score on T-clips-42 (threshold 0.35).",
+      "source": "S7",
+      "source_line": 55,
+      "caveats": [
+        "Rough score is a guide, not a verdict.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "rough score",
+      "class": null,
+      "value": "+0.141",
+      "unit": null,
+      "condition": "threshold 0.35",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-found-aircraft-threshold-0.5",
+      "title": "v3 · found (aircraft) · T-clips-42",
+      "summary": "v3: \"found\" on aircraft clips was 25.5% of frames on T-clips-42 (threshold 0.5).",
+      "source": "S7",
+      "source_line": 56,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "aircraft",
+      "value": "25.5%",
+      "unit": "share of frames",
+      "condition": "threshold 0.5",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.5",
+      "title": "v3 · mislabeled only (aircraft) · T-clips-42",
+      "summary": "v3: \"mislabeled only\" on aircraft clips was 0.6% of frames on T-clips-42 (threshold 0.5).",
+      "source": "S7",
+      "source_line": 56,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "aircraft",
+      "value": "0.6%",
+      "unit": "share of frames",
+      "condition": "threshold 0.5",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-found-drone-threshold-0.5",
+      "title": "v3 · found (drone) · T-clips-42",
+      "summary": "v3: \"found\" on drone clips was 5.5% of frames on T-clips-42 (threshold 0.5).",
+      "source": "S7",
+      "source_line": 56,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "drone",
+      "value": "5.5%",
+      "unit": "share of frames",
+      "condition": "threshold 0.5",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.5",
+      "title": "v3 · mislabeled only (drone) · T-clips-42",
+      "summary": "v3: \"mislabeled only\" on drone clips was 7.9% of frames on T-clips-42 (threshold 0.5).",
+      "source": "S7",
+      "source_line": 56,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "drone",
+      "value": "7.9%",
+      "unit": "share of frames",
+      "condition": "threshold 0.5",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-rough-score-threshold-0.5",
+      "title": "v3 · rough score · T-clips-42",
+      "summary": "v3 scored +0.112 rough score on T-clips-42 (threshold 0.5).",
+      "source": "S7",
+      "source_line": 56,
+      "caveats": [
+        "Rough score is a guide, not a verdict.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "rough score",
+      "class": null,
+      "value": "+0.112",
+      "unit": null,
+      "condition": "threshold 0.5",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-found-aircraft-threshold-0.65",
+      "title": "v3 · found (aircraft) · T-clips-42",
+      "summary": "v3: \"found\" on aircraft clips was 9.0% of frames on T-clips-42 (threshold 0.65).",
+      "source": "S7",
+      "source_line": 57,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "aircraft",
+      "value": "9.0%",
+      "unit": "share of frames",
+      "condition": "threshold 0.65",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.65",
+      "title": "v3 · mislabeled only (aircraft) · T-clips-42",
+      "summary": "v3: \"mislabeled only\" on aircraft clips was 0.3% of frames on T-clips-42 (threshold 0.65).",
+      "source": "S7",
+      "source_line": 57,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "aircraft",
+      "value": "0.3%",
+      "unit": "share of frames",
+      "condition": "threshold 0.65",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-found-drone-threshold-0.65",
+      "title": "v3 · found (drone) · T-clips-42",
+      "summary": "v3: \"found\" on drone clips was 1.6% of frames on T-clips-42 (threshold 0.65).",
+      "source": "S7",
+      "source_line": 57,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "drone",
+      "value": "1.6%",
+      "unit": "share of frames",
+      "condition": "threshold 0.65",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.65",
+      "title": "v3 · mislabeled only (drone) · T-clips-42",
+      "summary": "v3: \"mislabeled only\" on drone clips was 2.0% of frames on T-clips-42 (threshold 0.65).",
+      "source": "S7",
+      "source_line": 57,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "drone",
+      "value": "2.0%",
+      "unit": "share of frames",
+      "condition": "threshold 0.65",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-rough-score-threshold-0.65",
+      "title": "v3 · rough score · T-clips-42",
+      "summary": "v3 scored +0.041 rough score on T-clips-42 (threshold 0.65).",
+      "source": "S7",
+      "source_line": 57,
+      "caveats": [
+        "Rough score is a guide, not a verdict.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "rough score",
+      "class": null,
+      "value": "+0.041",
+      "unit": null,
+      "condition": "threshold 0.65",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-found-aircraft-threshold-0.8",
+      "title": "v3 · found (aircraft) · T-clips-42",
+      "summary": "v3: \"found\" on aircraft clips was 1.6% of frames on T-clips-42 (threshold 0.8).",
+      "source": "S7",
+      "source_line": 58,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "aircraft",
+      "value": "1.6%",
+      "unit": "share of frames",
+      "condition": "threshold 0.8",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.8",
+      "title": "v3 · mislabeled only (aircraft) · T-clips-42",
+      "summary": "v3: \"mislabeled only\" on aircraft clips was 0.0% of frames on T-clips-42 (threshold 0.8).",
+      "source": "S7",
+      "source_line": 58,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "aircraft",
+      "value": "0.0%",
+      "unit": "share of frames",
+      "condition": "threshold 0.8",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-found-drone-threshold-0.8",
+      "title": "v3 · found (drone) · T-clips-42",
+      "summary": "v3: \"found\" on drone clips was 0.3% of frames on T-clips-42 (threshold 0.8).",
+      "source": "S7",
+      "source_line": 58,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "drone",
+      "value": "0.3%",
+      "unit": "share of frames",
+      "condition": "threshold 0.8",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.8",
+      "title": "v3 · mislabeled only (drone) · T-clips-42",
+      "summary": "v3: \"mislabeled only\" on drone clips was 0.4% of frames on T-clips-42 (threshold 0.8).",
+      "source": "S7",
+      "source_line": 58,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "drone",
+      "value": "0.4%",
+      "unit": "share of frames",
+      "condition": "threshold 0.8",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-v3-T-clips-42-rough-score-threshold-0.8",
+      "title": "v3 · rough score · T-clips-42",
+      "summary": "v3 scored +0.007 rough score on T-clips-42 (threshold 0.8).",
+      "source": "S7",
+      "source_line": 58,
+      "caveats": [
+        "Rough score is a guide, not a verdict.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-v3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "rough score",
+      "class": null,
+      "value": "+0.007",
+      "unit": null,
+      "condition": "threshold 0.8",
+      "experiment_id": "X-threshold",
+      "compared_with": [],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-found-aircraft-threshold-0.25",
+      "title": "run3 · found (aircraft) · T-clips-42",
+      "summary": "run3: \"found\" on aircraft clips was 37.4% of frames on T-clips-42 (threshold 0.25).",
+      "source": "S7",
+      "source_line": 59,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "aircraft",
+      "value": "37.4%",
+      "unit": "share of frames",
+      "condition": "threshold 0.25",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-found-aircraft-threshold-0.25"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.25",
+      "title": "run3 · mislabeled only (aircraft) · T-clips-42",
+      "summary": "run3: \"mislabeled only\" on aircraft clips was 10.8% of frames on T-clips-42 (threshold 0.25).",
+      "source": "S7",
+      "source_line": 59,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "aircraft",
+      "value": "10.8%",
+      "unit": "share of frames",
+      "condition": "threshold 0.25",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.25"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-found-drone-threshold-0.25",
+      "title": "run3 · found (drone) · T-clips-42",
+      "summary": "run3: \"found\" on drone clips was 12.5% of frames on T-clips-42 (threshold 0.25).",
+      "source": "S7",
+      "source_line": 59,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "drone",
+      "value": "12.5%",
+      "unit": "share of frames",
+      "condition": "threshold 0.25",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-found-drone-threshold-0.25"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-mislabeled-only-drone-threshold-0.25",
+      "title": "run3 · mislabeled only (drone) · T-clips-42",
+      "summary": "run3: \"mislabeled only\" on drone clips was 17.2% of frames on T-clips-42 (threshold 0.25).",
+      "source": "S7",
+      "source_line": 59,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "drone",
+      "value": "17.2%",
+      "unit": "share of frames",
+      "condition": "threshold 0.25",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.25"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-rough-score-threshold-0.25",
+      "title": "run3 · rough score · T-clips-42",
+      "summary": "run3 scored +0.110 rough score on T-clips-42 (threshold 0.25).",
+      "source": "S7",
+      "source_line": 59,
+      "caveats": [
+        "Rough score is a guide, not a verdict.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "rough score",
+      "class": null,
+      "value": "+0.110",
+      "unit": null,
+      "condition": "threshold 0.25",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-rough-score-threshold-0.25"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-found-aircraft-threshold-0.35",
+      "title": "run3 · found (aircraft) · T-clips-42",
+      "summary": "run3: \"found\" on aircraft clips was 27.9% of frames on T-clips-42 (threshold 0.35).",
+      "source": "S7",
+      "source_line": 60,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "aircraft",
+      "value": "27.9%",
+      "unit": "share of frames",
+      "condition": "threshold 0.35",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-found-aircraft-threshold-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.35",
+      "title": "run3 · mislabeled only (aircraft) · T-clips-42",
+      "summary": "run3: \"mislabeled only\" on aircraft clips was 6.0% of frames on T-clips-42 (threshold 0.35).",
+      "source": "S7",
+      "source_line": 60,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "aircraft",
+      "value": "6.0%",
+      "unit": "share of frames",
+      "condition": "threshold 0.35",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-found-drone-threshold-0.35",
+      "title": "run3 · found (drone) · T-clips-42",
+      "summary": "run3: \"found\" on drone clips was 5.7% of frames on T-clips-42 (threshold 0.35).",
+      "source": "S7",
+      "source_line": 60,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "drone",
+      "value": "5.7%",
+      "unit": "share of frames",
+      "condition": "threshold 0.35",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-found-drone-threshold-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-mislabeled-only-drone-threshold-0.35",
+      "title": "run3 · mislabeled only (drone) · T-clips-42",
+      "summary": "run3: \"mislabeled only\" on drone clips was 12.7% of frames on T-clips-42 (threshold 0.35).",
+      "source": "S7",
+      "source_line": 60,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "drone",
+      "value": "12.7%",
+      "unit": "share of frames",
+      "condition": "threshold 0.35",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-rough-score-threshold-0.35",
+      "title": "run3 · rough score · T-clips-42",
+      "summary": "run3 scored +0.074 rough score on T-clips-42 (threshold 0.35).",
+      "source": "S7",
+      "source_line": 60,
+      "caveats": [
+        "Rough score is a guide, not a verdict.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "rough score",
+      "class": null,
+      "value": "+0.074",
+      "unit": null,
+      "condition": "threshold 0.35",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-rough-score-threshold-0.35"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-found-aircraft-threshold-0.5",
+      "title": "run3 · found (aircraft) · T-clips-42",
+      "summary": "run3: \"found\" on aircraft clips was 16.6% of frames on T-clips-42 (threshold 0.5).",
+      "source": "S7",
+      "source_line": 61,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "aircraft",
+      "value": "16.6%",
+      "unit": "share of frames",
+      "condition": "threshold 0.5",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-found-aircraft-threshold-0.5"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.5",
+      "title": "run3 · mislabeled only (aircraft) · T-clips-42",
+      "summary": "run3: \"mislabeled only\" on aircraft clips was 1.6% of frames on T-clips-42 (threshold 0.5).",
+      "source": "S7",
+      "source_line": 61,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "aircraft",
+      "value": "1.6%",
+      "unit": "share of frames",
+      "condition": "threshold 0.5",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.5"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-found-drone-threshold-0.5",
+      "title": "run3 · found (drone) · T-clips-42",
+      "summary": "run3: \"found\" on drone clips was 1.1% of frames on T-clips-42 (threshold 0.5).",
+      "source": "S7",
+      "source_line": 61,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "drone",
+      "value": "1.1%",
+      "unit": "share of frames",
+      "condition": "threshold 0.5",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-found-drone-threshold-0.5"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-mislabeled-only-drone-threshold-0.5",
+      "title": "run3 · mislabeled only (drone) · T-clips-42",
+      "summary": "run3: \"mislabeled only\" on drone clips was 6.3% of frames on T-clips-42 (threshold 0.5).",
+      "source": "S7",
+      "source_line": 61,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "drone",
+      "value": "6.3%",
+      "unit": "share of frames",
+      "condition": "threshold 0.5",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.5"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-rough-score-threshold-0.5",
+      "title": "run3 · rough score · T-clips-42",
+      "summary": "run3 scored +0.049 rough score on T-clips-42 (threshold 0.5).",
+      "source": "S7",
+      "source_line": 61,
+      "caveats": [
+        "Rough score is a guide, not a verdict.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "rough score",
+      "class": null,
+      "value": "+0.049",
+      "unit": null,
+      "condition": "threshold 0.5",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-rough-score-threshold-0.5"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-found-aircraft-threshold-0.65",
+      "title": "run3 · found (aircraft) · T-clips-42",
+      "summary": "run3: \"found\" on aircraft clips was 6.5% of frames on T-clips-42 (threshold 0.65).",
+      "source": "S7",
+      "source_line": 62,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "aircraft",
+      "value": "6.5%",
+      "unit": "share of frames",
+      "condition": "threshold 0.65",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-found-aircraft-threshold-0.65"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.65",
+      "title": "run3 · mislabeled only (aircraft) · T-clips-42",
+      "summary": "run3: \"mislabeled only\" on aircraft clips was 0.0% of frames on T-clips-42 (threshold 0.65).",
+      "source": "S7",
+      "source_line": 62,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "aircraft",
+      "value": "0.0%",
+      "unit": "share of frames",
+      "condition": "threshold 0.65",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.65"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-found-drone-threshold-0.65",
+      "title": "run3 · found (drone) · T-clips-42",
+      "summary": "run3: \"found\" on drone clips was 0.0% of frames on T-clips-42 (threshold 0.65).",
+      "source": "S7",
+      "source_line": 62,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "drone",
+      "value": "0.0%",
+      "unit": "share of frames",
+      "condition": "threshold 0.65",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-found-drone-threshold-0.65"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-mislabeled-only-drone-threshold-0.65",
+      "title": "run3 · mislabeled only (drone) · T-clips-42",
+      "summary": "run3: \"mislabeled only\" on drone clips was 2.5% of frames on T-clips-42 (threshold 0.65).",
+      "source": "S7",
+      "source_line": 62,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "drone",
+      "value": "2.5%",
+      "unit": "share of frames",
+      "condition": "threshold 0.65",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.65"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-rough-score-threshold-0.65",
+      "title": "run3 · rough score · T-clips-42",
+      "summary": "run3 scored +0.020 rough score on T-clips-42 (threshold 0.65).",
+      "source": "S7",
+      "source_line": 62,
+      "caveats": [
+        "Rough score is a guide, not a verdict.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "rough score",
+      "class": null,
+      "value": "+0.020",
+      "unit": null,
+      "condition": "threshold 0.65",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-rough-score-threshold-0.65"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-found-aircraft-threshold-0.8",
+      "title": "run3 · found (aircraft) · T-clips-42",
+      "summary": "run3: \"found\" on aircraft clips was 2.3% of frames on T-clips-42 (threshold 0.8).",
+      "source": "S7",
+      "source_line": 63,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "aircraft",
+      "value": "2.3%",
+      "unit": "share of frames",
+      "condition": "threshold 0.8",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-found-aircraft-threshold-0.8"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-mislabeled-only-aircraft-threshold-0.8",
+      "title": "run3 · mislabeled only (aircraft) · T-clips-42",
+      "summary": "run3: \"mislabeled only\" on aircraft clips was 0.0% of frames on T-clips-42 (threshold 0.8).",
+      "source": "S7",
+      "source_line": 63,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "aircraft",
+      "value": "0.0%",
+      "unit": "share of frames",
+      "condition": "threshold 0.8",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-mislabeled-only-aircraft-threshold-0.8"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-found-drone-threshold-0.8",
+      "title": "run3 · found (drone) · T-clips-42",
+      "summary": "run3: \"found\" on drone clips was 0.0% of frames on T-clips-42 (threshold 0.8).",
+      "source": "S7",
+      "source_line": 63,
+      "caveats": [
+        "\"found\" = right class appears (even if the wrong one appears too).",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "found",
+      "class": "drone",
+      "value": "0.0%",
+      "unit": "share of frames",
+      "condition": "threshold 0.8",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-found-drone-threshold-0.8"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-mislabeled-only-drone-threshold-0.8",
+      "title": "run3 · mislabeled only (drone) · T-clips-42",
+      "summary": "run3: \"mislabeled only\" on drone clips was 1.0% of frames on T-clips-42 (threshold 0.8).",
+      "source": "S7",
+      "source_line": 63,
+      "caveats": [
+        "\"mislabeled only\" = wrong class appears and the right one does not.",
+        "This ledger line gives four figures separated by slashes without labels; the order here follows the longer lines above it.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "mislabeled only",
+      "class": "drone",
+      "value": "1.0%",
+      "unit": "share of frames",
+      "condition": "threshold 0.8",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-mislabeled-only-drone-threshold-0.8"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    },
+    {
+      "id": "R-run3-T-clips-42-rough-score-threshold-0.8",
+      "title": "run3 · rough score · T-clips-42",
+      "summary": "run3 scored +0.006 rough score on T-clips-42 (threshold 0.8).",
+      "source": "S7",
+      "source_line": 63,
+      "caveats": [
+        "Rough score is a guide, not a verdict.",
+        "42 clips with per-video labels is a small test."
+      ],
+      "model_id": "M-run3",
+      "variant": null,
+      "test_set_id": "T-clips-42",
+      "metric_name": "rough score",
+      "class": null,
+      "value": "+0.006",
+      "unit": null,
+      "condition": "threshold 0.8",
+      "experiment_id": "X-threshold",
+      "compared_with": [
+        "R-v3-T-clips-42-rough-score-threshold-0.8"
+      ],
+      "also_from": [
+        "S8"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "id": "G-real-sky",
+      "title": "No run on Varn's own camera in a real sky",
+      "summary": "No run on Varn's own camera in a real sky.",
+      "source": "S8",
+      "source_line": 68,
+      "kind": "open",
+      "links": []
+    },
+    {
+      "id": "G-empty-sky",
+      "title": "Empty-sky false alarms not measured",
+      "summary": "False alarms on empty sky have not been measured.",
+      "source": "S8",
+      "source_line": 69,
+      "kind": "open",
+      "links": []
+    },
+    {
+      "id": "G-v3-drone-clips",
+      "title": "v3 finds a drone in few real-clip frames",
+      "summary": "v3 finds a drone in only about 8% of frames of the real drone clips.",
+      "source": "S8",
+      "source_line": 70,
+      "kind": "open",
+      "links": [
+        "T-clips-42"
+      ]
+    },
+    {
+      "id": "G-small-distant",
+      "title": "v3 is nearly blind on small, distant objects",
+      "summary": "v3 is nearly blind on small, distant objects (0.063 to 0.079 on held-out Svanstrom videos).",
+      "source": "S8",
+      "source_line": 71,
+      "kind": "open",
+      "links": [
+        "T-svan-1195",
+        "T-svan-897"
+      ]
+    },
+    {
+      "id": "G-finetune-mixup",
+      "title": "Fine-tunes mixed up drone and aircraft more",
+      "summary": "Three kinds of fine-tune found aircraft in more frames but mixed up drone and aircraft more. v3 stays the default.",
+      "source": "S8",
+      "source_line": 72,
+      "kind": "open",
+      "links": [
+        "X-clips-compare"
+      ]
+    },
+    {
+      "id": "G-hypothesis",
+      "title": "Unverified hypothesis: large military unmanned aircraft",
+      "summary": "Hypothesis, NOT verified: large military unmanned aircraft are called \"aircraft\" because the training drones were small multirotors.",
+      "source": "S8",
+      "source_line": 73,
+      "kind": "unverified",
+      "links": [
+        "D-clips"
+      ]
+    },
+    {
+      "id": "G-small-test",
+      "title": "The real-clip test is small",
+      "summary": "42 clips with per-video labels is a small test. A hand-labeled set of boxes from real footage is needed.",
+      "source": "S8",
+      "source_line": 74,
+      "kind": "open",
+      "links": [
+        "T-clips-42"
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "id": "N-scope",
+      "text": "Varn is detection only: a camera finds objects in the sky and labels them drone or aircraft. No jamming or interference.",
+      "source": "S1",
+      "source_line": 3
+    },
+    {
+      "id": "N-hand-copied",
+      "text": "All numbers were copied by hand from Kaggle report.md files, run logs and a threshold-check notebook, Oct 2026.",
+      "source": "S1",
+      "source_line": 4
+    },
+    {
+      "id": "N-not-run",
+      "text": "No model has been run on Varn's own camera in a real sky. No hardware has been built. No empty-sky false-alarm rate has been measured.",
+      "source": "S1",
+      "source_line": 5
+    },
+    {
+      "id": "N-metric",
+      "text": "metric \"mAP50\" = mean average precision at IoU 0.5, as reported by the Ultralytics validator.",
+      "source": "S1",
+      "source_line": 6
+    }
+  ]
+}
