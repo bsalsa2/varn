@@ -95,3 +95,8 @@ test('cascade: buttons that sit on a bone background set their own dark text wit
     assert.doesNotMatch(CSS, new RegExp(`^\\.${cls} \\{`, 'm'), `${cls} must be scoped under .ask`);
   }
 });
+
+test('cascade: no doubled selectors, and the button gets its glass background (a doubled `.ask .ask .ask-fab` matched nothing and left a white button)', () => {
+  assert.doesNotMatch(CSS, /\.ask \.ask [.\w]/);
+  assert.match(CSS, /^\.ask \.ask-fab, \.ask-panel \{\s*background: var\(--glass\)/m);
+});
