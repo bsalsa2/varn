@@ -12,13 +12,16 @@ export function normalise(res) {
     id: c.id || `call_${i}`, name: c.name || c.function?.name, arguments: toArgs(c.arguments ?? c.function?.arguments),
   })).filter((c) => typeof c.name === 'string');
   const text = typeof res?.response === 'string' ? res.response : typeof msg?.content === 'string' ? msg.content : typeof res?.result?.response === 'string' ? res.result.response : '';
-  return { text, toolCalls: calls, usage: res?.usage || res?.result?.usage || null };
+  const finish = msg ? res?.choices?.[0]?.finish_reason ?? null : null;
+  const shape = `keys=${Object.keys(res || {}).slice(0, 8).join('|')};text=${text.length}ch;tool_calls=${calls.length};finish=${finish}`;
+  return { text, toolCalls: calls, usage: res?.usage || res?.result?.usage || null, shape };
 }
 
 export function makeRunModel(env) {
   return async function runModel({ messages }) {
     const res = await env.AI.run(MODEL, {
       messages, max_tokens: MAX_OUTPUT_TOKENS, temperature: 0,
+      chat_template_kwargs: { enable_thinking: false },     // Gemma 4's thinking mode would eat the output budget before the answer
       tools: TOOL_SPECS.map((t) => ({ type: 'function', function: t })),
     });
     return normalise(res);

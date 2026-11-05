@@ -4,7 +4,7 @@
 export const MODEL = '@cf/google/gemma-4-26b-a4b-it';
 export const IN_PER_TOKEN = 9091 / 1e6;
 export const OUT_PER_TOKEN = 27273 / 1e6;
-export const MAX_OUTPUT_TOKENS = 350;
+export const MAX_OUTPUT_TOKENS = 600;               // thinking is switched off (see model.js), so this is all answer
 export const MAX_MODEL_CALLS = 5;                      // up to 4 tool steps, then the final answer
 export const tokensOf = (text) => Math.ceil(String(text).length / 3);          // deliberately pessimistic
 

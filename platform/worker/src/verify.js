@@ -24,10 +24,22 @@ export function numbersInAnswer(text) {
   return out;
 }
 
+/** Reads the model's JSON even when it adds a sentence around it or wraps it in a code fence. */
 export function parseFinal(text) {
   if (typeof text !== 'string') return null;
-  const m = text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '');
-  try { const j = JSON.parse(m); return j && typeof j === 'object' && !Array.isArray(j) ? j : null; } catch { return null; }
+  const t = text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '');
+  const tryParse = (x) => { try { const j = JSON.parse(x); return j && typeof j === 'object' && !Array.isArray(j) ? j : null; } catch { return null; } };
+  const whole = tryParse(t);
+  if (whole) return whole;
+  for (let start = t.indexOf('{'); start !== -1 && start < t.length; start = t.indexOf('{', start + 1)) {      // first balanced {...} that parses
+    let depth = 0, inStr = false, esc = false;
+    for (let i = start; i < t.length; i++) {
+      const ch = t[i];
+      if (inStr) { if (esc) esc = false; else if (ch === '\\') esc = true; else if (ch === '"') inStr = false; continue; }
+      if (ch === '"') inStr = true; else if (ch === '{') depth++; else if (ch === '}' && --depth === 0) { const j = tryParse(t.slice(start, i + 1)); if (j && typeof j.type === 'string') return j; break; }
+    }
+  }
+  return null;
 }
 
 /**

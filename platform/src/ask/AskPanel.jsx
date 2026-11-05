@@ -53,7 +53,7 @@ export function Bubble({ msg, onRun, onDismiss, canRun }) {
       <p>{msg.error ? <strong>Problem: </strong> : null}{msg.text}</p>
       {msg.type === 'raw' ? (
         <details><summary>Raw results</summary>
-          <pre className="ask-out">{JSON.stringify({ results: msg.results, facts: msg.facts }, null, 2)}</pre>
+          <pre className="ask-out">{JSON.stringify({ results: msg.results, facts: msg.facts, diag: msg.diag }, null, 2)}</pre>
         </details>
       ) : null}
       <Sources ids={msg.sources} cited={msg.cited} />
@@ -113,7 +113,7 @@ export default function AskPanel() {
       if (a.type === 'command') {
         const v = validateCommands(Array.isArray(a.commands) ? a.commands : [a.command]);     // checked again here before it is ever shown as runnable
         add(v.ok ? { role: 'ai', type: 'command', commands: v.commands, kind: v.kind, say: a.say } : { role: 'ai', error: true, text: 'The assistant proposed something that is not allowed, so it was dropped.' });
-      } else add({ role: 'ai', type: a.type, text: a.text, sources: a.sources, cited: a.cited, results: a.results, facts: a.facts });
+      } else add({ role: 'ai', type: a.type, text: a.text, sources: a.sources, cited: a.cited, results: a.results, facts: a.facts, diag: a.diag });
       return;
     }
     if (r.error === 'unauthorized') { setSignedIn(false); setNote('Your session ended. Sign in again.'); return; }

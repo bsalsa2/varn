@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { runAsk, prepare, MAX_TOOL_STEPS } from '../src/ask.js';
 import { isBriefing } from '../src/intent.js';
 import { scoreFacts, SCOPE_FACT } from '../src/facts.js';
-import { normalise } from '../src/model.js';
+import { normalise, makeRunModel } from '../src/model.js';
+import { parseFinal } from '../src/verify.js';
 import { FACTS, LIVE, scripted } from './helpers.js';
 
 const answer = (text, sources) => ({ text: JSON.stringify({ type: 'answer', text, sources }) });
@@ -214,4 +215,44 @@ test('verification: rounding a real number is fine, a different number is not', 
     const r = await ask([{ tool: 'get_view_state' }, answer(`The camera is ${wrong} up.`, ['get_view_state'])], 'how high is the camera');
     assert.equal(r.response.type, 'raw', wrong);
   }
+});
+
+test('model request: thinking is switched off and the answer has room (Gemma 4 thinking used up the budget and cut the JSON off)', async () => {
+  let seen; const env = { AI: { run: async (model, args) => { seen = { model, args }; return { response: '{"type":"answer","text":"I don\'t have that.","sources":[]}' }; } } };
+  const out = await makeRunModel(env)({ messages: [{ role: 'user', content: 'hi' }] });
+  assert.equal(seen.model, '@cf/google/gemma-4-26b-a4b-it');
+  assert.deepEqual(seen.args.chat_template_kwargs, { enable_thinking: false });
+  assert.equal(seen.args.max_tokens, 600); assert.equal(seen.args.temperature, 0);
+  assert.match(out.shape, /keys=response;text=\d+ch/);
+});
+
+test('parser: finds the JSON even with words around it, a code fence, or braces inside strings', () => {
+  const j = '{"type":"answer","text":"Use {curly} braces","sources":["F-SCOPE"]}';
+  for (const text of [j, `Sure! ${j} Hope that helps.`, '```json\n' + j + '\n```', `Thinking... {not json} then ${j}`]) assert.equal(parseFinal(text)?.text, 'Use {curly} braces', text.slice(0, 30));
+  for (const text of ['no json here', '{"type":"answer", "text":', '', null, '[1,2]']) assert.equal(parseFinal(text), null, String(text));
+});
+
+test('prose reply: when tools were consulted, a plain-text answer is accepted only if it passes the same checks', async () => {
+  const q = "Brief me on what's on screen";
+  const good = await ask([{ text: 'SIM: the camera is about 1,235 km up, 5 earthquakes are loaded (strongest 6.1) and 3 events are open.' }], q);
+  assert.equal(good.response.type, 'answer'); assert.equal(good.model.calls.n, 1);
+  assert.ok(good.response.sources.includes('get_quake_summary'));
+  const invented = await ask([{ text: 'SIM: 99 earthquakes are loaded.' }], q);
+  assert.equal(invented.response.type, 'raw'); assert.match(invented.response.text, /number 99/);
+  const noSim = await ask([{ text: 'There are 4 tracks in the sky.' }], q);
+  assert.equal(noSim.response.type, 'raw');
+  const link = await ask([{ text: 'SIM: see https://evil.example for 5 earthquakes.' }], q);
+  assert.equal(link.response.type, 'raw');
+});
+
+test('prose reply: with nothing consulted there is nothing to verify against, so it is not accepted', async () => {
+  const r = await ask([{ text: 'It is sunny in Paris.' }, { text: 'It is sunny in Paris.' }], 'what is the weather in Paris?');
+  assert.equal(r.response.type, 'answer'); assert.match(r.response.text, /couldn't produce an answer/);
+});
+
+test('diagnostics: a raw fallback says what shape the model reply had (no content), so a failure can be understood', async () => {
+  const q = 'give me a briefing';
+  const model = async () => ({ text: 'SIM: 99 earthquakes', toolCalls: [], usage: null, shape: 'keys=choices;text=19ch;tool_calls=0;finish=length' });
+  const r = await runAsk({ question: q, live: LIVE, facts: FACTS, runModel: model });
+  assert.equal(r.response.type, 'raw'); assert.equal(r.response.diag, 'keys=choices;text=19ch;tool_calls=0;finish=length');
 });

@@ -49,14 +49,15 @@ export async function runAsk({ question, live, facts, runModel }) {
   const factIds = new Set(p.picked.map((f) => f.id)), toolsUsed = new Set(p.pre.map((r) => r.tool)), results = [...p.pre];
   const factText = new Map(p.picked.map((f) => [f.id, f.text]));
   const messages = [...p.messages];
-  let spent = 0, calls = 0, steps = 0, retried = false, simLabelled = p.pre.some((r) => r.tool === 'get_sim_tracks' && r.label === 'SIM');
+  let spent = 0, calls = 0, steps = 0, retried = false, lastShape = null, simLabelled = p.pre.some((r) => r.tool === 'get_sim_tracks' && r.label === 'SIM');
   const finish = (response) => ({ response, neurons: spent });
-  const raw = (why) => finish({ type: 'raw', text: `I couldn't verify an answer (${why}), so here are the raw results.`, results, facts: p.picked.filter((f) => f.id !== 'F-SCOPE').slice(0, 5).map(forPrompt) });
+  const raw = (why) => finish({ type: 'raw', text: `I couldn't verify an answer (${why}), so here are the raw results.`, diag: lastShape, results, facts: p.picked.filter((f) => f.id !== 'F-SCOPE').slice(0, 5).map(forPrompt) });
   const nudge = { role: 'user', content: 'Reply with only the JSON object {"type":"answer","text":"...","sources":[...]}.' };
 
   while (calls < MAX_MODEL_CALLS) {
     calls++;
     const out = await runModel({ messages });
+    lastShape = out.shape || null;
     spent += actualCost({ usage: out.usage, messages, output: out.text + JSON.stringify(out.toolCalls) });
 
     if (out.toolCalls.length) {
@@ -94,12 +95,16 @@ export async function runAsk({ question, live, facts, runModel }) {
       const v = validateCommands(Array.isArray(parsed.commands) ? parsed.commands : [parsed.command]);
       if (v.ok) return finish({ type: 'command', commands: v.commands, command: v.commands[0], kind: v.kind, say: String(parsed.say || `Run: ${v.commands.join(', then ')}`).slice(0, 200) });
     }
-    if (!parsed) {
+    // Plain prose instead of JSON: when tools were consulted, treat it as the answer text and verify it the same way
+    // (every number, the SIM label, no links); the sources are the tools that were actually used.
+    const prose = !parsed && results.length && out.text.trim() && !/^\s*[{\[]/.test(out.text) ? out.text.trim() : null;
+    const effective = parsed || (prose ? { type: 'answer', text: prose, sources: [...toolsUsed] } : null);
+    if (!effective) {
       if (!retried) { retried = true; messages.push(nudge); continue; }
       return results.length ? raw('the answer was not valid JSON') : finish(plain("I couldn't produce an answer. Please rephrase."));
     }
     const allowed = allowedNumbers(results, [...factText.values()], question);
-    const v = verifyAnswer(parsed, { factIds, toolsUsed, allowed, simLabelled });
+    const v = verifyAnswer(effective, { factIds, toolsUsed, allowed, simLabelled });
     if (v.ok) {
       const cited = {}; for (const s of v.answer.sources) if (factText.has(s)) cited[s] = factText.get(s);
       return finish({ ...v.answer, cited });
