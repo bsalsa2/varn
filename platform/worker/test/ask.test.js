@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runAsk, prepare, MAX_TOOL_STEPS } from '../src/ask.js';
 import { isBriefing } from '../src/intent.js';
+import { validateHistory } from '../src/history.js';
 import { scoreFacts, SCOPE_FACT } from '../src/facts.js';
 import { normalise, makeRunModel } from '../src/model.js';
 import { parseFinal } from '../src/verify.js';
@@ -255,4 +256,30 @@ test('diagnostics: a raw fallback says what shape the model reply had (no conten
   const model = async () => ({ text: 'SIM: 99 earthquakes', toolCalls: [], usage: null, shape: 'keys=choices;text=19ch;tool_calls=0;finish=length' });
   const r = await runAsk({ question: q, live: LIVE, facts: FACTS, runModel: model });
   assert.equal(r.response.type, 'raw'); assert.equal(r.response.diag, 'keys=choices;text=19ch;tool_calls=0;finish=length');
+});
+
+test('memory: earlier messages are passed to the model, so "yes" can mean what was just offered', async () => {
+  const history = [{ role: 'user', text: "Brief me on what's on screen" }, { role: 'assistant', text: 'There are 27 earthquakes, the strongest is 6.1. Would you like to see the strongest earthquake?' }];
+  const model = scripted([{ tool: 'propose_command', args: { commands: ['quakes day', 'go 1'], say: 'Fly to the strongest earthquake.' } }]);
+  const r = await runAsk({ question: 'Yes', live: LIVE, facts: FACTS, history, runModel: model });
+  assert.equal(r.response.type, 'command'); assert.deepEqual(r.response.commands, ['quakes day', 'go 1']);
+  const sent = model.calls.messages[0].slice(0, 4).map((m) => m.role);
+  assert.deepEqual(sent, ['system', 'user', 'assistant', 'user']);
+  assert.equal(model.calls.messages[0][2].content, history[1].text);
+});
+
+test('memory: numbers already said earlier in the chat may be repeated, others still may not', async () => {
+  const history = [{ role: 'user', text: 'how many quakes' }, { role: 'assistant', text: 'There are 27 earthquakes loaded.' }];
+  const ok = await runAsk({ question: 'and the strongest?', live: LIVE, facts: FACTS, history, runModel: scripted([{ tool: 'get_quake_summary' }, answer('Of the 27 earthquakes, the strongest is 6.1.', ['get_quake_summary'])]) });
+  assert.equal(ok.response.type, 'answer');
+  const bad = await runAsk({ question: 'and the strongest?', live: LIVE, facts: FACTS, history, runModel: scripted([{ tool: 'get_quake_summary' }, answer('Of the 31 earthquakes, the strongest is 6.1.', ['get_quake_summary'])]) });
+  assert.equal(bad.response.type, 'raw');
+});
+
+test('memory: history is validated strictly', () => {
+  assert.deepEqual(validateHistory(undefined), { ok: true, value: [] });
+  assert.equal(validateHistory([{ role: 'user', text: 'hi' }, { role: 'assistant', text: 'hello' }]).ok, true);
+  for (const bad of ['x', [{ role: 'system', text: 'x' }], [{ role: 'user', text: '' }], [{ role: 'user', text: 'x'.repeat(301) }], [{ role: 'assistant', text: 'x'.repeat(701) }], [{ role: 'user', text: 'a', extra: 1 }], Array(5).fill({ role: 'user', text: 'a' }), [null]]) assert.equal(validateHistory(bad).ok, false, JSON.stringify(bad).slice(0, 40));
+  const p = prepare({ question: 'hi', live: {}, facts: FACTS, history: [{ role: 'user', text: 'a'.repeat(400) }] });
+  assert.equal(p.error, 'bad_history');
 });

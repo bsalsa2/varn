@@ -17,6 +17,8 @@ test('client: login keeps the token in memory only and asks send it as a bearer 
   assert.equal(f.calls[0].init.headers.authorization, undefined);
   assert.equal(f.calls[1].init.credentials, 'omit'); assert.equal(f.calls[1].init.cache, 'no-store');
   assert.deepEqual(JSON.parse(f.calls[1].init.body), { question: 'hello', live: { view: {} } });
+  await c.ask('yes', {}, [{ role: 'user', text: 'hi' }]);
+  assert.deepEqual(JSON.parse(f.calls[2].init.body).history, [{ role: 'user', text: 'hi' }]);
   c.signOut(); assert.equal(c.signedIn, false);
 });
 

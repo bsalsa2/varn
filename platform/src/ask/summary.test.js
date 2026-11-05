@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildLive, twilight, LIMITS } from './summary.js';
+import { historyFrom } from './history.js';
+import { validateHistory } from '../../worker/src/history.js';
 import { validateLive } from '../../worker/src/live.js';
 
 const NOW = Date.UTC(2026, 10, 5, 12, 0, 0);
@@ -62,4 +64,18 @@ test('summary: missing or malformed inputs are left out, never guessed and never
     assert.doesNotThrow(() => buildLive(input)); assert.equal(validateLive(buildLive(input)).ok, true);
   }
   assert.deepEqual(buildLive({}), {});
+});
+
+test('history: the last exchanges are sent as plain text the Worker accepts, and errors and long text are handled', () => {
+  const msgs = [
+    { role: 'user', text: 'brief me' }, { role: 'ai', type: 'answer', text: 'Quakes: 27. Would you like to see the strongest?', sources: ['x'] },
+    { role: 'user', text: 'yes' }, { role: 'ai', type: 'command', say: 'Fly there.', commands: ['quakes day', 'go 1'] },
+    { role: 'ai', error: true, text: 'Limit reached' }, { role: 'user', text: 'x'.repeat(500) },
+  ];
+  const h = historyFrom(msgs);
+  assert.equal(h.length, 4); assert.deepEqual(h.map((m) => m.role), ['user', 'assistant', 'user', 'user'].slice(0, 4).map((r, i) => h[i].role));
+  assert.equal(h.at(-1).text.length, 300); assert.ok(!h.some((m) => /Limit reached/.test(m.text)));
+  assert.equal(validateHistory(h).ok, true);
+  assert.match(historyFrom(msgs.slice(0, 4)).at(-1).text, /I proposed: quakes day, then go 1/);
+  assert.deepEqual(historyFrom([]), []); assert.deepEqual(historyFrom(undefined), []);
 });

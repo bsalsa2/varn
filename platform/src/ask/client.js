@@ -20,9 +20,9 @@ export function createClient({ base, fetchImpl } = {}) {
       if (r.data?.token) { token = r.data.token; return { ok: true }; }
       return { ok: false, ...r };
     },
-    async ask(question, live) {
+    async ask(question, live, past = []) {
       if (!token) return { error: 'unauthorized', message: 'Sign in first.' };
-      const r = await call('/v1/ask', { question, live }, true);
+      const r = await call('/v1/ask', { question, live, ...(past.length ? { history: past } : {}) }, true);
       if (r.error === 'unauthorized') token = null;
       return r.data ? { response: r.data } : r;
     },

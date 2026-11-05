@@ -79,8 +79,8 @@ export async function handle(request, env, deps) {
 
         if (shouldRefuse(body.question)) return reply({ type: 'answer', text: REFUSAL, sources: [], refused: true }, 200, origin);
 
-        const p = prepare({ question: body.question, live: body.live, facts });
-        if (p.error) return reply({ error: p.error, message: p.error === 'bad_question' ? 'Questions are 1 to 300 characters.' : 'Live data was not in the expected form.' }, 400, origin);
+        const p = prepare({ question: body.question, live: body.live, facts, history: body.history });
+        if (p.error) return reply({ error: p.error, message: p.error === 'bad_question' ? 'Questions are 1 to 300 characters.' : 'The request was not in the expected form.' }, 400, origin);
 
         const cfg = { questionCap: num(env.DAILY_QUESTION_CAP, DEFAULTS.DAILY_QUESTION_CAP), budget: num(env.NEURON_BUDGET, DEFAULTS.NEURON_BUDGET) };
         const limiter = stub('global');
@@ -88,7 +88,7 @@ export async function handle(request, env, deps) {
         if (!hold.ok) return reply({ error: 'limit_reached', message: 'Limit reached for today. It resets at 00:00 UTC.' }, 429, origin);
 
         let out;
-        try { out = await runAsk({ question: body.question, live: body.live, facts, runModel: makeRunModel(env) }); }
+        try { out = await runAsk({ question: body.question, live: body.live, history: body.history, facts, runModel: makeRunModel(env) }); }
         catch (e) {
           await limiter.settle(hold.key, p.estimate, 0).catch(() => {});
           if (isAllowanceError(e)) return reply({ error: 'limit_reached', message: 'Limit reached for today. It resets at 00:00 UTC.' }, 429, origin);

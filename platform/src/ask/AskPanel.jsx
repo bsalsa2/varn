@@ -5,6 +5,7 @@ import { createClient } from './client.js';
 import { askHost } from './host.js';
 import { validateCommands } from '../../worker/src/allowlist.js';
 import { isBriefing } from '../../worker/src/intent.js';
+import { historyFrom } from './history.js';
 
 export const DISCLAIMER = "AI assistant. It can be wrong. Answers come from the app's data; sources shown.";
 const client = createClient({ base: import.meta.env.VITE_ASK_URL });
@@ -103,10 +104,11 @@ export default function AskPanel() {
     e.preventDefault();
     const q = text.trim();
     if (!q || busy) return;
+    const history = historyFrom(msgs);                      // what was said before this question
     setText(''); setBusy(true);
     add({ role: 'user', text: q });
     const live = await askHost.snapshot(undefined, { briefing: isBriefing(q) });
-    const r = await client.ask(q, live);
+    const r = await client.ask(q, live, history);
     setBusy(false);
     if (r.response) {
       const a = r.response;
