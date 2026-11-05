@@ -290,3 +290,21 @@ test('verification: a source written with number-words allows that number', asyn
   const r = await ask([answer('Three kinds of fine-tune found aircraft in more frames but mixed up drone and aircraft more.', [f.id])], 'what happened with the kinds of fine-tune that mixed up drone and aircraft');
   assert.equal(r.response.type, 'answer');
 });
+
+import { geminiBody, normaliseGemini, makeRunModel as mkRun } from '../src/model.js';
+test('gemini: body folds system, merges roles, never leaks the key; errors are terse', async () => {
+  const b = geminiBody([{ role: 'system', content: 'S' }, { role: 'user', content: 'a' }, { role: 'user', content: 'b' }, { role: 'assistant', content: 'c' }], 600, 'gemini-2.5-flash');
+  assert.equal(b.systemInstruction.parts[0].text, 'S');
+  assert.deepEqual(b.contents.map((c) => c.role), ['user', 'model']);
+  assert.match(b.contents[0].parts[0].text, /a\n\nb/);
+  assert.equal(b.generationConfig.thinkingConfig.thinkingBudget, 0);
+  let seen;
+  const ok = mkRun({ GEMINI_API_KEY: 'KEY123' }, async (url, init) => { seen = { url, init }; return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: '{"type":"final"}' }] } }], usageMetadata: { promptTokenCount: 5, candidatesTokenCount: 2 } }) }; });
+  assert.equal(ok.textProtocol, true);
+  const out = await ok({ messages: [{ role: 'user', content: 'hi' }] });
+  assert.equal(out.text, '{"type":"final"}');
+  assert.ok(!seen.url.includes('KEY123') && seen.init.headers['x-goog-api-key'] === 'KEY123' && !seen.init.body.includes('KEY123'));
+  const bad = mkRun({ GEMINI_API_KEY: 'KEY123' }, async () => ({ ok: false, status: 429, text: async () => 'KEY123 secret body' }));
+  await assert.rejects(() => bad({ messages: [{ role: 'user', content: 'hi' }] }), (e) => !/KEY123/.test(e.message) && /429/.test(e.message));
+  assert.equal(normaliseGemini({}).text, '');
+});

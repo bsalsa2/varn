@@ -98,3 +98,6 @@ This site is **separate from the public site and not linked from it**. Cloudflar
 - Free-plan limits come from Cloudflare's pricing pages as of this build; check the Workers AI dashboard for real Neuron use.
 
 
+
+## Optional: use your own Gemini API key
+Set the Worker secret `GEMINI_API_KEY` (optionally var `GEMINI_MODEL`, default `gemini-2.5-flash`) and the Worker uses Gemini instead of Workers AI. Delete the secret to go back. Questions then go to Google; on the free tier Google may use them to improve its products. All answer checks, the command allowlist, caps and login still apply. Never put the key in this repo or the public site.
