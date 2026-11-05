@@ -75,12 +75,12 @@ npm run dev:private          # http://localhost:5173, with the Ask button and Ct
 npm run build:private        # writes dist-private/ (never deploy this to the public site)
 ```
 
-`ALLOWED_ORIGINS` in `wrangler.toml` lists the private site (`https://varn-ask-app-7q2k.pages.dev`) and `http://localhost:5173`. The public site is deliberately **not** listed.
+`ALLOWED_ORIGINS` in `wrangler.toml` lists the private site (`https://varn-ask-app-9x4m.pages.dev`) and `http://localhost:5173`. The public site is deliberately **not** listed.
 
 ### Host the private build on its own Pages site (no terminal needed to use it)
 
 1. Cloudflare dashboard → **Workers & Pages** → **Create application** → **Pages** → **Import an existing Git repository** → pick `bsalsa2/varn`.
-2. Project name `varn-ask-app-7q2k` (any unused name works, but then update `ALLOWED_ORIGINS` to match). Production branch: the branch you deploy from.
+2. Project name `varn-ask-app-9x4m` (any unused name works, but then update `ALLOWED_ORIGINS` to match). Production branch: the branch you deploy from.
 3. Build settings: framework preset **None**; build command `npm run build:private`; build output directory `dist-private`; root directory (under Advanced) `platform`.
 4. Environment variables: `VITE_ASK_URL` = your Worker's address, and `NODE_VERSION` = `22`.
 5. Save and Deploy. In the Worker (Workers & Pages → varn-ask → Settings → Variables and Secrets) make sure `ALLOWED_ORIGINS` includes the new `https://<project>.pages.dev`.
