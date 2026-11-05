@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { hashPassword, verifyPassword, parseHash, signToken, verifyToken, constantTimeEqual, MAX_ITERATIONS, b64u, SESSION_SECONDS } from '../src/auth.js';
-import { makeSecrets, checkPolicy, MIN_LENGTH } from '../tools/make_password_hash.mjs';
+import { makeSecrets, checkPolicy, MIN_LENGTH, putSecret, savePair } from '../tools/make_password_hash.mjs';
 
 const SECRET = b64u.enc(crypto.getRandomValues(new Uint8Array(32)));
 
@@ -68,11 +68,11 @@ test('token: a signature over a different payload shape is rejected even if vali
   assert.equal((await verifyToken(SECRET, `${payload}.${sig}`, 5000)).reason, 'malformed');
 });
 
-test('make_password_hash: enforces 14 characters and yields a hash the Worker accepts', async () => {
-  assert.equal(MIN_LENGTH, 14);
+test('make_password_hash: enforces 10 characters and yields a hash the Worker accepts', async () => {
+  assert.equal(MIN_LENGTH, 10);
   assert.ok(checkPolicy('short one'));
-  assert.ok(checkPolicy('1234567890123'));          // 13
-  assert.equal(checkPolicy('12345678901234'), null); // 14
+  assert.ok(checkPolicy('123456789'));              // 9
+  assert.equal(checkPolicy('1234567890'), null);    // 10
   assert.ok(checkPolicy(' leading space here'));
   await assert.rejects(() => makeSecrets('too short'));
   const s = await makeSecrets('this is a long passphrase');
@@ -99,4 +99,23 @@ test('make_password_hash: the command-line part really runs (it used to do nothi
   const src = fs.readFileSync(new URL('../tools/make_password_hash.mjs', import.meta.url), 'utf8').replace(/^\s*\/\/.*$/gm, '');
   assert.doesNotMatch(src, /file:\/\/\$\{process\.argv/);          // the comparison that never matched on Windows
   assert.match(src, /pathToFileURL\(path\.resolve\(process\.argv\[1\]\)\)/);
+});
+
+test('make_password_hash --put: values go to wrangler through stdin, never through arguments, and are never logged', async () => {
+  const s = await makeSecrets('a random 10 pw');
+  const calls = [], logs = [];
+  const fake = (cmd, args, opts) => { calls.push({ cmd, args, opts }); return { status: 0, stdout: 'Success! Uploaded secret', stderr: '' }; };
+  assert.equal(savePair(s, (l) => logs.push(l), fake), true);
+  assert.deepEqual(calls.map((c) => c.args), [['wrangler', 'secret', 'put', 'ASK_PASSWORD_HASH'], ['wrangler', 'secret', 'put', 'ASK_SESSION_SECRET']]);
+  assert.equal(calls[0].opts.input, s.ASK_PASSWORD_HASH); assert.equal(calls[1].opts.input, s.ASK_SESSION_SECRET);
+  for (const v of Object.values(s)) { assert.ok(!calls.some((c) => c.args.join(' ').includes(v))); assert.ok(!logs.join('\n').includes(v)); }
+  assert.deepEqual(logs, ['ASK_PASSWORD_HASH: saved to Cloudflare', 'ASK_SESSION_SECRET: saved to Cloudflare']);
+});
+
+test('make_password_hash --put: a failure is reported, the value is scrubbed from any error text, and the result is false', async () => {
+  const s = await makeSecrets('a random 10 pw'); const logs = [];
+  const fake = () => ({ status: 1, stdout: '', stderr: `ERROR bad value ${s.ASK_PASSWORD_HASH}` });
+  assert.equal(savePair(s, (l) => logs.push(l), fake), false);
+  assert.ok(logs.some((l) => /FAILED/.test(l))); assert.ok(!logs.join('\n').includes(s.ASK_PASSWORD_HASH));
+  assert.equal(putSecret('X', 'v', () => ({ status: 0, stdout: 'ok' })).ok, true);
 });

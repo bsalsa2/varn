@@ -38,18 +38,13 @@ npx wrangler deploy
 
 `deploy` creates the Worker and its Durable Object. Until the two secrets exist the Worker answers `503 not_configured`, so it is safe to deploy first.
 
-Make the password hash and session secret **on your own computer** (the password is typed, not echoed, at least 14 characters, and is never written anywhere):
+Make the password hash and session secret **on your own computer** (the password is typed, not echoed, at least 10 characters, and is never written anywhere):
 
 ```bash
-node tools/make_password_hash.mjs
+node tools/make_password_hash.mjs --put
 ```
 
-It prints `ASK_PASSWORD_HASH=...` and `ASK_SESSION_SECRET=...`. Store each with Wrangler and paste the value when asked (do not put them on a command line):
-
-```bash
-npx wrangler secret put ASK_PASSWORD_HASH
-npx wrangler secret put ASK_SESSION_SECRET
-```
+It asks for a password (at least 10 characters, typed twice, not shown) and saves `ASK_PASSWORD_HASH` and `ASK_SESSION_SECRET` straight to Cloudflare. Nothing is printed, copied or pasted. (Without `--put` it prints the two values for you to store with `npx wrangler secret put <NAME>`; that is where copy-and-paste mistakes happen.)
 
 Check it:
 
