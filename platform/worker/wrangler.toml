@@ -20,7 +20,7 @@ tag = "v1"
 new_sqlite_classes = ["Limiter"]
 
 [vars]
-ALLOWED_ORIGINS = "https://varn-command-center.pages.dev,http://localhost:5173"
+ALLOWED_ORIGINS = "https://varn-ask-app-7q2k.pages.dev,http://localhost:5173"
 DAILY_QUESTION_CAP = "60"
 NEURON_BUDGET = "8000"
 
