@@ -57,7 +57,10 @@ export function makeRunModel(env, fetchFn = fetch) {
         method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
         body: JSON.stringify(geminiBody(messages, MAX_OUTPUT_TOKENS, model)),
       });
-      if (!r.ok) throw new Error(`gemini ${r.status}`);                  // never include the response body or key in errors
+      if (!r.ok) {                                                      // never include the key, the question or the body text in errors
+        let st = ''; try { st = String((await r.json())?.error?.status || '').replace(/[^A-Z_]/g, '').slice(0, 30); } catch { /* no body */ }
+        throw new Error(`gemini ${r.status}${st ? ' ' + st : ''}`);
+      }
       return normaliseGemini(await r.json());
     };
     run.textProtocol = true;
