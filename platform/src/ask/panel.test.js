@@ -100,3 +100,11 @@ test('cascade: no doubled selectors, and the button gets its glass background (a
   assert.doesNotMatch(CSS, /\.ask \.ask [.\w]/);
   assert.match(CSS, /^\.ask \.ask-fab, \.ask-panel \{\s*background: var\(--glass\)/m);
 });
+
+test('command chip: a sequence shows every step and one Run button', () => {
+  const html = h(mod.CommandChip, { msg: { id: 9, say: 'Fly to the strongest earthquake.', commands: ['quakes day', 'go 1'], kind: 'terminal' }, canRun: true, onRun() {}, onDismiss() {} });
+  assert.match(html, /<code>quakes day<\/code>/); assert.match(html, /<code>go 1<\/code>/); assert.match(html, />then</);
+  assert.equal((html.match(/class="ask-run"/g) || []).length, 1); assert.match(text(html), /Run 2 steps/);
+  const src = fs.readFileSync(new URL('./AskPanel.jsx', import.meta.url), 'utf8');
+  assert.match(src, /for \(const c of m\.commands\)/); assert.match(src, /validateCommands\(/);     // runs in order, validated again in the browser
+});

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateCommand, LAYERS, WINDOWS, EVENT_CATS, TERMINAL_VERBS, VIEWS } from '../src/allowlist.js';
+import { validateCommand, validateCommands, LAYERS, WINDOWS, EVENT_CATS, TERMINAL_VERBS, VIEWS } from '../src/allowlist.js';
 import { COMMANDS, LAYER_ALIASES } from '../../src/globe/commands.js';
 import { WINDOWS as APP_WINDOWS, EVENT_CATEGORIES } from '../../src/globe/feeds.js';
 
@@ -35,4 +35,13 @@ test('allowlist: rejects everything that writes, watches, saves, clears, checks 
 test('allowlist: nothing in it can target, engage, jam or track anything', () => {
   const all = [...TERMINAL_VERBS, 'view', ...LAYERS, ...EVENT_CATS, ...VIEWS].join(' ');
   assert.doesNotMatch(all, /target|engage|jam|weapon|shoot|track|lock|fire /i);     // 'fires' is the wildfire layer, not a weapon verb
+});
+
+test('allowlist: sequences of 1 to 3 allowed commands pass; anything else rejects the whole sequence', () => {
+  assert.deepEqual(validateCommands(['quakes day', 'go 1']), { ok: true, commands: ['quakes day', 'go 1'], kind: 'terminal' });
+  assert.deepEqual(validateCommands(['  LAYERS fires ON ']).commands, ['layers fires on']);
+  assert.equal(validateCommands(['view sky']).kind, 'view');
+  for (const bad of [[], ['home', 'home', 'home', 'home'], ['home', 'watch quakes'], ['view sky', 'home'], ['home', 'view sky'], 'home', null, [5], ['quakes day; clear', 'go 1']]) {
+    assert.equal(validateCommands(bad).ok, false, JSON.stringify(bad));
+  }
 });

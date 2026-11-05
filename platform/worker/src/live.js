@@ -95,7 +95,7 @@ export const TOOL_SPECS = [
   { name: 'get_event_summary', description: 'Counts by category of the loaded NASA EONET event list.', parameters: { type: 'object', properties: {}, required: [] } },
   { name: 'get_sim_tracks', description: 'Counts of the Sky view tracks. Always carries its SIM or REAL label.', parameters: { type: 'object', properties: {}, required: [] } },
   { name: 'search_facts', description: 'Search the written facts about Varn (models, tests, limits). Returns up to 5.', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
-  { name: 'propose_command', description: 'Propose ONE view-only terminal command for the human to approve. Allowed: fly <place>, layers <name> on|off, quakes [window] [min_mag], fires [days], events [category] [days], go <n>, home, tilt, north, brief, sun, imagery, view earth|sky|records.',
-    parameters: { type: 'object', properties: { command: { type: 'string' }, say: { type: 'string' } }, required: ['command', 'say'] } },
+  { name: 'propose_command', description: 'Propose view-only terminal commands for the human to approve; they run in order with one click. Allowed: fly <place>, layers <name> on|off, quakes [window] [min_mag], fires [days], events [category] [days], go <n>, home, tilt, north, brief, sun, imagery, view earth|sky|records. Give 1 to 3 commands. After quakes, "go 1" flies to the strongest; after fires or events, "go 1" flies to the newest.',
+    parameters: { type: 'object', properties: { commands: { type: 'array', items: { type: 'string' } }, say: { type: 'string' } }, required: ['commands', 'say'] } },
 ];
 export const TOOL_NAMES = TOOL_SPECS.map((t) => t.name);

@@ -11,6 +11,13 @@ export function allowedNumbers(...sources) {
   for (const src of sources) for (const n of numbersIn(typeof src === 'string' ? src : JSON.stringify(src))) set.add(num(n));
   return set;
 }
+const decimals = (x) => (String(x).split('.')[1] || '').length;
+/** True when n is a source number, or that number rounded to fewer decimals (1234.6 may be written 1235; 6.14 may be written 6.1). */
+export function matchesSource(n, a) {
+  if (Math.abs(a - n) < 1e-9) return true;
+  for (let k = 0; k < decimals(a); k++) if (Math.abs(Number(a.toFixed(k)) - n) < 1e-9) return true;
+  return false;
+}
 export function numbersInAnswer(text) {
   const out = numbersIn(text).map(num);
   for (const w of String(text).toLowerCase().match(/\b[a-z]+\b/g) || []) if (w in WORDS) out.push(WORDS[w]);
@@ -38,7 +45,7 @@ export function verifyAnswer(answer, ctx) {
   if (text === NO_DATA) return { ok: true, answer: { type: 'answer', text, sources: [] } };
   if (answer.sources.length === 0) return bad('no sources cited');
   for (const s of answer.sources) if (!ctx.factIds.has(s) && !ctx.toolsUsed.has(s)) return bad(`unknown source "${s}"`);
-  for (const n of numbersInAnswer(text)) if (![...ctx.allowed].some((a) => Math.abs(a - n) < 1e-9)) return bad(`number ${n} is not in the tool results or facts`);
+  for (const n of numbersInAnswer(text)) if (![...ctx.allowed].some((a) => matchesSource(n, a))) return bad(`number ${n} is not in the tool results or facts`);
   if (ctx.simLabelled && !/\bSIM\b/.test(text)) return bad('simulated tracks must be labelled SIM');
   return { ok: true, answer: { type: 'answer', text, sources: [...new Set(answer.sources)] } };
 }

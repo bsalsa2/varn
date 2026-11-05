@@ -23,7 +23,7 @@ export const askHost = {
   subscribe(fn) { subs.add(fn); return () => subs.delete(fn); },
 
   /** What is on screen, as the small schema the Worker accepts. Never throws; missing parts are left out. */
-  async snapshot(now = Date.now()) {
+  async snapshot(now = Date.now(), { briefing = false } = {}) {
     const earth = slots.get('earth'), sky = slots.get('sky');
     const input = { now };
     if (earth) {
@@ -34,6 +34,9 @@ export const askHost = {
         try { const r = await feeds.fetchQuakes({ window: 'day', minMag: 2.5 }); input.quakes = { window: 'day', minMag: 2.5, fetched: r.fetched, items: r.items }; } catch { /* leave out */ }
       }
       if (list?.kind === 'event' && meta.events) input.events = { ...meta.events, items: list.items };
+      else if (briefing) {                                   // a briefing wants the whole picture: open natural events from the last week
+        try { const r = await feeds.fetchEvents({ category: 'all', days: 7 }); input.events = { category: 'all', days: 7, items: r.items }; } catch { /* leave out */ }
+      }
     }
     if (sky) { try { input.sim = sky.sim(); } catch { /* leave out */ } }
     return buildLive(input);

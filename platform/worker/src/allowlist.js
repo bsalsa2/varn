@@ -78,3 +78,20 @@ export function validateCommand(raw) {
 
   return { ok: false, reason: `"${verb}" is not an allowed command` };
 }
+
+/**
+ * A short sequence of allowlisted commands the human runs with ONE click, in order (for example `quakes day` then `go 1`).
+ * Every command is validated on its own; one bad command rejects the whole sequence. At most 3. A `view` switch must stand alone.
+ * -> { ok: true, commands, kind } or { ok: false, reason }
+ */
+export function validateCommands(list) {
+  if (!Array.isArray(list) || list.length < 1 || list.length > 3) return { ok: false, reason: 'give 1 to 3 commands' };
+  const out = [];
+  for (const raw of list) {
+    const v = validateCommand(raw);
+    if (!v.ok) return { ok: false, reason: `"${String(raw).slice(0, 40)}": ${v.reason}` };
+    out.push(v);
+  }
+  if (out.some((v) => v.kind === 'view') && out.length > 1) return { ok: false, reason: 'a view switch must be on its own' };
+  return { ok: true, commands: out.map((v) => v.command), kind: out[0].kind };
+}

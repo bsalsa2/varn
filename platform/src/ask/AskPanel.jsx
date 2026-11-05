@@ -3,7 +3,8 @@ import { MessageSquareText, X, Send, Play, LogIn, Loader2 } from 'lucide-react';
 import './ask.css';
 import { createClient } from './client.js';
 import { askHost } from './host.js';
-import { validateCommand } from '../../worker/src/allowlist.js';
+import { validateCommands } from '../../worker/src/allowlist.js';
+import { isBriefing } from '../../worker/src/intent.js';
 
 export const DISCLAIMER = "AI assistant. It can be wrong. Answers come from the app's data; sources shown.";
 const client = createClient({ base: import.meta.env.VITE_ASK_URL });
@@ -25,14 +26,15 @@ function Sources({ ids, cited }) {
 }
 
 export function CommandChip({ msg, onRun, onDismiss, canRun }) {
+  const cmds = msg.commands || [msg.command];
   return (
     <div className="ask-cmd">
       <p>{msg.say}</p>
       <div className="ask-cmdrow">
-        <code>{msg.command}</code>
+        {cmds.map((c, i) => <React.Fragment key={c + i}>{i ? <span className="ask-then" aria-hidden="true">then</span> : null}<code>{c}</code></React.Fragment>)}
         {msg.state === 'ran' ? <span className="ask-done">Ran</span> : msg.state === 'dismissed' ? <span className="ask-done">Dismissed</span> : (
           <>
-            <button type="button" className="ask-run" onClick={() => onRun(msg)} disabled={!canRun} aria-describedby={canRun ? undefined : `why-${msg.id}`}><Play size={13} aria-hidden="true" /> Run</button>
+            <button type="button" className="ask-run" onClick={() => onRun(msg)} disabled={!canRun} aria-describedby={canRun ? undefined : `why-${msg.id}`}><Play size={13} aria-hidden="true" /> {cmds.length > 1 ? `Run ${cmds.length} steps` : 'Run'}</button>
             <button type="button" className="ask-quiet" onClick={() => onDismiss(msg)}>Dismiss</button>
           </>
         )}
@@ -103,14 +105,14 @@ export default function AskPanel() {
     if (!q || busy) return;
     setText(''); setBusy(true);
     add({ role: 'user', text: q });
-    const live = await askHost.snapshot();
+    const live = await askHost.snapshot(undefined, { briefing: isBriefing(q) });
     const r = await client.ask(q, live);
     setBusy(false);
     if (r.response) {
       const a = r.response;
       if (a.type === 'command') {
-        const v = validateCommand(a.command);                       // checked again here before it is ever shown as runnable
-        add(v.ok ? { role: 'ai', type: 'command', command: v.command, kind: v.kind, say: a.say } : { role: 'ai', error: true, text: 'The assistant proposed something that is not allowed, so it was dropped.' });
+        const v = validateCommands(Array.isArray(a.commands) ? a.commands : [a.command]);     // checked again here before it is ever shown as runnable
+        add(v.ok ? { role: 'ai', type: 'command', commands: v.commands, kind: v.kind, say: a.say } : { role: 'ai', error: true, text: 'The assistant proposed something that is not allowed, so it was dropped.' });
       } else add({ role: 'ai', type: a.type, text: a.text, sources: a.sources, cited: a.cited, results: a.results, facts: a.facts });
       return;
     }
@@ -120,8 +122,15 @@ export default function AskPanel() {
 
   async function run(m) {
     patch(m.id, { state: 'ran' });
-    const r = await askHost.run(m.command);
-    patch(m.id, { state: r.ok ? 'ran' : undefined, output: r.lines });
+    const out = [];
+    let ok = true;
+    for (const c of m.commands) {                                  // in order, one click; stops at the first step that fails
+      const r = await askHost.run(c);
+      if (m.commands.length > 1) out.push({ t: `> ${c}` });
+      out.push(...r.lines);
+      if (!r.ok) { ok = false; break; }
+    }
+    patch(m.id, { state: ok ? 'ran' : undefined, output: out });
   }
 
   const canRun = (m) => m.kind === 'view' || hasEarth;

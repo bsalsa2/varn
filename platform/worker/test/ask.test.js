@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runAsk, prepare, MAX_TOOL_STEPS } from '../src/ask.js';
+import { isBriefing } from '../src/intent.js';
 import { scoreFacts, SCOPE_FACT } from '../src/facts.js';
 import { normalise } from '../src/model.js';
 import { FACTS, LIVE, scripted } from './helpers.js';
@@ -98,7 +99,7 @@ test('tools: search_facts results can be cited and counted in the answer', async
 
 test('command: propose_command with an allowlisted command becomes a command for the human to approve', async () => {
   const r = await ask([{ tool: 'propose_command', args: { command: 'layers fires on', say: 'Show the fire layer.' } }], 'show me wildfires');
-  assert.deepEqual(r.response, { type: 'command', command: 'layers fires on', kind: 'terminal', say: 'Show the fire layer.' });
+  assert.deepEqual(r.response, { type: 'command', commands: ['layers fires on'], command: 'layers fires on', kind: 'terminal', say: 'Show the fire layer.' });
   assert.equal(r.model.calls.n, 1);
 });
 
@@ -168,4 +169,49 @@ test('model adapter: reads both documented response shapes', () => {
   assert.equal(normalise({ choices: [{ message: { content: 'hi' } }] }).text, 'hi');
   assert.deepEqual(normalise(null).toolCalls, []);
   assert.deepEqual(normalise({ tool_calls: [{ name: 'x', arguments: '{bad json' }] }).toolCalls[0].arguments, {});
+});
+
+test('briefing: the code gathers every available summary up front, so one model call is enough and the answer is verified against it', async () => {
+  const q = "Brief me on what's on screen";
+  assert.ok(isBriefing(q) && isBriefing('give me an overview') && isBriefing('summarise this') && !isBriefing('fly to Kyiv') && !isBriefing('what did v3 score'));
+  const p = prepare({ question: q, live: LIVE, facts: FACTS });
+  assert.match(p.messages[0].content, /LIVE DATA \(computed in code\)/);
+  assert.deepEqual(p.pre.map((r) => r.tool), ['get_view_state', 'get_quake_summary', 'get_event_summary', 'get_sim_tracks']);
+  const r = await ask([answer('SIM: the view is the whole Earth from about 1235 km up; 5 earthquakes are loaded, the strongest is 6.1, and 3 events are open.', ['get_view_state', 'get_quake_summary', 'get_event_summary', 'get_sim_tracks'])], q);
+  assert.equal(r.response.type, 'answer'); assert.equal(r.model.calls.n, 1);
+});
+
+test('briefing: made-up numbers or an unlabelled Sky count still fall back to the raw results', async () => {
+  const q = 'give me a briefing';
+  const invented = await ask([answer('SIM: 77 earthquakes are loaded.', ['get_quake_summary'])], q);
+  assert.equal(invented.response.type, 'raw'); assert.equal(invented.response.results.length, 4);
+  const noSim = await ask([answer('There are 4 tracks in the sky.', ['get_sim_tracks'])], q);
+  assert.equal(noSim.response.type, 'raw'); assert.match(noSim.response.text, /SIM/);
+});
+
+test('briefing: with nothing loaded it does not invent anything', () => {
+  const p = prepare({ question: 'brief me', live: {}, facts: FACTS });
+  assert.deepEqual(p.pre, []); assert.doesNotMatch(p.messages[0].content, /LIVE DATA \(computed in code\)/);
+});
+
+test('zoom: the assistant can propose a short sequence the human runs with one click', async () => {
+  const r = await ask([{ tool: 'propose_command', args: { commands: ['quakes day', 'go 1'], say: 'List todays earthquakes, then fly to the strongest.' } }], 'zoom to the strongest earthquake');
+  assert.deepEqual(r.response, { type: 'command', commands: ['quakes day', 'go 1'], command: 'quakes day', kind: 'terminal', say: 'List todays earthquakes, then fly to the strongest.' });
+  assert.equal(r.model.calls.n, 1);
+});
+
+test('zoom: a sequence with one disallowed step is rejected as a whole', async () => {
+  for (const cmds of [['quakes day', 'watch quakes'], ['home', 'clear'], ['quakes', 'go 1', 'home', 'sun'], ['view sky', 'home'], []]) {
+    const r = await ask([{ tool: 'propose_command', args: { commands: cmds, say: 'x' } }, { tool: 'propose_command', args: { commands: cmds, say: 'x' } }, answer("I don't have that.", [])], 'do it');
+    assert.notEqual(r.response.type, 'command', JSON.stringify(cmds));
+  }
+});
+
+test('verification: rounding a real number is fine, a different number is not', async () => {
+  const ok = await ask([{ tool: 'get_view_state' }, answer('The camera is about 1,235 km up.', ['get_view_state'])], 'how high is the camera');
+  assert.equal(ok.response.type, 'answer');
+  for (const wrong of ['about 1,240 km', 'about 1,300 km', 'about 12,346 km']) {
+    const r = await ask([{ tool: 'get_view_state' }, answer(`The camera is ${wrong} up.`, ['get_view_state'])], 'how high is the camera');
+    assert.equal(r.response.type, 'raw', wrong);
+  }
 });
