@@ -370,3 +370,16 @@ test('answer: citing a tool that was consulted but had no data ("not available")
   const bad = await ask([answer('The Sky view is not open, so there are no simulated tracks.', ['get_sim_tracks'])], 'any aircraft tracks?', live);
   assert.notEqual(bad.response.type, 'answer');
 });
+
+test('gemini: a 429 on one model falls back to another; a Google 429 is not reported as our own daily cap', async () => {
+  const gen = ['generateContent'];
+  const list = { models: [{ name: 'models/gemini-3-flash', supportedGenerationMethods: gen }, { name: 'models/gemini-3-flash-lite', supportedGenerationMethods: gen }] };
+  const f = async (url) => {
+    if (url.includes('/models?')) return { ok: true, status: 200, json: async () => list };
+    return /lite/.test(url) ? { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: '{}' }] } }] }) } : { ok: false, status: 429, json: async () => ({ error: { status: 'RESOURCE_EXHAUSTED' } }) };
+  };
+  assert.equal((await mkRun({ GEMINI_API_KEY: 'K' }, f)({ messages: [{ role: 'user', content: 'x' }] })).text, '{}');
+  const { isAllowanceError } = await import('../src/model.js');
+  assert.equal(isAllowanceError(new Error('gemini 429 RESOURCE_EXHAUSTED @m')), false);
+  assert.equal(isAllowanceError(new Error('3036: daily free allocation')), true);
+});

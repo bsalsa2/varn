@@ -79,7 +79,7 @@ export function makeRunModel(env, fetchFn = fetch) {
       return r;
     };
     const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
-    const overloaded = (r) => [500, 503, 504, 524, 599].includes(r.status);
+    const overloaded = (r) => [429, 500, 503, 504, 524, 599].includes(r.status);          // 429: that model's free quota is used up; others have their own
     const run = async ({ messages }) => {
       let model = env.GEMINI_MODEL || discovered || 'gemini-2.5-flash';
       let r = await call(model, messages);
@@ -90,7 +90,7 @@ export function makeRunModel(env, fetchFn = fetch) {
         const pick = (await models())[0];
         if (pick) { discovered = pick; model = pick; r = await call(pick, messages); }
       }
-      if (overloaded(r) && r.status !== 524) { await sleep(800); r = await call(model, messages); }  // one quick retry on the same model (not after a timeout)
+      if (overloaded(r) && r.status !== 524 && r.status !== 429) { await sleep(800); r = await call(model, messages); }  // one quick retry on the same model (not after a timeout)
       if (overloaded(r) && !env.GEMINI_MODEL) {                         // still busy: try the next-best models, once each
         for (const alt of (await models()).filter((m) => m !== model).slice(0, 2)) {
           last = alt; r = await call(alt, messages);
@@ -124,4 +124,4 @@ export function makeRunModel(env, fetchFn = fetch) {
 }
 
 /** True when Workers AI says the free daily allocation is used up (error 3036, HTTP 429) or capacity is out (3040). */
-export const isAllowanceError = (e) => /\b(3036|3040|429)\b|daily free allocation|out of capacity|gemini 429/i.test(String(e?.message || e));
+export const isAllowanceError = (e) => !/^gemini/.test(String(e?.message)) && /\b(3036|3040|429)\b|daily free allocation|out of capacity/i.test(String(e?.message || e));
