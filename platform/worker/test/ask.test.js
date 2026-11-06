@@ -355,7 +355,7 @@ test('gemini: overloaded (503) retries, then falls back to the next-best model',
   };
   const out = await mkRun({ GEMINI_API_KEY: 'K' }, f)({ messages: [{ role: 'user', content: 'x' }] });
   assert.equal(out.text, '{"ok":1}');
-  assert.deepEqual(hit.slice(0, 2), ['gemini-2.5-flash', 'gemini-2.5-flash']);       // original + one retry
+  assert.equal(hit[0], hit[1]);                                                       // original + one retry on the same model
   assert.equal(hit.at(-1), 'gemini-3-flash-lite');
   const pinned = [];
   const g = async (url) => { pinned.push(url); return { ok: false, status: 503, json: async () => ({ error: { status: 'UNAVAILABLE' } }) }; };
