@@ -37,7 +37,9 @@ export function geminiBody(messages, maxTokens, model) {
   }
   if (contents[0]?.role === 'model') contents.unshift({ role: 'user', parts: [{ text: '(start)' }] });
   const generationConfig = { maxOutputTokens: maxTokens, temperature: 0, responseMimeType: 'application/json' };
-  if (/2\.5-flash/.test(model)) generationConfig.thinkingConfig = { thinkingBudget: 0 };     // thinking would eat the output budget
+  // Thinking is slow and eats the output budget: switch it off (2.5) or to the lowest level (3 and later).
+  if (/gemini-2\.5-flash/.test(model)) generationConfig.thinkingConfig = { thinkingBudget: 0 };
+  else if (/gemini-([3-9]|\d{2,})/.test(model)) generationConfig.thinkingConfig = { thinkingLevel: 'minimal' };
   return { systemInstruction: { parts: [{ text: system }] }, contents, generationConfig };
 }
 
@@ -66,9 +68,18 @@ export function makeRunModel(env, fetchFn = fetch) {
   // Gemini API (the owner's own key, set as a Worker secret). Plain-JSON protocol, same checks as every other model.
   if (env.GEMINI_API_KEY) {
     const headers = { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY };
-    const call = (model, messages) => fetchFn(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST', headers, body: JSON.stringify(geminiBody(messages, MAX_OUTPUT_TOKENS, model)),
-    });
+    const post = (model, body) => fetchFn(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(25000),
+    }).catch((e) => { throw new Error(e?.name === 'TimeoutError' || e?.name === 'AbortError' ? 'gemini timeout' : 'gemini network'); });
+    const call = async (model, messages) => {
+      const body = geminiBody(messages, MAX_OUTPUT_TOKENS, model);
+      const r = await post(model, body);
+      if (r.status === 400 && body.generationConfig.thinkingConfig) {   // this model rejects the thinking setting: try once without it
+        delete body.generationConfig.thinkingConfig;
+        return post(model, body);
+      }
+      return r;
+    };
     const run = async ({ messages }) => {
       let r = await call(env.GEMINI_MODEL || discovered || 'gemini-2.5-flash', messages);
       if (r.status === 404 && !env.GEMINI_MODEL) {                      // the default name is gone: ask Google what this key can use

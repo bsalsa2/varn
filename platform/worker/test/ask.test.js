@@ -330,3 +330,15 @@ test('gemini: picks the newest stable flash model; falls back when the default i
   assert.equal(out.text, '{}');
   assert.ok(urls.at(-1).includes('gemini-3-flash:generateContent'));
 });
+
+test('gemini: lowest thinking by family, retry without it on 400, timeout is a terse error', async () => {
+  assert.equal(geminiBody([{ role: 'user', content: 'x' }], 600, 'gemini-2.5-flash').generationConfig.thinkingConfig.thinkingBudget, 0);
+  assert.equal(geminiBody([{ role: 'user', content: 'x' }], 600, 'gemini-3-flash').generationConfig.thinkingConfig.thinkingLevel, 'minimal');
+  const bodies = [];
+  const f = async (url, init) => { bodies.push(JSON.parse(init.body)); return bodies.length === 1 ? { ok: false, status: 400, json: async () => ({ error: { status: 'INVALID_ARGUMENT' } }) } : { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: '{}' }] } }] }) }; };
+  const out = await mkRun({ GEMINI_API_KEY: 'K', GEMINI_MODEL: 'gemini-3-flash' }, f)({ messages: [{ role: 'user', content: 'x' }] });
+  assert.equal(out.text, '{}');
+  assert.ok(bodies[0].generationConfig.thinkingConfig && !bodies[1].generationConfig.thinkingConfig);
+  const slow = mkRun({ GEMINI_API_KEY: 'K', GEMINI_MODEL: 'm' }, async () => { const e = new Error('x'); e.name = 'TimeoutError'; throw e; });
+  await assert.rejects(() => slow({ messages: [{ role: 'user', content: 'x' }] }), /^Error: gemini timeout$/);
+});
