@@ -60,6 +60,7 @@ export function rankGeminiModels(list) {
 export const pickGeminiModel = (list) => rankGeminiModels(list)[0] ?? null;
 
 let discovered = null;   // remembered for the life of the Worker instance
+const cooling = new Map();   // model -> time until which it is skipped after a 429 (free tier: 5 requests/min, 20/day per model)
 
 export function makeRunModel(env, fetchFn = fetch) {
   // Gemini API (the owner's own key, set as a Worker secret). Plain-JSON protocol, same checks as every other model.
@@ -81,19 +82,26 @@ export function makeRunModel(env, fetchFn = fetch) {
     const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
     const overloaded = (r) => [429, 500, 503, 504, 524, 599].includes(r.status);          // 429: that model's free quota is used up; others have their own
     const run = async ({ messages }) => {
-      let model = env.GEMINI_MODEL || discovered || 'gemini-2.5-flash';
-      let r = await call(model, messages);
-      let ranked = null, last = model;
+      let ranked = null, last = null;
       const models = async () => (ranked ??= await fetchFn('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers, signal: AbortSignal.timeout(10000) })
         .then(async (l) => (l.ok ? rankGeminiModels(await l.json()) : [])).catch(() => []));
+      let model = env.GEMINI_MODEL || discovered || 'gemini-2.5-flash';
+      last = model;
+      if (!env.GEMINI_MODEL && (cooling.get(model) || 0) > Date.now()) {         // this one was just rate-limited: start with a different one
+        const alt = (await models()).find((m) => (cooling.get(m) || 0) <= Date.now());
+        if (alt) model = alt;
+      }
+      let r = await call(model, messages);
+      if (r.status === 429) cooling.set(model, Date.now() + 60000);
       if (r.status === 404 && !env.GEMINI_MODEL) {                      // the default name is gone: ask Google what this key can use
         const pick = (await models())[0];
         if (pick) { discovered = pick; model = pick; r = await call(pick, messages); }
       }
       if (overloaded(r) && r.status !== 524 && r.status !== 429) { await sleep(800); r = await call(model, messages); }  // one quick retry on the same model (not after a timeout)
       if (overloaded(r) && !env.GEMINI_MODEL) {                         // still busy: try the next-best models, once each
-        for (const alt of (await models()).filter((m) => m !== model).slice(0, 2)) {
+        for (const alt of (await models()).filter((m) => m !== model && (cooling.get(m) || 0) <= Date.now()).slice(0, 4)) {
           last = alt; r = await call(alt, messages);
+          if (r.status === 429) cooling.set(alt, Date.now() + 60000);
           if (!overloaded(r)) { if (r.ok) discovered = alt; break; }
         }
       }

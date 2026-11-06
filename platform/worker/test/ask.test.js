@@ -383,3 +383,23 @@ test('gemini: a 429 on one model falls back to another; a Google 429 is not repo
   assert.equal(isAllowanceError(new Error('gemini 429 RESOURCE_EXHAUSTED @m')), false);
   assert.equal(isAllowanceError(new Error('3036: daily free allocation')), true);
 });
+
+test('gemini: a model that just hit its free limit is skipped on the next question; all-limited gives the Google message code', async () => {
+  const gen = ['generateContent'];
+  const list = { models: [7, 6, 5].map((n) => ({ name: `models/gemini-${n}-flash`, supportedGenerationMethods: gen })) };
+  const hits = [];
+  const answers = new Set(['gemini-6-flash', 'gemini-5-flash']);        // every other model (default name, newest, anything remembered) is out of free quota
+  const f = async (url) => {
+    if (url.includes('/models?')) return { ok: true, status: 200, json: async () => list };
+    const m = url.match(/models\/([^:]+):/)[1]; hits.push(m);
+    return !answers.has(m) ? { ok: false, status: 429, json: async () => ({ error: { status: 'RESOURCE_EXHAUSTED' } }) } : { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: '{}' }] } }] }) };
+  };
+  const run = mkRun({ GEMINI_API_KEY: 'K' }, f);
+  const msg = [{ role: 'user', content: 'x' }];
+  await run({ messages: msg });                      // default is limited, then the newest is limited, then gemini-6-flash answers
+  hits.length = 0;
+  await run({ messages: msg });
+  assert.ok(!hits.includes('gemini-7-flash') && !hits.includes('gemini-2.5-flash'), `cooled-down model was called again: ${hits}`);
+  answers.clear();
+  await assert.rejects(() => run({ messages: msg }), /^Error: gemini 429 RESOURCE_EXHAUSTED @/);
+});
