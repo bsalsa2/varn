@@ -308,3 +308,25 @@ test('gemini: body folds system, merges roles, never leaks the key; errors are t
   await assert.rejects(() => bad({ messages: [{ role: 'user', content: 'hi' }] }), (e) => !/KEY123/.test(e.message) && e.message === 'gemini 429 RESOURCE_EXHAUSTED');
   assert.equal(normaliseGemini({}).text, '');
 });
+
+import { pickGeminiModel } from '../src/model.js';
+test('gemini: picks the newest stable flash model; falls back when the default is gone (404)', async () => {
+  const gen = ['generateContent'];
+  const list = { models: [
+    { name: 'models/gemini-2.5-flash', supportedGenerationMethods: gen }, { name: 'models/gemini-3-flash', supportedGenerationMethods: gen },
+    { name: 'models/gemini-3-flash-lite', supportedGenerationMethods: gen }, { name: 'models/gemini-3-flash-preview', supportedGenerationMethods: gen },
+    { name: 'models/gemini-4-flash-image', supportedGenerationMethods: gen }, { name: 'models/gemini-embedding-001', supportedGenerationMethods: ['embedContent'] },
+  ] };
+  assert.equal(pickGeminiModel(list), 'gemini-3-flash');
+  assert.equal(pickGeminiModel({ models: [] }), null);
+  const urls = [];
+  const f = async (url) => {
+    urls.push(url);
+    if (url.includes('gemini-2.5-flash:')) return { ok: false, status: 404, json: async () => ({ error: { status: 'NOT_FOUND' } }) };
+    if (url.includes('/models?')) return { ok: true, status: 200, json: async () => list };
+    return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: '{}' }] } }] }) };
+  };
+  const out = await mkRun({ GEMINI_API_KEY: 'K' }, f)({ messages: [{ role: 'user', content: 'x' }] });
+  assert.equal(out.text, '{}');
+  assert.ok(urls.at(-1).includes('gemini-3-flash:generateContent'));
+});

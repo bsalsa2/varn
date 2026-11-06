@@ -48,15 +48,34 @@ export function normaliseGemini(res) {
   return { text, toolCalls: [], usage: u ? { prompt_tokens: u.promptTokenCount, completion_tokens: u.candidatesTokenCount } : null, shape: `gemini;text=${text.length}ch;finish=${cand?.finishReason ?? null}` };
 }
 
+/** Newest stable Flash model (not lite/image/audio/preview) from Google's models.list result, or null. */
+export function pickGeminiModel(list) {
+  const ok = (list?.models || []).filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'));
+  const rank = (name) => {
+    const m = /^models\/gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/.exec(name);
+    return m ? [parseFloat(m[1]), m[2] ? 0 : 1] : null;
+  };
+  const best = ok.map((m) => ({ name: m.name, r: rank(m.name) })).filter((x) => x.r)
+    .sort((a, b) => b.r[0] - a.r[0] || b.r[1] - a.r[1])[0];
+  return best ? best.name.replace(/^models\//, '') : null;
+}
+
+let discovered = null;   // remembered for the life of the Worker instance
+
 export function makeRunModel(env, fetchFn = fetch) {
   // Gemini API (the owner's own key, set as a Worker secret). Plain-JSON protocol, same checks as every other model.
   if (env.GEMINI_API_KEY) {
-    const model = env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const headers = { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY };
+    const call = (model, messages) => fetchFn(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST', headers, body: JSON.stringify(geminiBody(messages, MAX_OUTPUT_TOKENS, model)),
+    });
     const run = async ({ messages }) => {
-      const r = await fetchFn(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-        method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-        body: JSON.stringify(geminiBody(messages, MAX_OUTPUT_TOKENS, model)),
-      });
+      let r = await call(env.GEMINI_MODEL || discovered || 'gemini-2.5-flash', messages);
+      if (r.status === 404 && !env.GEMINI_MODEL) {                      // the default name is gone: ask Google what this key can use
+        const l = await fetchFn('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers });
+        const pick = l.ok ? pickGeminiModel(await l.json()) : null;
+        if (pick) { discovered = pick; r = await call(pick, messages); }
+      }
       if (!r.ok) {                                                      // never include the key, the question or the body text in errors
         let st = ''; try { st = String((await r.json())?.error?.status || '').replace(/[^A-Z_]/g, '').slice(0, 30); } catch { /* no body */ }
         throw new Error(`gemini ${r.status}${st ? ' ' + st : ''}`);
