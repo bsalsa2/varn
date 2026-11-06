@@ -10,7 +10,7 @@
     "prebuild": "node scripts/check-records.mjs",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test src/sky/sky.test.js src/globe/hillshade.test.js src/globe/commands.test.js src/globe/buildingsData.test.js src/globe/inspect.test.js src/records/rules.test.js src/records/model.test.js src/records/render.test.js"
+    "test": "node --test src/sky/sky.test.js src/globe/hillshade.test.js src/globe/commands.test.js src/globe/buildingsData.test.js src/globe/inspect.test.js src/records/rules.test.js src/records/model.test.js src/records/render.test.js worker/test/*.test.js"
   },
   "dependencies": {
     "@mapbox/vector-tile": "^2.0.5",
