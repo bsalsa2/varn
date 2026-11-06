@@ -342,3 +342,23 @@ test('gemini: lowest thinking by family, retry without it on 400, timeout is a t
   const slow = mkRun({ GEMINI_API_KEY: 'K', GEMINI_MODEL: 'm' }, async () => { const e = new Error('x'); e.name = 'TimeoutError'; throw e; });
   await assert.rejects(() => slow({ messages: [{ role: 'user', content: 'x' }] }), /^Error: gemini timeout$/);
 });
+
+test('gemini: overloaded (503) retries, then falls back to the next-best model', async () => {
+  const gen = ['generateContent'];
+  const list = { models: [{ name: 'models/gemini-3-flash', supportedGenerationMethods: gen }, { name: 'models/gemini-3-flash-lite', supportedGenerationMethods: gen }, { name: 'models/gemini-2.5-flash', supportedGenerationMethods: gen }] };
+  const hit = [];
+  const f = async (url) => {
+    if (url.includes('/models?')) return { ok: true, status: 200, json: async () => list };
+    hit.push(url.match(/models\/([^:]+):/)[1]);
+    return /gemini-3-flash-lite/.test(url) ? { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: '{"ok":1}' }] } }] }) }
+      : { ok: false, status: 503, json: async () => ({ error: { status: 'UNAVAILABLE' } }) };
+  };
+  const out = await mkRun({ GEMINI_API_KEY: 'K' }, f)({ messages: [{ role: 'user', content: 'x' }] });
+  assert.equal(out.text, '{"ok":1}');
+  assert.deepEqual(hit.slice(0, 2), ['gemini-2.5-flash', 'gemini-2.5-flash']);       // original + one retry
+  assert.equal(hit.at(-1), 'gemini-3-flash-lite');
+  const pinned = [];
+  const g = async (url) => { pinned.push(url); return { ok: false, status: 503, json: async () => ({ error: { status: 'UNAVAILABLE' } }) }; };
+  await assert.rejects(() => mkRun({ GEMINI_API_KEY: 'K', GEMINI_MODEL: 'x' }, g)({ messages: [{ role: 'user', content: 'x' }] }), /gemini 503 UNAVAILABLE/);
+  assert.equal(pinned.length, 2);                                                    // a pinned model never falls back
+});

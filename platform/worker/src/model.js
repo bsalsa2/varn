@@ -50,17 +50,14 @@ export function normaliseGemini(res) {
   return { text, toolCalls: [], usage: u ? { prompt_tokens: u.promptTokenCount, completion_tokens: u.candidatesTokenCount } : null, shape: `gemini;text=${text.length}ch;finish=${cand?.finishReason ?? null}` };
 }
 
-/** Newest stable Flash model (not lite/image/audio/preview) from Google's models.list result, or null. */
-export function pickGeminiModel(list) {
-  const ok = (list?.models || []).filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'));
-  const rank = (name) => {
-    const m = /^models\/gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/.exec(name);
-    return m ? [parseFloat(m[1]), m[2] ? 0 : 1] : null;
-  };
-  const best = ok.map((m) => ({ name: m.name, r: rank(m.name) })).filter((x) => x.r)
-    .sort((a, b) => b.r[0] - a.r[0] || b.r[1] - a.r[1])[0];
-  return best ? best.name.replace(/^models\//, '') : null;
+/** Stable Flash models (not image/audio/preview) from Google's models.list result, best first: newest, full before lite. */
+export function rankGeminiModels(list) {
+  const rank = (name) => { const m = /^models\/gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/.exec(name); return m ? [parseFloat(m[1]), m[2] ? 0 : 1] : null; };
+  return (list?.models || []).filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'))
+    .map((m) => ({ name: m.name.replace(/^models\//, ''), r: rank(m.name) })).filter((x) => x.r)
+    .sort((x, y) => y.r[0] - x.r[0] || y.r[1] - x.r[1]).map((x) => x.name);
 }
+export const pickGeminiModel = (list) => rankGeminiModels(list)[0] ?? null;
 
 let discovered = null;   // remembered for the life of the Worker instance
 
@@ -80,12 +77,24 @@ export function makeRunModel(env, fetchFn = fetch) {
       }
       return r;
     };
+    const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+    const overloaded = (r) => r.status === 503 || r.status === 500 || r.status === 504 || r.status === 524;
     const run = async ({ messages }) => {
-      let r = await call(env.GEMINI_MODEL || discovered || 'gemini-2.5-flash', messages);
+      let model = env.GEMINI_MODEL || discovered || 'gemini-2.5-flash';
+      let r = await call(model, messages);
+      let ranked = null;
+      const models = async () => (ranked ??= await fetchFn('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers, signal: AbortSignal.timeout(10000) })
+        .then(async (l) => (l.ok ? rankGeminiModels(await l.json()) : [])).catch(() => []));
       if (r.status === 404 && !env.GEMINI_MODEL) {                      // the default name is gone: ask Google what this key can use
-        const l = await fetchFn('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers });
-        const pick = l.ok ? pickGeminiModel(await l.json()) : null;
-        if (pick) { discovered = pick; r = await call(pick, messages); }
+        const pick = (await models())[0];
+        if (pick) { discovered = pick; model = pick; r = await call(pick, messages); }
+      }
+      if (overloaded(r)) { await sleep(800); r = await call(model, messages); }          // one quick retry on the same model
+      if (overloaded(r) && !env.GEMINI_MODEL) {                         // still busy: try the next-best models, once each
+        for (const alt of (await models()).filter((m) => m !== model).slice(0, 2)) {
+          r = await call(alt, messages);
+          if (!overloaded(r)) { if (r.ok) discovered = alt; break; }
+        }
       }
       if (!r.ok) {                                                      // never include the key, the question or the body text in errors
         let st = ''; try { st = String((await r.json())?.error?.status || '').replace(/[^A-Z_]/g, '').slice(0, 30); } catch { /* no body */ }
