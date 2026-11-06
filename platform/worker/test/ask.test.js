@@ -362,3 +362,11 @@ test('gemini: overloaded (503) retries, then falls back to the next-best model',
   await assert.rejects(() => mkRun({ GEMINI_API_KEY: 'K', GEMINI_MODEL: 'x' }, g)({ messages: [{ role: 'user', content: 'x' }] }), /gemini 503 UNAVAILABLE @x/);
   assert.equal(pinned.length, 2);                                                    // a pinned model never falls back
 });
+
+test('answer: citing a tool that was consulted but had no data ("not available") is accepted; never-consulted tools are not', async () => {
+  const live = { ...LIVE }; delete live.sim;
+  const ok = await ask([{ tool: 'get_sim_tracks' }, answer('The Sky view is not open, so there are no simulated tracks.', ['get_sim_tracks'])], 'any aircraft tracks?', live);
+  assert.equal(ok.response.type, 'answer', JSON.stringify(ok));
+  const bad = await ask([answer('The Sky view is not open, so there are no simulated tracks.', ['get_sim_tracks'])], 'any aircraft tracks?', live);
+  assert.notEqual(bad.response.type, 'answer');
+});

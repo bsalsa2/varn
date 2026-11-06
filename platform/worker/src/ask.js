@@ -67,7 +67,7 @@ export async function runAsk({ question, live, facts, runModel, history }) {
   const p = prepare({ question, live, facts, history, text });
   if (p.error) return { error: p.error, detail: p.detail };
 
-  const factIds = new Set(p.picked.map((f) => f.id)), toolsUsed = new Set(p.pre.map((r) => r.tool)), results = [...p.pre];
+  const factIds = new Set(p.picked.map((f) => f.id)), toolsUsed = new Set(p.pre.map((r) => r.tool)), consulted = new Set(toolsUsed), results = [...p.pre];   // consulted also holds tools that answered "not available"
   const factText = new Map(p.picked.map((f) => [f.id, f.text]));
   const messages = [...p.messages];
   let spent = 0, calls = 0, steps = 0, retried = false, lastShape = null, simLabelled = p.pre.some((r) => r.tool === 'get_sim_tracks' && r.label === 'SIM');
@@ -107,6 +107,7 @@ export async function runAsk({ question, live, facts, runModel, history }) {
         toolsUsed.add('search_facts');
       } else {
         result = TOOLS[call.name](p.live);
+        consulted.add(call.name);
         if (result.available) toolsUsed.add(call.name);
         if (call.name === 'get_sim_tracks' && result.available && result.label === 'SIM') simLabelled = true;
       }
@@ -129,7 +130,7 @@ export async function runAsk({ question, live, facts, runModel, history }) {
       return results.length ? raw('the answer was not valid JSON') : finish(plain("I couldn't produce an answer. Please rephrase."));
     }
     const allowed = allowedNumbers(results, [...factText.values()], question, p.history.map((m) => m.content));
-    const v = verifyAnswer(effective, { factIds, toolsUsed, allowed, simLabelled });
+    const v = verifyAnswer(effective, { factIds, toolsUsed: consulted, allowed, simLabelled });
     if (v.ok) {
       const cited = {}; for (const s of v.answer.sources) if (factText.has(s)) cited[s] = factText.get(s);
       return finish({ ...v.answer, cited });
