@@ -255,14 +255,6 @@ export default function EarthViewer() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plot]);
 
-  // Private assistant only (dead code in normal builds): lets the Ask panel read the view and run approved commands.
-  useEffect(() => {
-    if (import.meta.env.VITE_PRIVATE_ASK !== '1') return undefined;
-    let off = () => {}, dead = false;
-    import('../ask/host.js').then((m) => { if (!dead) off = m.askHost.register('earth', { ctx: termCtx }); });
-    return () => { dead = true; off(); };
-  }, [termCtx]);
-
   useEffect(() => {
     const onKey = (e) => {
       if (e.target.closest('input, textarea, select')) { if (e.key === 'Escape') e.target.blur(); return; }

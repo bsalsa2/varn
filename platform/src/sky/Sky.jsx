@@ -102,17 +102,6 @@ export default function Sky() {
   const live = useRef({});
   live.current = { scene, view, mode, selectedId, hoverId, quality, playing, speed, prefs };
 
-  // Private assistant only (dead code in normal builds): lets the Ask panel count the tracks on screen.
-  useEffect(() => {
-    if (import.meta.env.VITE_PRIVATE_ASK !== '1') return undefined;
-    let off = () => {}, dead = false;
-    import('../ask/host.js').then((m) => {
-      if (dead) return;
-      off = m.askHost.register('sky', { sim: () => { const sc = live.current.scene; return sc ? { mode: sc.mode === 'sim' ? 'SIM' : 'REAL', tracks: sc.tracks.map((t) => ({ kind: t.kind, adsb: t.match?.status === 'matched' })) } : null; } });
-    });
-    return () => { dead = true; off(); };
-  }, []);
-
   // Satellite view: built the first time it is opened, then kept (tiles stay cached).
   useEffect(() => {
     if (view !== 'sat') return;

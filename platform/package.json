@@ -5,16 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:private": "vite --mode private",
     "check:records": "node scripts/check-records.mjs",
     "export:facts": "node scripts/export-facts.mjs",
     "prebuild": "node scripts/check-records.mjs",
     "build": "vite build",
-    "build:private": "vite build --mode private --outDir dist-private --emptyOutDir",
-    "postbuild": "node scripts/check-no-ask.mjs",
-    "check:no-ask": "node scripts/check-no-ask.mjs",
     "preview": "vite preview",
-    "test": "node --test src/sky/sky.test.js src/globe/hillshade.test.js src/globe/commands.test.js src/globe/buildingsData.test.js src/globe/inspect.test.js src/records/rules.test.js src/records/model.test.js src/records/render.test.js src/ask/summary.test.js src/ask/client.test.js src/ask/panel.test.js src/ask/build.test.js worker/test/*.test.js"
+    "test": "node --test src/sky/sky.test.js src/globe/hillshade.test.js src/globe/commands.test.js src/globe/buildingsData.test.js src/globe/inspect.test.js src/records/rules.test.js src/records/model.test.js src/records/render.test.js worker/test/*.test.js"
   },
   "dependencies": {
     "@mapbox/vector-tile": "^2.0.5",
