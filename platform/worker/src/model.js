@@ -65,9 +65,10 @@ export function makeRunModel(env, fetchFn = fetch) {
   // Gemini API (the owner's own key, set as a Worker secret). Plain-JSON protocol, same checks as every other model.
   if (env.GEMINI_API_KEY) {
     const headers = { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY };
+    const synthetic = (status, st) => ({ ok: false, status, json: async () => ({ error: { status: st } }) });
     const post = (model, body) => fetchFn(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(25000),
-    }).catch((e) => { throw new Error(e?.name === 'TimeoutError' || e?.name === 'AbortError' ? 'gemini timeout' : 'gemini network'); });
+      method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(15000),
+    }).catch((e) => (e?.name === 'TimeoutError' || e?.name === 'AbortError' ? synthetic(524, 'TIMEOUT') : synthetic(599, 'NETWORK')));    // too slow counts like an overload
     const call = async (model, messages) => {
       const body = geminiBody(messages, MAX_OUTPUT_TOKENS, model);
       const r = await post(model, body);
@@ -78,27 +79,27 @@ export function makeRunModel(env, fetchFn = fetch) {
       return r;
     };
     const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
-    const overloaded = (r) => r.status === 503 || r.status === 500 || r.status === 504 || r.status === 524;
+    const overloaded = (r) => [500, 503, 504, 524, 599].includes(r.status);
     const run = async ({ messages }) => {
       let model = env.GEMINI_MODEL || discovered || 'gemini-2.5-flash';
       let r = await call(model, messages);
-      let ranked = null;
+      let ranked = null, last = model;
       const models = async () => (ranked ??= await fetchFn('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers, signal: AbortSignal.timeout(10000) })
         .then(async (l) => (l.ok ? rankGeminiModels(await l.json()) : [])).catch(() => []));
       if (r.status === 404 && !env.GEMINI_MODEL) {                      // the default name is gone: ask Google what this key can use
         const pick = (await models())[0];
         if (pick) { discovered = pick; model = pick; r = await call(pick, messages); }
       }
-      if (overloaded(r)) { await sleep(800); r = await call(model, messages); }          // one quick retry on the same model
+      if (overloaded(r) && r.status !== 524) { await sleep(800); r = await call(model, messages); }  // one quick retry on the same model (not after a timeout)
       if (overloaded(r) && !env.GEMINI_MODEL) {                         // still busy: try the next-best models, once each
         for (const alt of (await models()).filter((m) => m !== model).slice(0, 2)) {
-          r = await call(alt, messages);
+          last = alt; r = await call(alt, messages);
           if (!overloaded(r)) { if (r.ok) discovered = alt; break; }
         }
       }
       if (!r.ok) {                                                      // never include the key, the question or the body text in errors
         let st = ''; try { st = String((await r.json())?.error?.status || '').replace(/[^A-Z_]/g, '').slice(0, 30); } catch { /* no body */ }
-        throw new Error(`gemini ${r.status}${st ? ' ' + st : ''}`);
+        throw new Error(`gemini ${r.status}${st ? ' ' + st : ''} @${last}`);
       }
       return normaliseGemini(await r.json());
     };

@@ -92,7 +92,7 @@ export async function handle(request, env, deps) {
         catch (e) {
           await limiter.settle(hold.key, p.estimate, 0).catch(() => {});
           if (isAllowanceError(e)) return reply({ error: 'limit_reached', message: 'Limit reached for today. It resets at 00:00 UTC.' }, 429, origin);
-          const code = /^gemini (\d{3}( [A-Z_]+)?|timeout|network)$/.exec(String(e?.message))?.[0];       // provider status only, so a setup problem is visible
+          const code = /^gemini \d{3}( [A-Z_]+)?( @[\w.\-]+)?$/.exec(String(e?.message))?.[0];       // provider status only, so a setup problem is visible
           return reply({ error: 'model_unavailable', message: `The assistant is unavailable right now.${code ? ` (${code})` : ''}` }, 502, origin);
         }
         await limiter.settle(hold.key, p.estimate, out.neurons).catch(() => {});

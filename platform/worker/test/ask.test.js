@@ -305,7 +305,7 @@ test('gemini: body folds system, merges roles, never leaks the key; errors are t
   assert.equal(out.text, '{"type":"final"}');
   assert.ok(!seen.url.includes('KEY123') && seen.init.headers['x-goog-api-key'] === 'KEY123' && !seen.init.body.includes('KEY123'));
   const bad = mkRun({ GEMINI_API_KEY: 'KEY123' }, async () => ({ ok: false, status: 429, json: async () => ({ error: { status: 'RESOURCE_EXHAUSTED', message: 'KEY123 secret' } }) }));
-  await assert.rejects(() => bad({ messages: [{ role: 'user', content: 'hi' }] }), (e) => !/KEY123/.test(e.message) && e.message === 'gemini 429 RESOURCE_EXHAUSTED');
+  await assert.rejects(() => bad({ messages: [{ role: 'user', content: 'hi' }] }), (e) => !/KEY123/.test(e.message) && /^gemini 429 RESOURCE_EXHAUSTED @[\w.\-]+$/.test(e.message));
   assert.equal(normaliseGemini({}).text, '');
 });
 
@@ -340,7 +340,7 @@ test('gemini: lowest thinking by family, retry without it on 400, timeout is a t
   assert.equal(out.text, '{}');
   assert.ok(bodies[0].generationConfig.thinkingConfig && !bodies[1].generationConfig.thinkingConfig);
   const slow = mkRun({ GEMINI_API_KEY: 'K', GEMINI_MODEL: 'm' }, async () => { const e = new Error('x'); e.name = 'TimeoutError'; throw e; });
-  await assert.rejects(() => slow({ messages: [{ role: 'user', content: 'x' }] }), /^Error: gemini timeout$/);
+  await assert.rejects(() => slow({ messages: [{ role: 'user', content: 'x' }] }), /^Error: gemini 524 TIMEOUT @m$/);
 });
 
 test('gemini: overloaded (503) retries, then falls back to the next-best model', async () => {
@@ -359,6 +359,6 @@ test('gemini: overloaded (503) retries, then falls back to the next-best model',
   assert.equal(hit.at(-1), 'gemini-3-flash-lite');
   const pinned = [];
   const g = async (url) => { pinned.push(url); return { ok: false, status: 503, json: async () => ({ error: { status: 'UNAVAILABLE' } }) }; };
-  await assert.rejects(() => mkRun({ GEMINI_API_KEY: 'K', GEMINI_MODEL: 'x' }, g)({ messages: [{ role: 'user', content: 'x' }] }), /gemini 503 UNAVAILABLE/);
+  await assert.rejects(() => mkRun({ GEMINI_API_KEY: 'K', GEMINI_MODEL: 'x' }, g)({ messages: [{ role: 'user', content: 'x' }] }), /gemini 503 UNAVAILABLE @x/);
   assert.equal(pinned.length, 2);                                                    // a pinned model never falls back
 });
