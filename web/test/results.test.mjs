@@ -96,21 +96,21 @@ test('the check accepts the published content', () => {
 });
 
 test('the check refuses a value written as text or outside 0-100', () => {
-  const asText = checkWith((s) => s.replace('value: 7.5,', "value: '7.5%',"));
+  const asText = checkWith((s) => s.replace('value: 36,', "value: '36%',"));
   assert.equal(asText.status, 1);
   assert.match(asText.stdout, /plain number from 0 to 100/);
-  const tooBig = checkWith((s) => s.replace('value: 7.5,', 'value: 750,'));
+  const tooBig = checkWith((s) => s.replace('value: 36,', 'value: 750,'));
   assert.equal(tooBig.status, 1);
 });
 
 test('the check refuses numbers without a source', () => {
-  const r = checkWith((s) => s.replace(/source: 'Model v2, 43 real-world videos[^']*'/, "source: ''"));
+  const r = checkWith((s) => s.replace(/source: 'Model v3 \(about[^']*'/, "source: ''"));
   assert.equal(r.status, 1);
   assert.match(r.stdout, /results\.source is empty/);
 });
 
 test('the check refuses an unknown chart kind', () => {
-  const r = checkWith((s) => s.replace(/kind: 'drone',(\s*title: 'Drones labeled correctly')/, "kind: 'bird',$1"));
+  const r = checkWith((s) => s.replace(/kind: 'drone',(\s*title: 'Drone box shown on drone clips')/, "kind: 'bird',$1"));
   assert.equal(r.status, 1);
   assert.match(r.stdout, /Use 'aircraft' or 'drone'/);
 });

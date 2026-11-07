@@ -458,6 +458,7 @@ function siteFooter(c, { from = '', close = null } = {}) {
     <div class="footer-fine">
       ${close ? `<p class="footer-line">${esc(close.heading)} ${esc(close.text)}</p>` : ''}
       <p>${esc((close && close.disclosure) || c.close.disclosure)}</p>
+      <p>${esc(footer.independence)}</p>
       <p>${esc(c.close.copyright)}</p>
     </div>
   </div>
@@ -726,10 +727,10 @@ export function renderResearchHead(c) {
   const r = c.researchPage;
   const url = new URL('research.html', c.meta.url).href;
   return `${counter(c)}
-    <title>${esc(r.title)} | Varn</title>
+    <title>${esc(r.title)} | Varn Labs</title>
     <meta name="description" content="${esc(r.description)}" />
     <link rel="canonical" href="${esc(url)}" />
-    <meta property="og:title" content="${esc(r.title)} | Varn" />
+    <meta property="og:title" content="${esc(r.title)} | Varn Labs" />
     <meta property="og:description" content="${esc(r.description)}" />`;
 }
 
@@ -964,7 +965,7 @@ ${siteFooter(c, { from: 'research' })}`;
 // ---- Not-found page (404.html) -----------------------------------------------
 export function renderNotFoundHead(c) {
   return `${counter(c)}
-    <title>${esc(c.notFound.title)} | Varn</title>
+    <title>${esc(c.notFound.title)} | Varn Labs</title>
     <meta name="description" content="${esc(c.notFound.text)}" />
     <meta name="robots" content="noindex" />`;
 }
@@ -998,7 +999,7 @@ export function renderAboutHead(c) {
   const a = c.about;
   const url = new URL('about.html', c.meta.url).href;
   return `${counter(c)}
-    <title>${esc(a.title)} | Varn</title>
+    <title>${esc(a.title)} | Varn Labs</title>
     <meta name="description" content="${esc(a.description)}" />
     <link rel="canonical" href="${esc(url)}" />`;
 }
@@ -1041,7 +1042,7 @@ ${siteFooter(c, { from: 'about' })}`;
 export function renderPrivacyHead(c) {
   const url = new URL('privacy.html', c.meta.url).href;
   return `${counter(c)}
-    <title>${esc(c.privacy.title)} | Varn</title>
+    <title>${esc(c.privacy.title)} | Varn Labs</title>
     <meta name="description" content="${esc(c.privacy.description)}" />
     <link rel="canonical" href="${esc(url)}" />`;
 }
@@ -1090,7 +1091,7 @@ ${siteFooter(c, { from: 'privacy' })}`;
 export function renderContactHead(c) {
   const url = new URL('contact.html', c.meta.url).href;
   return `${counter(c)}
-    <title>${esc(c.contact.title)} | Varn</title>
+    <title>${esc(c.contact.title)} | Varn Labs</title>
     <meta name="description" content="${esc(c.contact.description)}" />
     <link rel="canonical" href="${esc(url)}" />`;
 }
@@ -1154,10 +1155,10 @@ export function renderDemoHead(c) {
   const d = c.demo;
   const url = new URL('demo.html', c.meta.url).href;
   return `${counter(c)}
-    <title>${esc(d.title)} | Varn</title>
+    <title>${esc(d.title)} | Varn Labs</title>
     <meta name="description" content="${esc(d.description)}" />
     <link rel="canonical" href="${esc(url)}" />
-    <meta property="og:title" content="${esc(d.title)} | Varn" />
+    <meta property="og:title" content="${esc(d.title)} | Varn Labs" />
     <meta property="og:description" content="${esc(d.description)}" />`;
 }
 
@@ -1305,8 +1306,7 @@ ${siteNav(c, { home: false, current: 'demo.html' })}
               <table class="demo-table">
                 <thead><tr><th scope="col">Model</th><th scope="col">Status</th><th scope="col">Evidence</th></tr></thead>
                 <tbody>
-                  <tr><th scope="row">v2</th><td>${statePill('Measured')}</td><td>Scored on 43 recorded videos. See the measured results above.</td></tr>
-                  <tr><th scope="row">v3</th><td>${statePill('Testing')}</td><td>In training, with drone and aircraft classes at 960 px input. No results yet.</td></tr>
+                  <tr><th scope="row">v3</th><td>${statePill('Measured')}</td><td>Scored on 42 recorded clips, with drone and aircraft classes at 960 px input. See the measured results above.</td></tr>
                 </tbody>
               </table>
             </div>

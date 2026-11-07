@@ -202,6 +202,12 @@ text('close.heading');
 text('close.text');
 text('close.disclosure');
 text('close.copyright');
+// Exact wording, on the About page and in the footer.
+{
+  const s = 'Varn Labs is an independent research project and is not affiliated with any other company named Varn.';
+  if (get('footer.independence') !== s) err('footer.independence must be the exact independence sentence.', lineOf('independence:'));
+  if (!(get('about.scope') || []).includes(s)) err('about.scope must include the exact independence sentence.', lineOf('INDEPENDENCE,'));
+}
 // The research snapshot repeats numbers published in `results`, which stay the
 // one source: the page reads them from there, and these must match.
 {
