@@ -31,7 +31,7 @@ VARN aims to build what others struggle to build, solve real problems, and turn 
 
 ## What we're working on now
 
-VARN is at an early research and prototype stage. Current work explores **camera-based observation and computer vision**, including experimental detection and tracking software, a dashboard, event logging, and a developing model-training and evaluation workflow.
+VARN is at an early research and prototype stage. Current work explores **camera-based observation and computer vision**, including experimental detection and tracking software for drones and aircraft, a dashboard, event logging, and a developing model-training and evaluation workflow.
 
 The immediate technical priority is to make training understandable, repeatable, and measurable—then use evaluation evidence to decide what to improve next.
 
