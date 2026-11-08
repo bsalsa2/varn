@@ -983,9 +983,10 @@
   }
   .demo-tabs {
     flex-direction: row;
+    flex-wrap: wrap;
   }
   .demo-tabs li {
-    flex: 1;
+    flex: 1 1 auto;
   }
   .demo-tab {
     justify-content: center;

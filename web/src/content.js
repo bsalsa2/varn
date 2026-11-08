@@ -77,7 +77,7 @@ export const content = {
       },
       {
         name: 'Log',
-        text: 'Each sighting is saved with its time, class, confidence and where the camera was pointing.',
+        text: 'Each sighting is saved with its time, class, confidence and where the camera was pointing. Confidence is how sure the model is, from 0 to 1; it is not the chance it is right.',
         status: 'Tested in simulation',
         state: 'tested',
       },
@@ -112,6 +112,7 @@ export const content = {
     // files in /hardware. It must always say so: nothing is built.
     concept: {
       src: './models/hero-mount-1400.webp',
+      tiny: './models/hero-mount-280.webp',
       small: './models/hero-mount-700.webp',
       width: 1400,
       height: 1871,
@@ -213,20 +214,20 @@ export const content = {
       {
         number: '02',
         title: 'DETECT',
-        fact: 'YOLO · ONNX model',
-        body: 'Every frame goes through a YOLO object-detection model. For each thing it finds, it returns a class (drone or aircraft), a confidence score and a box. Today that is model v3 (about 3.0 million parameters), which is weak at drones.',
+        fact: 'Standard object-detection model',
+        body: 'Every frame goes through an object-detection model (YOLO, a widely used kind that finds and labels things in an image). For each thing it finds, it returns a class (drone or aircraft), a confidence score and a box. Today that is model v3 (about 3.0 million parameters), which is weak at drones.',
       },
       {
         number: '03',
         title: 'TRACK',
         fact: 'Pico · two servos',
-        body: 'The tracker picks one target and stays locked on it from frame to frame. A small controller turns how far off-centre the target is into new pan and tilt angles, and a Raspberry Pi Pico drives the two servos.',
+        body: 'The tracker picks one target and stays locked on it from frame to frame. A small controller turns how far off-centre the target is into new pan and tilt angles. A Raspberry Pi Pico (a small microcontroller board) drives the two servos.',
       },
       {
         number: '04',
         title: 'LOG',
         fact: 'Time · class · confidence · direction',
-        body: 'Every sighting is saved with its time, what it was, how confident the model was and which way the camera was pointing, plus a snapshot of its best moment. An hourly sky-clear check records the quiet too.',
+        body: 'Every sighting is saved with its time, what it was, how confident the model was and which way the camera was pointing. A snapshot of its best moment is saved too. An hourly sky-clear check records the quiet too.',
       },
       {
         number: '05',
@@ -262,7 +263,7 @@ export const content = {
         rule: 'Looks like an aircraft, but no matching broadcast was found. It may be a plane that does not broadcast, or a misread.',
       },
     ],
-    note: 'The ADS-B comparison is written but has not yet been run against a real feed, so these labels are shown here as a design, not as measured results.',
+    note: 'The ADS-B comparison is written but has not yet been run against a real feed. So these labels are shown here as a design, not as measured results.',
   },
 
   math: {
@@ -286,7 +287,7 @@ export const content = {
   how: {
     kicker: 'Under the hood',
     heading: 'The hardware and the view',
-    summary: 'Three views, all of them simulations or CAD renders and none of them footage: what the camera overlay will look like, a sky picture of sightings, and a 3D model of the pan-tilt mount.',
+    summary: 'Three views, all of them simulations or CAD renders and none of them footage. They show what the camera overlay will look like, a sky picture of sightings, and a 3D model of the pan-tilt mount.',
     toggle: 'Show the overlay, sky picture and 3D mount',
     // 3D viewer of the pan-tilt mount, built from the STL files in /hardware.
     mount: {
@@ -370,7 +371,7 @@ export const content = {
       'One model, v3, the current detector. Five fine-tunes were tested. None beat v3 at telling drones from aircraft, so v3 stays the default.',
       'Not yet checked against real flight data (ADS-B).',
       'Labels are per video, so frames where the object is out of view or tiny count as misses. The two charts use different sets of clips.',
-      'On held-out public-dataset videos, v3 is nearly blind to small, distant objects: mAP50 (a standard detection score; 1.0 is perfect) is about 0.06 to 0.08. v3 scores higher (about 0.85) on the Roboflow validation pictures, but v3 was probably trained on that collection, so that number flatters it; held-out videos are the fairer test.',
+      'On videos from a public drone-detection dataset, v3 is nearly blind to small, distant objects. Its mAP50 (a standard detection score; 1.0 is perfect) is about 0.06 to 0.08. v3 scores higher (about 0.85) on validation pictures from Roboflow (a public online collection of labeled images). But v3 was probably trained on that collection, so that number flatters it. Videos from a different collection are the fairer test.',
       `Not done yet: no run on Varn's own camera in a real sky, and no false-alarm measurement on empty sky.`,
     ],
     source: 'Model v3 (about 3.0 million parameters), 42 recorded clips, 1,701 frames at one frame per second, confidence 0.35.',
@@ -391,11 +392,11 @@ export const content = {
       },
       {
         tag: 'NOT REMOTE ID',
-        text: 'It can see drones that broadcast nothing, unlike Remote ID, but it does not replace Remote ID or RF sensors.',
+        text: 'It can see drones that broadcast nothing, unlike Remote ID (an identification signal a drone broadcasts). It does not replace Remote ID or RF sensors (radio receivers that pick up the signals between a drone and its controller).',
       },
       {
         tag: 'SMALL, DISTANT OBJECTS',
-        text: 'On held-out public-dataset videos, v3 is nearly blind to small, distant objects (mAP50 about 0.06 to 0.08).',
+        text: 'On videos from a public drone-detection dataset, v3 is nearly blind to small, distant objects (mAP50 about 0.06 to 0.08).',
       },
       {
         tag: 'NOT YET MEASURED',
@@ -447,7 +448,7 @@ export const content = {
     description: 'VARN research: test methodology, measured results with their limits, model versions, hardware and parts cost, validation status, roadmap and references.',
     kicker: 'Research',
     heading: 'Research and engineering detail',
-    intro: 'Everything the home page leaves out: how the model was tested, what the numbers do and do not show, what the hardware is, and what is still pending. Recorded-video evaluation only. Physical hardware validation pending.',
+    intro: 'This page covers everything the home page leaves out. It explains how the model was tested, what the numbers do and do not show, what the hardware is and what is still pending. Recorded-video evaluation only. Physical hardware validation pending.',
     contentsLabel: 'On this page',
     sections: [
       { id: 'methodology', label: 'Test methodology' },
@@ -462,8 +463,8 @@ export const content = {
       heading: 'Test methodology',
       paragraphs: [
         'Model v3 is the current detector, with drone and aircraft classes and about 3.0 million parameters.',
-        `It was run on 42 recorded video clips, sampled at one frame per second (1,701 frames), with a confidence threshold of 0.35. One of the 43 collected clips is a corrupt file and was skipped. Labels are per video, so frames where the object is out of view or tiny count as misses. Each figure is the share of frames where a box of the clip's class appears.`,
-        'This is a test of the model on recorded video. It is not a test of the camera, the mount, the servos or any outdoor setup, none of which has been built.',
+        `It was run on 42 recorded video clips, sampled at one frame per second (1,701 frames), with a confidence threshold of 0.35. Confidence is how sure the model is, from 0 to 1; it is not the chance it is right. One of the 43 collected clips is a corrupt file and was skipped. Labels are per video, so frames where the object is out of view or tiny count as misses. Each figure is the share of frames where a box of the clip's class appears.`,
+        'This is a test of the model on recorded video. It is not a test of the camera, the mount, the servos (small motors that turn to a set angle) or any outdoor setup. None of these has been built.',
       ],
       unitsHeading: 'Two figures, one unit',
       units: [
@@ -472,7 +473,7 @@ export const content = {
       ],
       unitsNote: 'Both figures are per frame, but each comes from a different set of clips, and labels are per video. Out-of-view and tiny objects count as misses.',
     },
-    resultsNote: 'The drone result is weak and stays visible here. On held-out public-dataset videos, v3 is nearly blind to small, distant objects (mAP50 about 0.06 to 0.08).',
+    resultsNote: 'The drone result is weak and stays visible here. On videos from a public drone-detection dataset, v3 is nearly blind to small, distant objects (mAP50 about 0.06 to 0.08).',
     models: {
       heading: 'Model versions and limitations',
       rows: [
@@ -483,7 +484,7 @@ export const content = {
     },
     hardware: {
       heading: 'Hardware and bill of materials',
-      intro: 'The planned node is a webcam on a two-servo pan-tilt mount, driven by a Raspberry Pi Pico WH, with the model running on a laptop first and a Raspberry Pi 4 later. Nothing has been built. The renders and models on this page are CAD.',
+      intro: 'The planned node is a webcam on a two-servo pan-tilt mount, driven by a Raspberry Pi Pico WH. The model will run on a laptop first and a Raspberry Pi 4 later. Nothing has been built. The renders and models on this page are CAD (computer-aided design: 3D drawings, not photos).',
       costHeading: 'Estimated parts cost',
       costNote: 'A parts estimate from bom.csv in the repository, before shipping. It excludes the computer that runs the model, and the Pico WH and breadboard, which are already owned. It is not evidence of performance: the node is not built and nothing has run on real hardware.',
       bomHeading: 'Bill of materials',
@@ -652,12 +653,12 @@ export const content = {
       },
       {
         heading: 'Hosting',
-        text: `The site is hosted on GitHub Pages. Like any web host, GitHub's servers handle each visit and may keep standard technical logs, such as IP addresses and browser type, to run and protect the service. This site adds no tracking on top of that.`,
+        text: `The site is hosted on GitHub Pages. Like any web host, GitHub's servers handle each visit. They may keep standard technical logs, such as IP addresses and browser type, to run and protect the service. This site adds no tracking on top of that.`,
         link: { label: `GitHub's privacy statement`, href: 'https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement' },
       },
       {
         heading: 'Contact form',
-        text: `If you use the contact form, the name, email address, and message you type are sent to Formspree, a form service, which forwards them to hello@tryvarn.com and may keep a copy under its own policy. They are used only to reply to you. Nothing is stored on this site. The form loads nothing from Formspree until you press send. If the form is unavailable, you can email hello@tryvarn.com directly.`,
+        text: `If you use the contact form, the name, email address, and message you type are sent to Formspree, a form service. Formspree forwards them to hello@tryvarn.com and may keep a copy under its own policy. They are used only to reply to you. Nothing is stored on this site. The form loads nothing from Formspree until you press send. If the form is unavailable, you can email hello@tryvarn.com directly.`,
         link: { label: `Formspree's privacy policy`, href: 'https://formspree.io/legal/privacy-policy/' },
       },
       {

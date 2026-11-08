@@ -655,7 +655,7 @@ const platformSection = (c) => {
       </div>
       <div class="platform-foot">
         <figure class="concept glass-2">
-          <img src="${esc(pl.concept.src)}" srcset="${esc(pl.concept.small)} 700w, ${esc(pl.concept.src)} 1400w" sizes="140px" width="${pl.concept.width}" height="${pl.concept.height}" alt="${esc(pl.concept.alt)}" loading="lazy" decoding="async" />
+          <img src="${esc(pl.concept.src)}" srcset="${esc(pl.concept.tiny)} 280w, ${esc(pl.concept.small)} 700w, ${esc(pl.concept.src)} 1400w" sizes="140px" width="${pl.concept.width}" height="${pl.concept.height}" alt="${esc(pl.concept.alt)}" loading="lazy" decoding="async" />
           <figcaption class="mono">${esc(pl.concept.caption)}</figcaption>
         </figure>
         <a class="btn btn--glass btn--lg"${linkAttrs(pl.cta.href)}><span>${esc(pl.cta.label)}</span>${ARROW_UR}</a>

@@ -61,7 +61,7 @@ function renderKpis() {
     tile('Events', s.total, 'simulated, last 24 hours') +
     tile('Aircraft', s.aircraft, 'model label: aircraft', 'demo-kpi--aircraft') +
     tile('Possible drones', s.drone, 'model label: drone', 'demo-kpi--drone') +
-    tile('No ADS-B match', s.noAdsb, 'drones and some aircraft');
+    tile('No ADS-B match', s.noAdsb, 'no flight broadcast matched: drones and some aircraft');
 }
 
 function renderHourly() {
