@@ -1,3 +1,5 @@
+> Note: This is a long-term vision document written by a student. Varn Labs is an independent research project. Nothing here describes a current company, product, customer or contract.
+
 # VARN — Master Plan
 
 > **Purpose:** The strategic source of truth for VARN's vision, product philosophy, priorities, and milestones.  
@@ -143,8 +145,6 @@ Questions to investigate:
 - Who evaluates, purchases, operates, and maintains a solution?
 - What testing, security, procurement, and support requirements apply?
 - Can a controlled demonstration test the central product hypothesis?
-
-Learn from companies such as Anduril and Mach Industries without copying their product choices or assuming their circumstances can be replicated. Study how they moved from technical work to defined products, evidence, customer access, and a sustainable business.
 
 ## 9. Engineering Standards
 
