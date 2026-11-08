@@ -124,6 +124,12 @@ test('mAP50 is explained the first time it appears on a page, and no stale v2 wo
   assert.equal(text(home).includes('mAP50'), false);
 });
 
+test('the Roboflow score is shown with the reason it flatters v3', () => {
+  const sentence = 'v3 scores higher (about 0.85) on the Roboflow validation pictures, but v3 was probably trained on that collection, so that number flatters it; held-out videos are the fairer test.';
+  assert.ok(content.results.caveats.some((c) => c.includes(sentence)));
+  for (const html of [research, demo]) assert.ok(text(html).includes(sentence));
+});
+
 test('subpage title tags end in "| Varn Labs"', () => {
   const heads = [renderResearchHead, renderAboutHead, renderPrivacyHead, renderContactHead, renderDemoHead, renderNotFoundHead];
   for (const head of heads) assert.match(head(content), /<title>[^<]+ \| Varn Labs<\/title>/, head.name);

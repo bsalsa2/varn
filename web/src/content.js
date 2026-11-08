@@ -370,7 +370,7 @@ export const content = {
       'One model, v3, the current detector. Five fine-tunes were tested. None beat v3 at telling drones from aircraft, so v3 stays the default.',
       'Not yet checked against real flight data (ADS-B).',
       'Labels are per video, so frames where the object is out of view or tiny count as misses. The two charts use different sets of clips.',
-      'On held-out public-dataset videos, v3 is nearly blind to small, distant objects: mAP50 (a standard detection score; 1.0 is perfect) is about 0.06 to 0.08.',
+      'On held-out public-dataset videos, v3 is nearly blind to small, distant objects: mAP50 (a standard detection score; 1.0 is perfect) is about 0.06 to 0.08. v3 scores higher (about 0.85) on the Roboflow validation pictures, but v3 was probably trained on that collection, so that number flatters it; held-out videos are the fairer test.',
       `Not done yet: no run on Varn's own camera in a real sky, and no false-alarm measurement on empty sky.`,
     ],
     source: 'Model v3 (about 3.0 million parameters), 42 recorded clips, 1,701 frames at one frame per second, confidence 0.35.',
