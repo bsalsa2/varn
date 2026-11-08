@@ -533,6 +533,21 @@ export const content = {
   // browser (src/demo-data.js). The measured results on the Analytics tab come
   // from `results` above and are labelled as measured. Keep that line clear.
   demo: {
+    // Narrated screen recording of the command center prototype. The files
+    // live in public/video; the transcript text is read from the .txt file.
+    video: {
+      id: 'command-center',
+      heading: 'Command center demo',
+      src: './video/varn-command-center-demo.mp4',
+      poster: './video/varn-command-center-poster.webp',
+      captions: './video/varn-command-center-captions.vtt',
+      transcript: 'video/varn-command-center-transcript.txt',
+      width: 1600,
+      height: 916,
+      label: 'Video demo of the Varn command center prototype',
+      caption: 'A short demo of the command center prototype. It uses public data and shows no real Varn detections. Narration is synthetic.',
+      summary: 'Transcript and description',
+    },
     title: 'Dashboard demo',
     description: 'An interactive demo of the Varn dashboard with simulated sample data: overview, event explorer, analytics and system status.',
     kicker: 'Dashboard demo',
