@@ -3,7 +3,7 @@
 **Camera-based sky observation research**  
 *An independent research project. Results are published with their limits.*
 
-[Website](https://tryvarn.com) · [Master Plan](docs/MASTER_PLAN.md)
+[Website](https://tryvarn.com) · [Long-term vision notes](docs/MASTER_PLAN.md)
 
 ---
 
@@ -31,7 +31,7 @@ The immediate technical priority is to make training understandable, repeatable,
 
 ## Engineering principles
 
-- **Product ownership:** Build proprietary capabilities and products, not only custom work for others.
+- **Documented methods:** Record how each result was produced, including its data and settings.
 - **Evidence over hype:** Claims should match what has actually been implemented, tested, and measured.
 - **Difficult problems:** Pursue technically challenging work when it can create meaningful value.
 - **Reliability:** Evaluate failure cases and limitations, not just successful examples.
@@ -42,10 +42,10 @@ The immediate technical priority is to make training understandable, repeatable,
 
 1. **Establish a baseline:** Make the current computer-vision workflow reproducible.
 2. **Improve systematically:** Run controlled experiments and document results.
-3. **Identify a product problem:** Research real needs and existing alternatives before committing to a product.
+3. **Choose the next research question:** Use the measured failures, such as small, distant objects and drone detection, to decide what to study next.
 4. **Demonstrate a capability:** Build a controlled prototype with clear acceptance criteria.
-5. **Build the company:** Seek informed feedback, develop a credible portfolio, and explore appropriate programs and funding.
-6. **Expand through evidence:** Grow into more complete products and additional product areas when the results justify it.
+5. **Seek feedback:** Share results and limits, and ask people with relevant experience to critique them.
+6. **Expand through evidence:** Widen the testing, such as more clips, real sky conditions and physical hardware, only when the results justify it.
 
 The roadmap is a direction, not a claim that future capabilities already exist.
 
@@ -67,7 +67,7 @@ Long term, and not a current plan: if the evidence supports it, the hope is that
 ## Explore
 
 - **Website:** [tryvarn.com](https://tryvarn.com)
-- **Strategy and long-term direction:** [VARN Master Plan](docs/MASTER_PLAN.md)
+- **Strategy and long-term direction:** [Long-term vision notes](docs/MASTER_PLAN.md)
 
 ---
 
