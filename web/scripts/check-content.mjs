@@ -157,13 +157,15 @@ list('nav.links').forEach((l, i) => {
   link(`nav.links.${i}.href`, l?.href);
 });
 
-['headline', 'sub', 'status'].forEach((k) => text(`hero.${k}`));
+['headline', 'sub', 'status', 'stage'].forEach((k) => text(`hero.${k}`));
 text('nav.cta.label');
 link('nav.cta.href');
 text('hero.demo.label');
 link('hero.demo.href');
 text('hero.results.label');
 link('hero.results.href');
+text('hero.contact.label');
+link('hero.contact.href');
 text('platform.concept.alt');
 text('platform.concept.caption');
 publicFile('platform.concept.src');

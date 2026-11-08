@@ -539,6 +539,7 @@ const heroSection = (c) => {
     <div class="curtain" aria-hidden="true"></div>
     <div class="hero-inner wrap">
       <p class="hero-meta mono hero-rise" style="--i:0">${esc(hero.meta || '')}</p>
+      <p class="hero-stage hero-rise" style="--i:1">${esc(hero.stage)}</p>
       <div class="hero-copy">
         <h1 class="hero-title" id="hero-title" aria-label="${esc(hero.headline)}">${headline(hero.headline)}</h1>
         <div class="hero-side hero-rise" style="--i:6">
@@ -546,6 +547,7 @@ const heroSection = (c) => {
           <div class="hero-actions">
             <a class="btn btn--glass btn--lg"${linkAttrs(hero.demo.href)}><span>${esc(hero.demo.label)}</span>${ARROW_UR}</a>
             <a class="btn btn--quiet btn--lg"${linkAttrs(hero.results.href)}><span>${esc(hero.results.label)}</span>${ARROW_UR}</a>
+            <a class="btn btn--quiet btn--lg"${linkAttrs(hero.contact.href)}><span>${esc(hero.contact.label)}</span>${ARROW_UR}</a>
           </div>
         </div>
       </div>

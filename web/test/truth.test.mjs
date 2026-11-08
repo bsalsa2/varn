@@ -25,6 +25,16 @@ test('the hero carries the required copy, both calls to action and the prototype
   assert.match(home, /class="hero-actions[\s\S]*demo\.html[\s\S]*research\.html#results/);
 });
 
+test('the hero states the project stage and offers a contact link beside the demo and research links', () => {
+  assert.equal(content.hero.stage, 'Research prototype. Tested on recorded video; physical hardware validation is pending.');
+  assert.match(text(home), /Research prototype\. Tested on recorded video; physical hardware validation is pending\./);
+  assert.equal(content.hero.contact.label, 'Discuss the research');
+  assert.equal(content.hero.contact.href, './contact.html');
+  assert.match(home, /class="hero-actions[\s\S]*demo\.html[\s\S]*research\.html#results[\s\S]*contact\.html[\s\S]*Discuss the research/);
+  // The status labels are kept as they were.
+  assert.match(text(home), /RESEARCH PROTOTYPE · HARDWARE VALIDATION PENDING/);
+});
+
 test('the CAD picture is a labelled concept render, not in the hero', () => {
   assert.match(text(home), /CONCEPT RENDER · UNBUILT HARDWARE/);
   assert.match(content.platform.concept.alt, /Not a photograph/);
