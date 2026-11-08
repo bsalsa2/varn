@@ -589,6 +589,15 @@
 .scene.is-active .sc-row:not(.sc-row--head) {
   animation: row-in 0.7s var(--ease-expo) var(--d, 0s) forwards;
 }
+/* Narrow phones: drop the PAN/TILT column so the log fits at 12px. */
+@media (max-width: 359px) {
+  .sc-row {
+    grid-template-columns: 1.3fr 1.2fr 0.6fr;
+  }
+  .sc-row span:nth-child(4) {
+    display: none;
+  }
+}
 /* Scene 5: CHECK */
 .sc-check {
   display: grid;

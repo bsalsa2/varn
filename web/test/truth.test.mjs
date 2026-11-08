@@ -125,7 +125,7 @@ test('mAP50 is explained the first time it appears on a page, and no stale v2 wo
 });
 
 test('the Roboflow score is shown with the reason it flatters v3', () => {
-  const sentence = 'v3 scores higher (about 0.85) on the Roboflow validation pictures, but v3 was probably trained on that collection, so that number flatters it; held-out videos are the fairer test.';
+  const sentence = 'v3 scores higher (about 0.85) on validation pictures from Roboflow (a public online collection of labeled images). But v3 was probably trained on that collection, so that number flatters it. Videos from a different collection are the fairer test.';
   assert.ok(content.results.caveats.some((c) => c.includes(sentence)));
   for (const html of [research, demo]) assert.ok(text(html).includes(sentence));
 });
