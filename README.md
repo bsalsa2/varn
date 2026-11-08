@@ -1,37 +1,23 @@
-# VARN
+# Varn Labs
 
-**Autonomous Systems**  
-*Build what others struggle to build. Prove it works. Turn it into products.*
+**Camera-based sky observation research**  
+*An independent research project. Results are published with their limits.*
 
 [Website](https://tryvarn.com) · [Master Plan](docs/MASTER_PLAN.md)
 
 ---
 
-## The ambition
+## What this is
 
-**VARN is being built toward a defense-first autonomous-systems product company.**
+Varn Labs explores low-cost, camera-based sky observation: detecting drones and aircraft in recorded video, and checking what the camera sees against public flight data (ADS-B). That flight-data comparison is written but has not yet been run against a real feed.
 
-The long-term ambition is to develop breakthrough intelligence, turn it into exceptional complete products, and create capabilities that are difficult to deliver today.
+Varn Labs is an independent research project and is not affiliated with any other company named Varn.
 
-VARN is a **product company, not a contractor-first business**. The goal is to invent, own, develop, and sell proprietary products. Customer contracts and partnerships can help bring products to market, but they are not the purpose of the company.
-
-VARN aims to combine:
-
-- **Breakthrough technology:** Develop proprietary capabilities that are difficult to reproduce.
-- **Complete products:** Turn those capabilities into dependable systems that solve important problems.
-- **Vertical integration:** Own critical software, intelligence, sensing, hardware, and system-level decisions where they create a genuine advantage.
-
-National defense is the primary intended market. Civilian, industrial, and infrastructure applications may follow where the technology and customer need justify them.
-
-## The belief behind VARN
-
-We believe increasingly capable autonomous systems can help people perform dangerous and complex work with less unnecessary exposure to risk. Making that useful requires much more than a compelling demo: it requires rigorous testing, reliability, appropriate oversight, and honest evidence about limitations.
-
-VARN aims to build what others struggle to build, solve real problems, and turn difficult engineering into products people can depend on.
+It is a research prototype. Results so far come from recorded video only, and nothing has run on physical hardware yet. It is detection-only: nothing here jams, intercepts or acts against anything it sees.
 
 ## What we're working on now
 
-VARN is at an early research and prototype stage. Current work explores **camera-based observation and computer vision**, including experimental detection and tracking software, a dashboard, event logging, and a developing model-training and evaluation workflow.
+VARN is at an early research and prototype stage. Current work explores **camera-based observation and computer vision**, including experimental detection and tracking software for drones and aircraft, a dashboard, event logging, and a developing model-training and evaluation workflow.
 
 The immediate technical priority is to make training understandable, repeatable, and measurable—then use evaluation evidence to decide what to improve next.
 
@@ -73,6 +59,10 @@ VARN is an early-stage engineering initiative. Components must be described acco
 - **Planned hardware or features** are not completed products.
 
 Experiments should document inputs, configurations, evaluation methods, results, failure cases, and limitations. The goal is reproducible progress and precise public claims.
+
+## Long-term direction
+
+Long term, and not a current plan: if the evidence supports it, the hope is that low-cost sky sensing like this could one day help protect airspace and infrastructure, including for defense uses.
 
 ## Explore
 

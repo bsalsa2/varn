@@ -150,9 +150,10 @@ claims the repository cannot support: that the model reliably tells drones
 from aircraft, an uncited price comparison, a privacy page that does not match
 how the site is hosted and how the contact form works, or fake live
 telemetry. When the hosting, the form service or the analytics change, update
-the privacy text in `content.js` in the same commit. The two published v2
-numbers use different units (aircraft frames, and drone clips) and must keep
-their units and the "not comparable" caveat.
+the privacy text in `content.js` in the same commit. The two published v3
+figures are both per frame but come from different clips, and labels are per
+video; they must keep that caveat. The independence sentence (footer and About
+page) is checked for exact wording.
 
 ## The 3D pan-tilt mount
 

@@ -16,6 +16,9 @@ import { CONTACT_EMAIL, FORM_ENDPOINT } from './config.js';
 //  make a typo, the check names the line and what's wrong.
 // ---------------------------------------------------------------------------
 
+// Shown on the About page and in the footer of every page. Exact wording.
+const INDEPENDENCE = 'Varn Labs is an independent research project and is not affiliated with any other company named Varn.';
+
 export const content = {
   meta: {
     title: 'Varn Labs: camera-based sky observation research prototype',
@@ -123,25 +126,25 @@ export const content = {
   snapshot: {
     label: 'The research',
     heading: 'What the recorded video shows.',
-    intro: 'Model v2 was evaluated on 43 real-world video clips of planes, military jets and drones. The drone result is weak, and it is shown as it is.',
+    intro: 'Model v3, the current detector, was tested on 42 recorded video clips (1,701 frames, one frame per second). The drone result is weak, and it is shown as it is.',
     disclaimer: 'Recorded-video evaluation only. Physical hardware validation pending.',
     figures: [
       {
-        value: '14.9%',
-        number: 14.9,
+        value: '8%',
+        number: 8,
         kind: 'drone',
-        label: 'of drone clips correctly labeled',
-        unit: 'Per clip. Higher is better.',
+        label: 'of frames on drone clips show a drone box',
+        unit: 'Approximate, per frame. Higher is better.',
       },
       {
-        value: '7.5%',
-        number: 7.5,
+        value: '36%',
+        number: 36,
         kind: 'aircraft',
-        label: 'of aircraft video frames wrongly classified as drones',
-        unit: 'Per frame. Lower is better.',
+        label: 'of frames on aircraft clips show an aircraft box',
+        unit: 'Approximate, per frame. Higher is better.',
       },
     ],
-    notComparable: 'These two figures use different units, per clip and per frame, so they are not directly comparable.',
+    notComparable: 'Labels are per video, so frames where the object is out of view or tiny count as misses. The two figures come from different clips.',
     link: { label: 'Read the full research', href: './research.html' },
   },
 
@@ -172,9 +175,9 @@ export const content = {
         tag: 'MEASURED · RECORDED VIDEO',
         title: 'Recorded-video results',
         items: [
-          'Model v2 on 43 real-world clips',
-          '14.9% of drone clips labeled correctly: v2 is weak at drones',
-          '7.5% of aircraft video frames wrongly called a drone (a different unit)',
+          'Model v3 on 42 recorded clips (1,701 frames)',
+          'Drone box in about 8% of frames on drone clips: v3 is weak at drones',
+          'Aircraft box in about 36% of frames on aircraft clips',
         ],
       },
       {
@@ -211,7 +214,7 @@ export const content = {
         number: '02',
         title: 'DETECT',
         fact: 'YOLO · ONNX model',
-        body: 'Every frame goes through a YOLO object-detection model. For each thing it finds, it returns a class (drone or aircraft), a confidence score and a box. Today that is model v2, which is weak at drones. Model v3 is in training.',
+        body: 'Every frame goes through a YOLO object-detection model. For each thing it finds, it returns a class (drone or aircraft), a confidence score and a box. Today that is model v3 (about 3.0 million parameters), which is weak at drones.',
       },
       {
         number: '03',
@@ -321,7 +324,8 @@ export const content = {
       { label: 'DONE', text: 'Wiring diagram and bill of materials' },
       { label: 'DONE', text: 'Sighting logger (built and tested in simulation)' },
       { label: 'DONE', text: 'Live dashboard (built and tested in simulation)' },
-      { label: 'IN PROGRESS', text: 'Detection model v3 with drone and aircraft classes (in training)' },
+      { label: 'DONE', text: 'First detection model (v3) trained and scored on recorded video (weak at drones)' },
+      { label: 'IN PROGRESS', text: 'Improving drone detection on small, distant objects' },
       { label: 'NEXT', text: 'Run the logger and dashboard on real hardware' },
       { label: 'NEXT', text: 'Build the physical hardware' },
       { label: 'NEXT', text: 'Outdoor test' },
@@ -342,34 +346,34 @@ export const content = {
   // caveats are printed next to the charts: what this test does NOT show.
   results: {
     heading: 'Results so far',
-    intro: 'The v2 model, run on 43 real-world videos of planes, military jets and drones. This tests the model on recorded video. It is not a hardware test.',
+    intro: 'The v3 model, run on 42 recorded video clips (1,701 frames, one frame per second, confidence 0.35). This tests the model on recorded video. It is not a hardware test.',
     tag: 'MEASURED · RECORDED VIDEO',
-    sample: '43 real-world videos · model v2',
+    sample: '42 recorded clips · 1,701 frames · model v3',
     charts: [
       {
         kind: 'aircraft',
-        title: 'Aircraft wrongly called a drone',
-        unit: 'Share of aircraft frames. Lower is better.',
+        title: 'Aircraft box shown on aircraft clips',
+        unit: 'Share of frames on aircraft clips. Higher is better.',
         bars: [
-          { label: 'All aircraft', value: 7.5, detail: '798 of 10,657 frames' },
-          { label: 'Civilian planes', value: 0.8, part: true },
-          { label: 'Military jets', value: 10.8, detail: 'Mostly distant F-35s', part: true },
+          { label: 'Aircraft clips', value: 36, detail: 'About 36%. Labels are per video, so frames where the aircraft is out of view or tiny count as misses.' },
         ],
       },
       {
         kind: 'drone',
-        title: 'Drones labeled correctly',
-        unit: 'Share of drone clips. Higher is better.',
-        bars: [{ label: 'Drone clips', value: 14.9, detail: 'The number of drone clips is not listed here. v2 is weak at drones, and v3 is training to improve this.' }],
+        title: 'Drone box shown on drone clips',
+        unit: 'Share of frames on drone clips. Higher is better.',
+        bars: [{ label: 'Drone clips', value: 8, detail: 'About 8%. Same per-video labeling: out-of-view or tiny frames count as misses. v3 is weak at drones.' }],
       },
     ],
     caveats: [
       'Recorded video only. Nothing has run on the physical node yet.',
-      'One model, v2. v3 is in training and has no results yet.',
+      'One model, v3, the current detector. Five fine-tunes were tested. None beat v3 at telling drones from aircraft, so v3 stays the default.',
       'Not yet checked against real flight data (ADS-B).',
-      'The two charts use different units (frames of aircraft video, and drone clips), so their percentages are not comparable with each other.',
+      'Labels are per video, so frames where the object is out of view or tiny count as misses. The two charts use different sets of clips.',
+      'On held-out public-dataset videos, v3 is nearly blind to small, distant objects: mAP50 (a standard detection score; 1.0 is perfect) is about 0.06 to 0.08.',
+      `Not done yet: no run on Varn's own camera in a real sky, and no false-alarm measurement on empty sky.`,
     ],
-    source: 'Model v2, 43 real-world videos. v3 (drone and aircraft classes, 960 px input) is in training. There are no v3 results yet.',
+    source: 'Model v3 (about 3.0 million parameters), 42 recorded clips, 1,701 frames at one frame per second, confidence 0.35.',
   },
 
   // KNOWN LIMITS: what Varn can't do, stated plainly.
@@ -388,6 +392,14 @@ export const content = {
       {
         tag: 'NOT REMOTE ID',
         text: 'It can see drones that broadcast nothing, unlike Remote ID, but it does not replace Remote ID or RF sensors.',
+      },
+      {
+        tag: 'SMALL, DISTANT OBJECTS',
+        text: 'On held-out public-dataset videos, v3 is nearly blind to small, distant objects (mAP50 about 0.06 to 0.08).',
+      },
+      {
+        tag: 'NOT YET MEASURED',
+        text: `No run on Varn's own camera in a real sky, and no false-alarm measurement on empty sky.`,
       },
       {
         tag: 'NOT BUILT YET',
@@ -449,23 +461,23 @@ export const content = {
     methodology: {
       heading: 'Test methodology',
       paragraphs: [
-        'Model v2 is a custom two-class YOLOv8n detector (classes drone and aircraft). It was trained on a 28,526-image aircraft and drone dataset whose labels were merged into those two classes.',
-        'It was then run on 43 real-world videos of planes, military jets and drones. Aircraft videos are scored per frame: each frame where the model called the aircraft a drone counts as one error. Drone videos are scored per clip: a clip counts as correct when the model labeled the drone correctly.',
+        'Model v3 is the current detector, with drone and aircraft classes and about 3.0 million parameters.',
+        `It was run on 42 recorded video clips, sampled at one frame per second (1,701 frames), with a confidence threshold of 0.35. One of the 43 collected clips is a corrupt file and was skipped. Labels are per video, so frames where the object is out of view or tiny count as misses. Each figure is the share of frames where a box of the clip's class appears.`,
         'This is a test of the model on recorded video. It is not a test of the camera, the mount, the servos or any outdoor setup, none of which has been built.',
       ],
-      unitsHeading: 'Two metrics, two units',
+      unitsHeading: 'Two figures, one unit',
       units: [
-        { term: 'Aircraft wrongly called a drone', text: 'Share of aircraft video frames. 798 of 10,657 frames, 7.5%. Lower is better.' },
-        { term: 'Drones labeled correctly', text: 'Share of drone clips, 14.9%. Higher is better. The number of drone clips is not listed in the source.' },
+        { term: 'Aircraft box shown on aircraft clips', text: 'Share of frames on aircraft clips, about 36%. Higher is better.' },
+        { term: 'Drone box shown on drone clips', text: 'Share of frames on drone clips, about 8%. Higher is better.' },
       ],
-      unitsNote: 'A per-frame error rate and a per-clip hit rate measure different things. Do not read one against the other.',
+      unitsNote: 'Both figures are per frame, but each comes from a different set of clips, and labels are per video. Out-of-view and tiny objects count as misses.',
     },
-    resultsNote: 'The drone result is weak and stays visible here. Model v3 has no results yet.',
+    resultsNote: 'The drone result is weak and stays visible here. On held-out public-dataset videos, v3 is nearly blind to small, distant objects (mAP50 about 0.06 to 0.08).',
     models: {
       heading: 'Model versions and limitations',
       rows: [
-        { model: 'v2', state: 'Measured', text: 'Two-class YOLOv8n (drone, aircraft). Scored on 43 recorded videos. Weak at drones.' },
-        { model: 'v3', state: 'Testing', text: 'Drone and aircraft classes, 960 px input, resumed from v2. In training. Not yet scored against the same 43 clips, so it has no results to report.' },
+        { model: 'v3', state: 'Measured', text: 'Current detector, about 3.0 million parameters, drone and aircraft classes, 960 px input. Scored on 42 recorded clips. Weak at drones.' },
+        { model: 'Fine-tunes', state: 'Measured', text: 'Five fine-tunes were tested. None beat v3 at telling drones from aircraft, so v3 stays the default.' },
       ],
       limitsHeading: 'Known limits',
     },
@@ -509,6 +521,7 @@ export const content = {
       'A research prototype for passive visual sensing: a camera that watches the sky and a model that labels what it sees.',
       'Passive by design. It carries no payload, never jams, and never transmits on aircraft or drone frequencies.',
       'Not a product, and not deployed anywhere. The physical hardware node has not been built or validated.',
+      INDEPENDENCE,
     ],
     contactText: 'Questions about the project, the hardware or the code are welcome.',
     contactCta: { label: 'Contact', href: './contact.html' },
@@ -540,8 +553,7 @@ export const content = {
         { area: 'Software', name: 'Detection and tracking loop', state: 'Verified', text: 'Tested in simulation, with 243 automated tests.' },
         { area: 'Software', name: 'Sighting logger', state: 'Verified', text: 'Built and tested in simulation.' },
         { area: 'Software', name: 'Live dashboard', state: 'Verified', text: 'Built and tested in simulation. This page is a web demo of it.' },
-        { area: 'Model', name: 'Detection model v2', state: 'Measured', text: 'Scored on 43 recorded videos. See the Analytics tab for the numbers and their limits.' },
-        { area: 'Model', name: 'Detection model v3', state: 'Testing', text: 'In training. There are no v3 results yet.' },
+        { area: 'Model', name: 'Detection model v3', state: 'Measured', text: 'Scored on 42 recorded clips. See the Analytics tab for the numbers and their limits.' },
         { area: 'Data', name: 'Events shown in this demo', state: 'Simulated', text: 'Generated in your browser from a fixed pattern. Not recorded by any sensor.' },
         { area: 'Data', name: 'Comparison with real flight data (ADS-B)', state: 'Not connected', text: 'The comparison is written but has never been run against a real feed.' },
         { area: 'Hardware', name: 'Camera', state: 'Not connected', text: 'The physical node is not built yet.' },
@@ -598,6 +610,7 @@ export const content = {
 
   footer: {
     brand: 'VARN LABS',
+    independence: INDEPENDENCE,
     // Platform, Research, About, Contact and the source, in that order.
     links: [
       { label: 'Platform', href: './#platform' },

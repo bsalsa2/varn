@@ -107,7 +107,7 @@ test('the page says SIMULATED up front and lists every system state', () => {
   for (const t of content.demo.tabs) assert.match(html, new RegExp(`data-view="${t.id}"`));
   for (const row of content.demo.system.rows) assert.ok(html.includes(row.name), row.name);
   assert.match(html, /class="rc-grid"/); // the measured results are on the Analytics tab
-  assert.match(renderDemoHead(content), /<title>Dashboard demo \| Varn<\/title>/);
+  assert.match(renderDemoHead(content), /<title>Dashboard demo \| Varn Labs<\/title>/);
 });
 
 test('the system status uses only the known states', () => {

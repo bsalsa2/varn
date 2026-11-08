@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { content } from '../src/content.js';
-import { renderAboutBody, renderHead, renderBody, renderDemoBody, renderNotFoundBody, renderNotFoundHead, renderPrivacyBody, renderResearchBody } from '../src/render.js';
+import { renderAboutBody, renderAboutHead, renderContactHead, renderDemoHead, renderPrivacyHead, renderResearchHead, renderHead, renderBody, renderDemoBody, renderNotFoundBody, renderNotFoundHead, renderPrivacyBody, renderResearchBody } from '../src/render.js';
 
 const home = renderBody(content);
 const research = renderResearchBody(content);
@@ -53,13 +53,13 @@ test('the process keeps validation pending', () => {
 
 test('the research snapshot shows the weak drone result with its units and the required disclaimer', () => {
   const t = text(home);
-  assert.match(t, /14\.9%/);
-  assert.match(t, /7\.5%/);
-  assert.match(t, /Per clip/);
-  assert.match(t, /Per frame/);
-  assert.match(t, /not directly comparable/);
+  assert.match(t, /\b8%/);
+  assert.match(t, /36%/);
+  assert.match(t, /per frame/i);
+  assert.match(t, /Labels are per video/);
+  assert.match(t, /out of view or tiny count as misses/);
   assert.match(t, /Recorded-video evaluation only\. Physical hardware validation pending\./);
-  assert.doesNotMatch(t, /v3 (results|scored|achieves)/i);
+  assert.doesNotMatch(t, /14\.9|7\.5%|10,657/);
 });
 
 test('the dashboard preview is marked SIMULATED', () => {
@@ -94,15 +94,41 @@ test('the snapshot numbers match the published results', () => {
   }
 });
 
-test('the two published v2 numbers keep their units and are marked not comparable', () => {
+test('the two published v3 numbers keep their units and the per-video labeling caveat', () => {
   const [aircraft, drone] = content.results.charts;
-  assert.match(aircraft.unit, /aircraft frames/);
-  assert.equal(aircraft.bars[0].value, 7.5);
-  assert.equal(aircraft.bars[0].detail, '798 of 10,657 frames');
-  assert.match(drone.unit, /drone clips/);
-  assert.equal(drone.bars[0].value, 14.9);
-  assert.match(drone.bars[0].detail, /number of drone clips is not listed/i);
-  assert.ok(content.results.caveats.some((c) => /different units/i.test(c)));
+  assert.match(aircraft.unit, /frames on aircraft clips/);
+  assert.equal(aircraft.bars[0].value, 36);
+  assert.match(aircraft.bars[0].detail, /out of view or tiny count as misses/);
+  assert.match(drone.unit, /frames on drone clips/);
+  assert.equal(drone.bars[0].value, 8);
+  assert.match(drone.bars[0].detail, /out-of-view or tiny frames count as misses/);
+  assert.ok(content.results.caveats.some((c) => /Labels are per video/.test(c)));
+  assert.ok(content.results.caveats.some((c) => /no false-alarm measurement on empty sky/.test(c)));
+});
+
+test('the independence sentence is on the About page and in every footer, exactly', () => {
+  const s = 'Varn Labs is an independent research project and is not affiliated with any other company named Varn.';
+  assert.equal(content.footer.independence, s);
+  assert.ok(content.about.scope.includes(s));
+  for (const html of [home, research, about, demo, privacy]) assert.ok(text(html).includes(s));
+});
+
+test('mAP50 is explained the first time it appears on a page, and no stale v2 wording remains', () => {
+  assert.doesNotMatch(JSON.stringify(content), /resumed from v2|in training|no v3 results|\bv2\b/i);
+  for (const html of [research, demo]) {
+    const t = text(html);
+    const first = t.indexOf('mAP50');
+    assert.ok(first >= 0, 'mAP50 appears');
+    assert.match(t.slice(first, first + 120), /mAP50 \(a standard detection score; 1\.0 is perfect\)/);
+  }
+  assert.equal(text(home).includes('mAP50'), false);
+});
+
+test('subpage title tags end in "| Varn Labs"', () => {
+  const heads = [renderResearchHead, renderAboutHead, renderPrivacyHead, renderContactHead, renderDemoHead, renderNotFoundHead];
+  for (const head of heads) assert.match(head(content), /<title>[^<]+ \| Varn Labs<\/title>/, head.name);
+  assert.match(renderHead(content), /<title>Varn Labs: /);
+  for (const head of [renderResearchHead, renderDemoHead]) assert.match(head(content), /og:title" content="[^"]+ \| Varn Labs"/, head.name);
 });
 
 test('the demo states SIMULATED on the page, in the top bar and in the data', () => {
