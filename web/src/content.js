@@ -53,6 +53,8 @@ export const content = {
     headline: 'Watch the sky.',
     sub: 'Exploring a camera-based approach to observing and logging objects in the sky.',
     status: 'RESEARCH PROTOTYPE · HARDWARE VALIDATION PENDING',
+    // One plain line near the opening so the project's stage is clear at a glance.
+    stage: 'Research prototype. Tested on recorded video; physical hardware validation is pending.',
     meta: 'Passive visual awareness',
     statusLabel: 'Status',
     statusTitle: 'Research prototype',
@@ -60,6 +62,7 @@ export const content = {
     ticker: ['Recorded-video evaluation only', 'Dashboard data is simulated', 'Passive \u00b7 receives light only'],
     demo: { label: 'Explore the demo', href: './demo.html' },
     results: { label: 'View research results', href: './research.html#results' },
+    contact: { label: 'Discuss the research', href: './contact.html' },
     scroll: 'Scroll',
   },
 

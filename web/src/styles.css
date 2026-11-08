@@ -725,17 +725,26 @@ main,
 .hero-title {
   font-family: var(--f-display);
   font-weight: 500;
-  font-size: var(--fs-hero);
+  /* Never wider than the screen: "THE SKY." must stay on one line. */
+  font-size: min(var(--fs-hero), calc((100vw - 2 * var(--gutter)) / 3.85));
   line-height: 0.82;
   letter-spacing: -0.065em;
   text-transform: uppercase;
   color: var(--text-1);
   margin-left: -0.04em;
+  /* A flex column, so the lines' negative margins add up instead of collapsing. */
+  display: flex;
+  flex-direction: column;
 }
 .hero-title .line {
   display: block;
+  white-space: nowrap;
+  /* The mask the letters rise through. Padded on every side (and pulled back
+     with equal negative margins, so the layout is unchanged) so that no glyph,
+     full stop or overshoot is ever cut at rest. */
   overflow: hidden;
-  padding-bottom: 0.08em;
+  padding: 0.16em 0.06em 0.24em;
+  margin: -0.16em -0.06em -0.16em;
 }
 .hero-title .ch,
 .hero-title .sp {
@@ -745,8 +754,8 @@ main,
   width: 0.22em;
 }
 .hero-title .ch {
-  animation: letter 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: calc(0.75s + var(--n) * 0.045s);
+  animation: letter 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(0.1s + var(--n) * 0.035s);
 }
 @keyframes letter {
   from {
@@ -770,6 +779,17 @@ main,
   font-size: 1.25rem;
   line-height: 1.4;
   color: var(--text-1);
+}
+.hero-stage {
+  font-family: var(--f-mono);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  color: var(--text-1);
+  padding-left: 12px;
+  border-left: 2px solid var(--ice);
+  max-width: 34em;
+  margin: 0 0 28px;
 }
 .hero-actions {
   display: flex;
@@ -2936,7 +2956,7 @@ main > .section:first-child {
 }
 .hero-meta {
   position: static;
-  margin: 0 0 28px;
+  margin: 0 0 14px;
 }
 .hero-status {
   padding-left: var(--edge);
@@ -2952,7 +2972,11 @@ main > .section:first-child {
   /* Width left of the intro column (line two, the wider one, passes under it
      because the column ends above it) and height left under the nav. */
   .hero-title {
-    font-size: max(7.5rem, min(calc((var(--copy) - var(--side) - 40px) / 3.15), calc((94svh - 290px) / 1.8), 20rem));
+    font-size: max(7.5rem, min(calc((var(--copy) - var(--side) - 40px) / 3.15), calc((94svh - 320px) / 1.8), 20rem));
+  }
+  /* The stage line stays in the space left of the intro column. */
+  .hero-stage {
+    max-width: calc(var(--copy) - var(--side) - 40px);
   }
   /* The intro column starts level with the label, so it ends well above line two. */
   .hero-side {
@@ -2960,7 +2984,15 @@ main > .section:first-child {
     width: var(--side);
   }
   .hero-sub {
-    font-size: clamp(1.15rem, 1.4vw, 1.5rem);
+    font-size: clamp(1.05rem, 1.3vw, 1.5rem);
+  }
+  /* Three actions in a column that must end above line two: the text links
+     keep a 40px target on desktop instead of the full 58px of a button. */
+  .hero-actions {
+    gap: 4px;
+  }
+  .hero-actions .btn--quiet {
+    min-height: 40px;
   }
   .hero-meta {
     font-size: 0.875rem;
@@ -2995,6 +3027,19 @@ main > .section:first-child {
   }
   .nav .wordmark {
     height: 14px;
+  }
+}
+/* Small laptops: the intro column has the least room above line two, so its
+   buttons and links are a little shorter there. */
+@media (min-width: 64em) and (max-width: 79.99em) {
+  .hero-actions {
+    gap: 2px;
+  }
+  .hero-actions .btn--glass {
+    min-height: 54px;
+  }
+  .hero-actions .btn--quiet {
+    min-height: 36px;
   }
 }
 /* Links that stand on a line of their own get a full-size tap target. */
