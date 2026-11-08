@@ -1334,3 +1334,27 @@
   line-height: 1.7;
   color: var(--ink-2);
 }
+
+/* ---- Command center: what it shows, what it is not ------------------------ */
+.cc-blocks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 32px 48px;
+  margin-top: clamp(40px, 6vw, 72px);
+}
+.cc-block-title {
+  margin: 0 0 16px;
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: 1.375rem;
+  color: var(--varn-text);
+}
+.cc-list {
+  margin: 0;
+  padding-left: 1.2em;
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+.cc-list li + li {
+  margin-top: 8px;
+}

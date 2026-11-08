@@ -186,14 +186,16 @@ if (get('process.stages.2.state') !== 'pending')
 if (get('process.note')) text('process.note');
 link('process.link.href');
 text('platform.heading');
-text('platform.banner');
-if (!/^SIMULATED/.test(get('platform.banner') || '') || get('platform.badge') !== 'SIMULATED')
-  err('platform.banner must start with SIMULATED and platform.badge must be exactly SIMULATED.', lineOf('banner:'));
+text('platform.sub');
+if (!/shows no real Varn detections/.test(get('platform.sub') || ''))
+  err('platform.sub must say the command center shows no real Varn detections.', lineOf('sub:'));
+text('platform.still.alt');
+text('platform.still.caption');
+publicFile('platform.still.src');
 link('platform.cta.href');
-list('platform.tabs', { min: 4 }).forEach((t, i) => {
-  text(`platform.tabs.${i}.id`, t?.id);
-  text(`platform.tabs.${i}.label`, t?.label);
-});
+text('demo.heading');
+if (!(get('demo.limits.items') || []).some((x) => /shows no real Varn detections/.test(x)))
+  err('demo.limits must say the command center shows no real Varn detections.', lineOf('limits:'));
 text('snapshot.heading');
 text('snapshot.intro');
 if (get('snapshot.disclaimer') !== 'Recorded-video evaluation only. Physical hardware validation pending.')
