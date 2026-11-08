@@ -576,7 +576,7 @@
       "id": "D-clips",
       "kind": "dataset",
       "title": "Licensed real clips",
-      "summary": "43 licensed real clips (public domain and CC). One drone clip (drone_11) is a broken file and is skipped, leaving 42 clips and 1,701 frames at one frame per second.",
+      "summary": "43 licensed real clips (public domain and CC). One drone clip (drone_11) is a corrupt file (\"moov atom not found\") and is skipped, leaving 42 clips and 1,701 frames at one frame per second.",
       "source": "S3",
       "source_line": 22,
       "attributes": [
