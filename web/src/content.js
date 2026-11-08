@@ -112,6 +112,7 @@ export const content = {
     // files in /hardware. It must always say so: nothing is built.
     concept: {
       src: './models/hero-mount-1400.webp',
+      tiny: './models/hero-mount-280.webp',
       small: './models/hero-mount-700.webp',
       width: 1400,
       height: 1871,
