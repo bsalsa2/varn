@@ -1,0 +1,10 @@
+VARN COMMAND CENTER: DEMO VIDEO TRANSCRIPT AND DESCRIPTION
+Length: about 34 seconds. Narrated screen recording of a prototype Earth viewer built on public data.
+
+0:00  A turning globe. Narration: "Meet the Varn command center, our prototype for exploring the whole planet."
+0:07  The globe spins quickly. Narration: "Spin the globe. Pick any city."
+0:10  The view dives from orbit down toward Washington, D.C. Narration: "Then dive from orbit to street level in seconds."
+0:15  A 3D aerial view of city buildings and parks. Narration: "Buildings rise in 3D, block by block."
+0:20  The layers panel opens, then satellite clouds spread over North America, a rainfall overlay appears, and an earthquake marker popup shows a magnitude, place and source on a night-side globe. Narration: "Layer in satellite clouds, rainfall, and recent earthquakes from around the world."
+0:26  A daytime view of North America with the layers panel open. Narration: "One interactive view of the Earth."
+0:28  A credits card while the narration finishes. Narration: "This is the Varn command center." Text on screen: "Varn Labs. Built on public data: Esri World Imagery, NASA GIBS, USGS, OpenStreetMap contributors, AWS Terrain Tiles, Cesium. This viewer does not show real Varn detections. The sky view is a labeled simulation. Research prototype. tryvarn.com"

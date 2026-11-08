@@ -1283,3 +1283,54 @@
     background: var(--surface-1);
   }
 }
+
+/* ---- Command center video ------------------------------------------------- */
+.demo-video {
+  margin-top: clamp(48px, 7vw, 88px);
+  scroll-margin-top: calc(var(--nav-h) + 24px);
+}
+.demo-video-title {
+  margin: 0 0 20px;
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: var(--fs-h2);
+  letter-spacing: -0.02em;
+  color: var(--varn-text);
+}
+.demo-video-fig {
+  margin: 0;
+}
+.demo-video-player {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--r-md);
+  background: var(--surface-page);
+  border: 1px solid var(--line);
+}
+.demo-video-caption {
+  margin-top: 12px;
+  max-width: 48rem;
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.demo-video-transcript {
+  margin-top: 24px;
+  max-width: 48rem;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.demo-video-transcript summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: var(--varn-text);
+}
+.demo-video-text p {
+  margin: 0 0 12px;
+  line-height: 1.7;
+  color: var(--ink-2);
+}

@@ -1,0 +1,3 @@
+# The root .gitignore blocks every video file so recordings are never committed
+# by accident. This one published demo video is the deliberate exception.
+!varn-command-center-demo.mp4

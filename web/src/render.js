@@ -1164,6 +1164,37 @@ export function renderDemoHead(c) {
     <meta property="og:description" content="${esc(d.description)}" />`;
 }
 
+// The command center video: click to play (no autoplay, nothing downloaded
+// until then), captions off by default, and the transcript as page text.
+export function demoTranscript(v) {
+  if (!v || !v.transcript) return [];
+  const file = fileURLToPath(new URL(`../public/${v.transcript}`, import.meta.url));
+  return readFileSync(file, 'utf8')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+function renderDemoVideo(v) {
+  if (!v) return '';
+  const [title, ...lines] = demoTranscript(v);
+  const items = lines.map((line) => `<p>${esc(line)}</p>`).join('');
+  return `
+    <section class="demo-video" id="${esc(v.id)}" aria-labelledby="h-${esc(v.id)}">
+      <h2 class="demo-video-title" id="h-${esc(v.id)}">${esc(v.heading)}</h2>
+      <figure class="demo-video-fig">
+        <video class="demo-video-player" controls preload="none" playsinline poster="${esc(v.poster)}" width="${v.width}" height="${v.height}" aria-label="${esc(v.label)}">
+          <source src="${esc(v.src)}" type="video/mp4" />
+          <track kind="captions" src="${esc(v.captions)}" srclang="en" label="English" />
+        </video>
+        <figcaption class="demo-video-caption">${esc(v.caption)}</figcaption>
+      </figure>
+      <details class="demo-video-transcript">
+        <summary>${esc(v.summary)}</summary>
+        <div class="demo-video-text">${title ? `<p class="mono">${esc(title)}</p>` : ''}${items}</div>
+      </details>
+    </section>`;
+}
+
 export function renderDemoBody(c) {
   const d = c.demo;
   const r = c.results || {};
@@ -1185,6 +1216,7 @@ export function renderDemoBody(c) {
           </tr>`
     )
     .join('');
+  const videoSection = renderDemoVideo(d.video);
   const defs = d.definitions.map((x) => `<div><dt>${esc(x.term)}</dt><dd>${esc(x.text)}</dd></div>`).join('');
   const stateLegend = ['Verified', 'Measured', 'Testing', 'Simulated', 'Not connected', 'Pending'].map(statePill).join('');
   return `
@@ -1336,6 +1368,7 @@ ${siteNav(c, { home: false, current: 'demo.html' })}
       </div>
     </div>
     </div>
+${videoSection}
   </div>
 
   <dialog class="demo-drawer" id="drawer" aria-labelledby="drawer-title">
