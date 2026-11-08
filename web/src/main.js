@@ -7,7 +7,6 @@ import { initReveal } from './reveal.js';
 import { initNavMenu } from './nav-menu.js';
 import { initScrollSpy } from './scrollspy.js';
 import { initAnchors } from './anchors.js';
-import { whenNear } from './lazy.js';
 import { initHeader, initPoster, initProcess } from './home-fx.js';
 
 initMotion();
@@ -31,17 +30,3 @@ if (footage) {
   sync();
   motion.subscribe(sync);
 }
-
-// The dashboard preview (and its styles) load when it is about to be seen.
-whenNear(
-  document.getElementById('pv'),
-  () =>
-    import('./platform-preview.js')
-      .then(({ createPreview }) => createPreview(document.getElementById('pv')))
-      .catch((err) => {
-        console.warn('[varn] dashboard preview unavailable.', err);
-        const loading = document.querySelector('[data-pv="loading"]');
-        if (loading) loading.textContent = 'The simulated preview could not load. The full demo is one click away.';
-      }),
-  '800px 0px'
-);

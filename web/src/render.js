@@ -587,26 +587,11 @@ const processSection = (p) => `
     </div>
   </section>`;
 
-// The dashboard window. The tabs, the banner and the measured and system
-// panels are plain HTML; platform-preview.js fills in the simulated overview
-// and events from the same generator the full demo uses.
+// The command center: a still from the demo video that links to it, with
+// the concept render of the camera mount and the button underneath.
 const platformSection = (c) => {
   const pl = c.platform;
-  const d = c.demo;
-  const r = c.results;
-  const rows = d.system.rows
-    .slice(0, 6)
-    .map(
-      (row) => `
-            <tr><th scope="row">${esc(row.name)}</th><td>${statePill(row.state)}</td></tr>`
-    )
-    .join('');
-  const tabs = pl.tabs
-    .map(
-      (t, i) =>
-        `<li><a class="pv-tab" href="./demo.html#${esc(t.id)}" data-pv-tab="${esc(t.id)}"${i === 0 ? ' aria-current="page"' : ''}>${esc(t.label)}</a></li>`
-    )
-    .join('');
+  const st = pl.still;
   return `
   <section class="platform section" id="platform" aria-labelledby="platform-title" data-spy="platform">
     <div class="wrap">
@@ -617,44 +602,13 @@ const platformSection = (c) => {
         </div>
         <p class="lede">${esc(pl.sub)}</p>
       </header>
-      <div class="pv glass-1" id="pv">
-        <div class="pv-top">
-          <p class="pv-title">${mark(22)}<span>${esc(pl.window)}</span></p>
-          <p class="pv-state">
-            <span class="sim-badge mono"><span class="sim-badge-mark" aria-hidden="true"></span>${esc(pl.badge)}</span>
-            <span class="pv-node mono"><span class="shape shape--no-adsb" aria-hidden="true"></span>${esc(pl.node)}</span>
-          </p>
-        </div>
-        <p class="pv-banner" role="note">${esc(pl.banner)}</p>
-        <div class="pv-body">
-          <nav class="pv-nav" aria-label="Dashboard preview views"><ul class="pv-tabs" id="pv-tabs">${tabs}</ul></nav>
-          <div class="pv-panels">
-            <section class="pv-panel" id="pv-overview" data-pv-panel="overview" aria-label="Overview">
-              <div class="pv-kpis" data-pv="kpis"></div>
-              <div class="pv-grid">
-                <div class="pv-card"><p class="pv-card-h mono">Events per hour · simulated</p><div class="demo-chart" data-pv="hourly"></div></div>
-                <div class="pv-card"><p class="pv-card-h mono">Latest events · simulated</p><ol class="pv-list" data-pv="latest"></ol></div>
-              </div>
-              <noscript><p class="pv-noscript">${esc(pl.noscript)}</p></noscript>
-              <p class="pv-loading mono" data-pv="loading">Loading the simulated preview&hellip;</p>
-            </section>
-            <section class="pv-panel" id="pv-events" data-pv-panel="events" aria-label="Events" hidden>
-              <div class="pv-card pv-card--flush"><div class="pv-table" data-pv="events" tabindex="0" role="region" aria-label="Simulated events"></div></div>
-              <p class="pv-more"><a class="u-link mono" href="./demo.html#events">Search, filter and export in the full demo &rarr;</a></p>
-            </section>
-            <section class="pv-panel" id="pv-analytics" data-pv-panel="analytics" aria-label="Analytics" hidden>
-              <p class="pv-badge mono">Simulated · for illustration</p>
-              <div class="pv-card"><p class="pv-card-h mono">Model confidence on simulated events</p><div class="demo-chart demo-chart--bins" data-pv="bins"></div></div>
-              <p class="pv-more"><a class="u-link mono" href="./research.html#results">Measured results, with their limits, are on the Research page &rarr;</a></p>
-            </section>
-            <section class="pv-panel" id="pv-system" data-pv-panel="system" aria-label="System" hidden>
-              <div class="pv-card pv-card--flush"><div class="pv-table" tabindex="0" role="region" aria-label="System status"><table class="demo-table pv-system"><thead><tr><th scope="col">Part</th><th scope="col">State</th></tr></thead><tbody>${rows}
-              </tbody></table></div></div>
-              <p class="pv-more"><a class="u-link mono" href="./demo.html#system">Every part and its detail in the full demo &rarr;</a></p>
-            </section>
-          </div>
-        </div>
-      </div>
+      <figure class="cc-still glass-1">
+        <a class="cc-still-link" href="${esc(st.href)}">
+          <img src="${esc(st.src)}" width="${st.width}" height="${st.height}" alt="${esc(st.alt)}" loading="lazy" decoding="async" />
+          <span class="cc-still-play"><span class="cc-still-icon" aria-hidden="true"></span>${esc(st.play)}</span>
+        </a>
+        <figcaption class="mono">${esc(st.caption)}</figcaption>
+      </figure>
       <div class="platform-foot">
         <figure class="concept glass-2">
           <img src="${esc(pl.concept.src)}" srcset="${esc(pl.concept.tiny)} 280w, ${esc(pl.concept.small)} 700w, ${esc(pl.concept.src)} 1400w" sizes="140px" width="${pl.concept.width}" height="${pl.concept.height}" alt="${esc(pl.concept.alt)}" loading="lazy" decoding="async" />
@@ -1139,9 +1093,7 @@ ${siteNav(c, { home: false, current: 'contact.html' })}
 ${siteFooter(c, { from: 'contact' })}`;
 }
 
-// ---- Dashboard demo (demo.html) ------------------------------------------
-// The page is a static shell: tabs, the measured results and the system
-// status are plain HTML, and demo.js fills in the simulated views.
+// ---- State pills (used by the Research page tables) ------------------------
 const STATE_KINDS = {
   verified: 'verified',
   measured: 'measured',
@@ -1197,28 +1149,11 @@ function renderDemoVideo(v) {
 
 export function renderDemoBody(c) {
   const d = c.demo;
-  const r = c.results || {};
-  const charts = Array.isArray(r.charts) ? r.charts : [];
-  const caveats = Array.isArray(r.caveats) ? r.caveats : [];
-  const tabs = d.tabs
-    .map(
-      (t) =>
-        `<li><a class="demo-tab" href="#${esc(t.id)}" data-view="${esc(t.id)}"><span class="demo-tab-mark" aria-hidden="true"></span>${esc(t.label)}</a></li>`
-    )
-    .join('');
-  const rows = d.system.rows
-    .map(
-      (row) => `
-          <tr>
-            <th scope="row"><span class="mono demo-area">${esc(row.area)}</span>${esc(row.name)}</th>
-            <td>${statePill(row.state)}</td>
-            <td>${esc(row.text)}</td>
-          </tr>`
-    )
-    .join('');
-  const videoSection = renderDemoVideo(d.video);
-  const defs = d.definitions.map((x) => `<div><dt>${esc(x.term)}</dt><dd>${esc(x.text)}</dd></div>`).join('');
-  const stateLegend = ['Verified', 'Measured', 'Testing', 'Simulated', 'Not connected', 'Pending'].map(statePill).join('');
+  const list = (block) => `
+      <section class="cc-block" aria-labelledby="h-${esc(block.id)}">
+        <h2 class="cc-block-title" id="h-${esc(block.id)}">${esc(block.heading)}</h2>
+        <ul class="cc-list">${block.items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+      </section>`;
   return `
 <a class="skip-link" href="#main">Skip to content</a>
 ${stage('stage-fixed')}
@@ -1231,149 +1166,10 @@ ${siteNav(c, { home: false, current: 'demo.html' })}
       <h1 class="demo-title" id="demo-title">${esc(d.heading)}</h1>
       <p class="lede">${esc(d.intro)}</p>
     </header>
-    <noscript><p class="demo-noscript">${esc(d.noscript)}</p></noscript>
-    <p class="demo-status" id="demo-status" role="status">Loading the demo&hellip;</p>
-
-    <div class="demo-app">
-      <div class="demo-top">
-        <p class="demo-top-title"><span class="demo-top-mark">${mark(22)}</span>Varn dashboard</p>
-        <p class="demo-top-state">
-          <span class="state-tag state-tag--simulated mono"><span class="state-shape" aria-hidden="true"></span>Simulated data</span>
-          <span class="demo-node"><span class="shape shape--no-adsb" aria-hidden="true"></span>Node-01<span class="demo-node-state">Not connected</span></span>
-        </p>
-      </div>
-      <p class="demo-banner" role="note"><span class="state-shape state-shape--sim" aria-hidden="true"></span><span>${esc(d.banner)}</span></p>
-
-    <div class="demo-shell">
-      <nav class="demo-side" aria-label="Dashboard views">
-        <ul class="demo-tabs">${tabs}</ul>
-      </nav>
-
-      <div class="demo-main">
-        <section class="demo-view" id="view-overview" data-view="overview" aria-labelledby="h-overview" hidden>
-          <header class="demo-view-head">
-            <h2 id="h-overview" tabindex="-1">Overview</h2>
-            <p class="mono demo-badge">Simulated · last 24 hours</p>
-          </header>
-          <div class="demo-kpis" data-slot="kpis"></div>
-          <div class="demo-cols">
-            <section class="demo-plate" aria-labelledby="h-hourly">
-              <header class="demo-plate-head">
-                <h3 id="h-hourly">Events per hour</h3>
-                <div class="demo-legend mono" aria-hidden="true">
-                  <span><i class="shape shape--aircraft"></i>Aircraft</span><span><i class="shape shape--drone"></i>Possible drone</span>
-                </div>
-              </header>
-              <div class="demo-chart" data-slot="hourly"></div>
-              <details class="demo-table-toggle">
-                <summary class="mono">Show as a table</summary>
-                <div class="demo-table-wrap" tabindex="0" role="region" aria-label="Events per hour as a table" data-slot="hourly-table"></div>
-              </details>
-            </section>
-            <section class="demo-plate" aria-labelledby="h-latest">
-              <header class="demo-plate-head">
-                <h3 id="h-latest">Latest events</h3>
-                <button class="demo-btn" type="button" id="replay">Replay simulated feed</button>
-              </header>
-              <ol class="demo-latest" data-slot="latest"></ol>
-              <p class="demo-more"><a class="u-link mono" href="#events">All events &rarr;</a></p>
-            </section>
-          </div>
-        </section>
-
-        <section class="demo-view" id="view-events" data-view="events" aria-labelledby="h-events" hidden>
-          <header class="demo-view-head">
-            <h2 id="h-events" tabindex="-1">Events</h2>
-            <p class="mono demo-badge">Simulated · not recorded</p>
-          </header>
-          <form class="demo-filters" role="search" aria-label="Filter events" onsubmit="return false">
-            <label class="demo-field"><span class="mono">Search</span><input type="search" id="f-q" placeholder="ID, class or time" autocomplete="off" /></label>
-            <label class="demo-field"><span class="mono">Class</span>
-              <select id="f-cls"><option value="all">All</option><option value="aircraft">Aircraft</option><option value="drone">Possible drone</option></select></label>
-            <label class="demo-field"><span class="mono">ADS-B</span>
-              <select id="f-adsb"><option value="all">All</option><option value="match">ADS-B match</option><option value="none">No ADS-B match</option></select></label>
-            <label class="demo-field"><span class="mono">Time</span>
-              <select id="f-hours"><option value="24">Last 24 hours</option><option value="6">Last 6 hours</option><option value="1">Last hour</option></select></label>
-            <button class="demo-btn" type="button" id="f-reset">Clear</button>
-          </form>
-          <div class="demo-plate demo-plate--flush">
-            <div class="demo-table-wrap demo-events-wrap" tabindex="0" role="region" aria-label="Events table" data-slot="events"></div>
-            <footer class="demo-events-foot">
-              <p class="mono" id="events-count" role="status" aria-live="polite"></p>
-              <div class="demo-foot-actions">
-                <button class="demo-btn" type="button" id="more">Show more</button>
-                <button class="demo-btn demo-btn--solid" type="button" id="export">Export CSV</button>
-              </div>
-              <p class="mono demo-note" id="export-note" role="status" hidden></p>
-            </footer>
-          </div>
-        </section>
-
-        <section class="demo-view" id="view-analytics" data-view="analytics" aria-labelledby="h-analytics">
-          <header class="demo-view-head">
-            <h2 id="h-analytics" tabindex="-1">Analytics</h2>
-          </header>
-          <div class="demo-section">
-            <p class="mono demo-badge demo-badge--measured">${esc(r.tag || 'MEASURED · RECORDED VIDEO')}</p>
-            <h3>Measured results</h3>
-            <p class="demo-lede">${esc(r.intro || '')} ${r.sample ? `<span class="mono demo-sample">${esc(r.sample)}</span>` : ''}</p>
-            <div class="rc-grid">${charts.map(resultChart).join('')}
-              ${
-                caveats.length
-                  ? `<div class="rc-caveats" role="note" aria-labelledby="demo-caveats-title"><h3 class="rc-caveats-title mono" id="demo-caveats-title">What this test does not show</h3><ul>${caveats.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>`
-                  : ''
-              }
-            </div>
-            ${charts.length ? resultTable(charts) : ''}
-            <p class="results-source mono">${esc(r.source || '')}</p>
-          </div>
-          <div class="demo-section">
-            <p class="mono demo-badge">Simulated · for illustration</p>
-            <h3>Model confidence on simulated events</h3>
-            <p class="demo-lede">How sure the model reports being, for the sample events. Real confidence values will come from the physical node.</p>
-            <div class="demo-chart demo-chart--bins" data-slot="bins"></div>
-            <div class="demo-legend mono" aria-hidden="true"><span><i class="shape shape--aircraft"></i>Aircraft</span><span><i class="shape shape--drone"></i>Possible drone</span></div>
-          </div>
-          <div class="demo-section">
-            <h3>Model versions</h3>
-            <div class="demo-table-wrap" tabindex="0" role="region" aria-label="Model versions">
-              <table class="demo-table">
-                <thead><tr><th scope="col">Model</th><th scope="col">Status</th><th scope="col">Evidence</th></tr></thead>
-                <tbody>
-                  <tr><th scope="row">v3</th><td>${statePill('Measured')}</td><td>Scored on 42 recorded clips, with drone and aircraft classes at 960 px input. See the measured results above.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="demo-section">
-            <h3>Definitions</h3>
-            <dl class="demo-defs">${defs}</dl>
-          </div>
-        </section>
-
-        <section class="demo-view" id="view-system" data-view="system" aria-labelledby="h-system">
-          <header class="demo-view-head">
-            <h2 id="h-system" tabindex="-1">${esc(d.system.heading)}</h2>
-          </header>
-          <p class="demo-lede">${esc(d.system.intro)}</p>
-          <div class="demo-legend demo-legend--states" aria-label="States">${stateLegend}</div>
-          <div class="demo-table-wrap" tabindex="0" role="region" aria-label="System status">
-            <table class="demo-table demo-table--system">
-              <thead><tr><th scope="col">Part</th><th scope="col">State</th><th scope="col">Detail</th></tr></thead>
-              <tbody>${rows}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
+${renderDemoVideo(d.video)}
+    <div class="cc-blocks">${list({ id: 'shows', ...d.shows })}${list({ id: 'limits', ...d.limits })}
     </div>
-    </div>
-${videoSection}
   </div>
-
-  <dialog class="demo-drawer" id="drawer" aria-labelledby="drawer-title">
-    <div class="demo-drawer-body" data-slot="drawer"></div>
-  </dialog>
 </main>
 ${siteFooter(c, { from: 'demo' })}`;
 }

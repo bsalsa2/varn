@@ -36,7 +36,7 @@ export const content = {
     goatcounter: 'bsalsa2',
   },
 
-  // Four destinations, no more. "Platform" scrolls to the dashboard section
+  // Four destinations, no more. "Platform" scrolls to the command center section
   // of the home page; the rest are pages. The last one is the demo button.
   nav: {
     brand: 'VARN',
@@ -59,7 +59,7 @@ export const content = {
     statusLabel: 'Status',
     statusTitle: 'Research prototype',
     // Plain facts only, listed in the status bar.
-    ticker: ['Recorded-video evaluation only', 'Dashboard data is simulated', 'Passive \u00b7 receives light only'],
+    ticker: ['Recorded-video evaluation only', 'Command center: public data only', 'Passive \u00b7 receives light only'],
     demo: { label: 'Explore the demo', href: './demo.html' },
     results: { label: 'View research results', href: './research.html#results' },
     contact: { label: 'Discuss the research', href: './contact.html' },
@@ -95,22 +95,22 @@ export const content = {
     link: { label: 'See all five steps', href: './research.html#story' },
   },
 
-  // SECTION 3: the platform. The window is the real dashboard demo, in small.
+  // SECTION 3: the platform. A still from the command center demo video,
+  // linking to the video on demo.html.
   platform: {
     label: 'The platform',
-    heading: 'The dashboard, in simulation.',
-    sub: 'An interactive demonstration of the VARN dashboard, running on generated sample data.',
-    badge: 'SIMULATED',
-    banner: 'SIMULATED · Sample data generated in your browser. No physical node is connected.',
-    window: 'VARN dashboard',
-    node: 'Node-01 · Not connected',
-    tabs: [
-      { id: 'overview', label: 'Overview' },
-      { id: 'events', label: 'Events' },
-      { id: 'analytics', label: 'Analytics' },
-      { id: 'system', label: 'System' },
-    ],
-    cta: { label: 'Explore the demo', href: './demo.html' },
+    heading: 'The command center.',
+    sub: 'A prototype 3D Earth viewer built on public data: satellite imagery, terrain, clouds, rainfall and recent earthquakes. It shows no real Varn detections.',
+    still: {
+      src: './video/varn-command-center-poster.webp',
+      width: 960,
+      height: 550,
+      alt: 'Still from the command center demo: a 3D view of Washington, D.C., with buildings, parks and the National Mall.',
+      caption: 'PROTOTYPE · PUBLIC DATA · NO REAL DETECTIONS',
+      href: './demo.html#command-center',
+      play: 'Watch the demo',
+    },
+    cta: { label: 'Watch the demo', href: './demo.html#command-center' },
     // A small CAD render of the PLANNED pan-tilt mount, drawn from the STL
     // files in /hardware. It must always say so: nothing is built.
     concept: {
@@ -122,7 +122,6 @@ export const content = {
       alt: 'Concept render of the planned VARN pan-tilt mount: a base holding the pan servo, a yoke on top and a camera arm between its uprights. Not a photograph; the hardware is not built.',
       caption: 'CONCEPT RENDER · UNBUILT HARDWARE',
     },
-    noscript: 'The dashboard preview needs JavaScript. The full demo does too; the measured results are on the Research page.',
   },
 
   // SECTION 4: a restrained snapshot of the published v2 results. The numbers
@@ -531,11 +530,15 @@ export const content = {
     contactCta: { label: 'Contact', href: './contact.html' },
   },
 
-  // DASHBOARD DEMO (demo.html): an interactive version of the dashboard.
-  // The events, counts and charts are SIMULATED, generated in the visitor's
-  // browser (src/demo-data.js). The measured results on the Analytics tab come
-  // from `results` above and are labelled as measured. Keep that line clear.
+  // COMMAND CENTER (demo.html): the command center prototype, a 3D Earth
+  // viewer built on public data (the app itself is in /platform). It shows no
+  // real Varn detections; keep that said on the page and under the video.
   demo: {
+    title: 'Command center demo',
+    description: 'A short narrated demo of the Varn command center prototype: a 3D Earth viewer built on public data. It shows no real Varn detections.',
+    kicker: 'Command center',
+    heading: 'The command center',
+    intro: 'A prototype for exploring the whole planet in 3D, built on public data. It shows no real Varn detections.',
     // Narrated screen recording of the command center prototype. The files
     // live in public/video; the transcript text is read from the .txt file.
     video: {
@@ -551,45 +554,26 @@ export const content = {
       caption: 'A short demo of the command center prototype. It uses public data and shows no real Varn detections. Narration is synthetic.',
       summary: 'Transcript and description',
     },
-    title: 'Dashboard demo',
-    description: 'An interactive demo of the Varn dashboard with simulated sample data: overview, event explorer, analytics and system status.',
-    kicker: 'Dashboard demo',
-    heading: 'Explore the dashboard',
-    intro: 'Click through the same views the real dashboard has. Every event, count and chart here is simulated sample data. Measured results are kept apart, on the Analytics tab.',
-    banner: 'SIMULATED · Sample data generated in your browser. No physical node is connected, and nothing here was detected by a camera.',
-    noscript: 'The dashboard demo needs JavaScript. The measured results are on the main page, under Results.',
-    tabs: [
-      { id: 'overview', label: 'Overview' },
-      { id: 'events', label: 'Events' },
-      { id: 'analytics', label: 'Analytics' },
-      { id: 'system', label: 'System' },
-    ],
-    // System tab. State is one of: Verified, Measured, Testing, Simulated, Not connected, Pending.
-    system: {
-      heading: 'System status',
-      intro: 'What exists, what has been tested, and what is not built yet.',
-      rows: [
-        { area: 'Software', name: 'Detection and tracking loop', state: 'Verified', text: 'Tested in simulation, with 243 automated tests.' },
-        { area: 'Software', name: 'Sighting logger', state: 'Verified', text: 'Built and tested in simulation.' },
-        { area: 'Software', name: 'Live dashboard', state: 'Verified', text: 'Built and tested in simulation. This page is a web demo of it.' },
-        { area: 'Model', name: 'Detection model v3', state: 'Measured', text: 'Scored on 42 recorded clips. See the Analytics tab for the numbers and their limits.' },
-        { area: 'Data', name: 'Events shown in this demo', state: 'Simulated', text: 'Generated in your browser from a fixed pattern. Not recorded by any sensor.' },
-        { area: 'Data', name: 'Comparison with real flight data (ADS-B)', state: 'Not connected', text: 'The comparison is written but has never been run against a real feed.' },
-        { area: 'Hardware', name: 'Camera', state: 'Not connected', text: 'The physical node is not built yet.' },
-        { area: 'Hardware', name: 'Pan-tilt mount and Pico controller', state: 'Pending', text: 'Designed in CAD, and the firmware is tested in software. The physical build is next.' },
-        { area: 'Hardware', name: 'Outdoor test', state: 'Pending', text: 'Not started.' },
+    // What the viewer shows, with each source. Facts from platform/README.md.
+    shows: {
+      heading: 'What it shows',
+      items: [
+        'Satellite imagery from Esri World Imagery, with the capture date where Esri gives one.',
+        '3D terrain from AWS Terrain Tiles, and 3D buildings in cities.',
+        'Day and night from the real position of the sun, with NASA city lights at night.',
+        'Daily satellite clouds and half-hourly rainfall from NASA GIBS.',
+        'Recent earthquakes from USGS.',
+        'Search for any place, with OpenStreetMap Nominatim.',
       ],
     },
-    // Short definitions, shown on the Analytics tab.
-    definitions: [
-      { term: 'Aircraft', text: 'The model called it an aircraft (a sage circle). The label is the model\'s guess, not a confirmed fact.' },
-      { term: 'Possible drone', text: 'The model called it a drone (an amber square). Not confirmed by anything else.' },
-      { term: 'ADS-B match', text: 'A real flight-data record matches the sighting. In this demo the matches are simulated; the real comparison has never been run.' },
-      { term: 'No ADS-B match', text: 'No flight-data record matches (a hollow ring). Drones never broadcast ADS-B, and neither do some small aircraft.' },
-      { term: 'Confidence', text: 'How sure the model is, from 0 to 1. It is not the chance that the label is right.' },
-    ],
+    limits: {
+      heading: 'What it is not',
+      items: [
+        'It shows no real Varn detections. The camera node is not built, so nothing here comes from it.',
+        'It is a research prototype, not a finished product.',
+      ],
+    },
   },
-
   // Contact form, shown above the sister-project card.
   notFound: {
     kicker: 'Error 404',
@@ -639,7 +623,7 @@ export const content = {
       { label: 'Source code', href: 'https://github.com/bsalsa2/varn' },
     ],
     legal: [
-      { label: 'Dashboard demo', href: './demo.html' },
+      { label: 'Command center demo', href: './demo.html' },
       { label: 'Privacy', href: './privacy.html' },
     ],
     contactLabel: 'Contact',

@@ -72,10 +72,13 @@ test('the research snapshot shows the weak drone result with its units and the r
   assert.doesNotMatch(t, /14\.9|7\.5%|10,657/);
 });
 
-test('the dashboard preview is marked SIMULATED', () => {
-  assert.match(home, /SIMULATED/);
-  assert.match(home, /class="sim-badge/);
-  assert.match(content.platform.banner, /^SIMULATED/);
+test('the platform section shows the command center and says it has no real Varn detections', () => {
+  const start = home.indexOf('id="platform"');
+  const section = home.slice(start, home.indexOf('</section>', start));
+  assert.match(section, /The command center\./);
+  assert.match(text(section), /It shows no real Varn detections\./);
+  assert.match(section, /href="\.\/demo\.html#command-center"/);
+  assert.doesNotMatch(section, /class="pv\b|SIMULATED|Node-01/);
 });
 
 test('no claim that the model reliably tells drones from aircraft', () => {
@@ -125,19 +128,19 @@ test('the independence sentence is on the About page and in every footer, exactl
 
 test('mAP50 is explained the first time it appears on a page, and no stale v2 wording remains', () => {
   assert.doesNotMatch(JSON.stringify(content), /resumed from v2|in training|no v3 results|\bv2\b/i);
-  for (const html of [research, demo]) {
+  for (const html of [research]) {
     const t = text(html);
     const first = t.indexOf('mAP50');
     assert.ok(first >= 0, 'mAP50 appears');
     assert.match(t.slice(first, first + 120), /mAP50 \(a standard detection score; 1\.0 is perfect\)/);
   }
-  assert.equal(text(home).includes('mAP50'), false);
+  for (const html of [home, demo]) assert.equal(text(html).includes('mAP50'), false);
 });
 
 test('the Roboflow score is shown with the reason it flatters v3', () => {
   const sentence = 'v3 scores higher (about 0.85) on validation pictures from Roboflow (a public online collection of labeled images). But v3 was probably trained on that collection, so that number flatters it. Videos from a different collection are the fairer test.';
   assert.ok(content.results.caveats.some((c) => c.includes(sentence)));
-  for (const html of [research, demo]) assert.ok(text(html).includes(sentence));
+  assert.ok(text(research).includes(sentence));
 });
 
 test('subpage title tags end in "| Varn Labs"', () => {
@@ -147,11 +150,10 @@ test('subpage title tags end in "| Varn Labs"', () => {
   for (const head of [renderResearchHead, renderDemoHead]) assert.match(head(content), /og:title" content="[^"]+ \| Varn Labs"/, head.name);
 });
 
-test('the demo states SIMULATED on the page, in the top bar and in the data', () => {
-  assert.match(content.demo.banner, /^SIMULATED/);
-  assert.match(demo, /state-tag--simulated[^>]*>[\s\S]*Simulated data/);
-  assert.match(demo, /Not connected/);
-  assert.doesNotMatch(demo, /Confirmed aircraft/);
+test('the demo page is the command center, says it has no real Varn detections, and has no simulated dashboard', () => {
+  assert.match(demo, /<h1[^>]*>The command center<\/h1>/);
+  assert.match(text(demo), /It shows no real Varn detections\. The camera node is not built/);
+  assert.doesNotMatch(demo, /class="demo-app|demo-tabs|Simulated data|Possible drones/);
 });
 
 test('no fake live telemetry is rendered in the static markup', () => {

@@ -3084,3 +3084,59 @@ main > .section:first-child {
 .notfound .section-head {
   margin-bottom: clamp(28px, 4vw, 48px);
 }
+
+/* ---- Command center still (home, platform section) ------------------------ */
+.cc-still {
+  margin: 0;
+  padding: 10px;
+  border-radius: var(--r-lg);
+}
+.cc-still-link {
+  position: relative;
+  display: block;
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.cc-still-link img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 960 / 550;
+  object-fit: cover;
+}
+.cc-still-play {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--r-sm);
+  background: var(--obsidian);
+  color: var(--text-1);
+  font-weight: 500;
+}
+.cc-still-icon {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 6px 0 6px 10px;
+  border-color: transparent transparent transparent var(--ice);
+}
+.cc-still-link:hover .cc-still-play,
+.cc-still-link:focus-visible .cc-still-play {
+  background: var(--ice);
+  color: var(--obsidian);
+}
+.cc-still-link:hover .cc-still-icon,
+.cc-still-link:focus-visible .cc-still-icon {
+  border-left-color: var(--obsidian);
+}
+.cc-still figcaption {
+  padding: 12px 6px 2px;
+  font-size: var(--fs-small);
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+}
