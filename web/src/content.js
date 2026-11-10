@@ -486,9 +486,9 @@ export const content = {
     },
     hardware: {
       heading: 'Hardware and bill of materials',
-      intro: 'The planned node is a webcam on a two-servo pan-tilt mount, driven by a Raspberry Pi Pico WH. The model will run on a laptop first and a Raspberry Pi 4 later. Nothing has been built. The renders and models on this page are CAD (computer-aided design: 3D drawings, not photos).',
+      intro: 'The planned node is a webcam on a two-servo pan-tilt mount, driven by a Raspberry Pi Pico 2 W. The model will run on a laptop first and a Raspberry Pi 4 later. Nothing has been built. The renders and models on this page are CAD (computer-aided design: 3D drawings, not photos).',
       costHeading: 'Estimated parts cost',
-      costNote: 'A parts estimate from bom.csv in the repository, before shipping. It excludes the computer that runs the model, and the Pico WH and breadboard, which are already owned. It is not evidence of performance: the node is not built and nothing has run on real hardware.',
+      costNote: 'A parts estimate from bom.csv in the repository, before shipping. It excludes the computer that runs the model, and the Pico 2 W, breadboard and jumper wires, which are already owned. It is not evidence of performance: the node is not built and nothing has run on real hardware.',
       bomHeading: 'Bill of materials',
       bomNote: 'Costs are rough USD estimates for the whole line, before shipping. The source is bom.csv.',
       viewsHeading: 'Simulations and CAD',
