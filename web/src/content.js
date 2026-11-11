@@ -271,11 +271,11 @@ export const content = {
   math: {
     heading: 'The cost goal',
     // Words inside [square brackets] light up white; the rest stay grey.
-    statement: 'The goal is a sensing layer [cheap enough to put almost anywhere.] One node\'s estimated parts come to [about $113.]',
+    statement: 'The goal is a sensing layer [cheap enough to put almost anywhere.] One node\'s estimated parts come to [about $54.]',
     stats: [
-      { label: 'Estimated sensing-hardware parts, one node', value: '~$113', highlight: true },
+      { label: 'Estimated sensing-hardware parts, one node', value: '~$54', highlight: true },
       { label: 'Not in that total', value: 'Computer' },
-      { label: 'Already owned, not priced', value: 'Pico + breadboard' },
+      { label: 'Already owned, not priced', value: 'Pico 2 W + breadboard + wires' },
     ],
     // Printed under the numbers so they can't be read as a capability claim.
     statsNote: 'A parts estimate from the bill of materials (bom.csv in the repo), before shipping. It says nothing about capability: the node is not built, and nothing has run on real hardware. No comparison with other detection systems is made here.',
