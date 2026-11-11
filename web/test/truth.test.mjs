@@ -48,8 +48,8 @@ test('navigation is Platform, Research, About and the demo button', () => {
 
 test('the home page has five parts and keeps detail on the research page', () => {
   for (const id of ['top', 'process', 'platform', 'research', 'close']) assert.match(home, new RegExp(`id="${id}"`));
-  assert.doesNotMatch(text(home), /\$113|bill of materials/i);
-  assert.match(research, /\$113\.20/);
+  assert.doesNotMatch(text(home), /\$54|bill of materials/i);
+  assert.match(research, /\$54\.21/);
   for (const id of ['methodology', 'results', 'models', 'hardware', 'validation', 'roadmap', 'references', 'story', 'status', 'limits'])
     assert.match(research, new RegExp(`id="${id}"`));
   assert.match(text(about), /Braden/);
@@ -90,7 +90,7 @@ test('no uncited industry price comparison, and the parts cost keeps its exclusi
   const all = text(home) + text(research);
   assert.doesNotMatch(all, /\$10,000s|tens of thousands|Typical detection system/i);
   assert.match(content.math.statsNote, /not a capability|nothing about capability/i);
-  assert.match(content.math.stats[0].value, /~\$113/);
+  assert.match(content.math.stats[0].value, /~\$54/);
   assert.match(content.researchPage.hardware.costNote, /excludes the computer/);
   assert.match(content.researchPage.hardware.costNote, /not evidence of performance/);
 });

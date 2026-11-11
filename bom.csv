@@ -2,12 +2,9 @@ part,quantity,purpose,est_cost_usd,link
 Raspberry Pi Pico 2 W (with headers),1,Servo controller + Wi-Fi link (already owned),0.00,
 Breadboard,1,Power rails and signal wiring (already owned),0.00,
 Jumper wires (male-to-female),1,Pico header pins to breadboard (already owned),0.00,
-SG92R micro servo (Adafruit 169; SG90 drop-in),2,Pan and tilt axes,11.90,https://www.adafruit.com/product/169
-SG90 pan-tilt bracket (or print hardware/pantilt.scad),1,Holds both servos and the camera,8.95,https://www.adafruit.com/product/1968
-1080p USB webcam,1,The camera that watches the sky,70.00,https://www.logitech.com/en-us/shop/p/c920s-pro-hd-webcam
-5V 2A USB power supply,1,Dedicated servo power,7.95,https://www.adafruit.com/product/1994
-USB breakout board,1,Brings the supply's 5V and GND onto the breadboard rails,1.50,https://www.adafruit.com/product/1833
-470-1000uF 16V+ electrolytic capacitor,1,Absorbs servo current spikes across the servo power rails,0.95,https://www.sparkfun.com/electrolytic-decoupling-capacitors-1000uf-25v.html
-Jumper wires (male-to-male),1,Servo plugs are female so these connect them to the breadboard,3.95,https://www.adafruit.com/product/758
-M2/M3 screw assortment,1,Servo tabs and horns (M2) and tilt pivot + base mounting (M3),8.00,
-Computer that runs the model (laptop now / Raspberry Pi 4 later),1,Runs detection and tracking (NOT included in the 113.20 total),,
+MG90S metal-gear micro servo (ShillehTek),2,Pan and tilt axes (bought),13.98,https://shillehtek.com/products/mg90s-metal-gear-micro-servo-motor-180-degree-9g-for-rc-plane
+Pan-Tilt Servo Bracket Kit for SG90 and MG90S servos (ShillehTek),1,Holds both servos and the camera (screws included; bought),3.99,https://shillehtek.com/products/pan-tilt-servo-bracket-kit-sg90-mg90s
+120-piece Dupont jumper wire set (ShillehTek),1,Male-to-male wires connect the female servo plugs to the breadboard (bought),6.25,https://shillehtek.com/products/shillehtek-120pcs-multicolored-dupont-wire
+Logitech C270 webcam (720p; 75 g),1,A small light camera that fits the mount (not yet bought; seen on sale at 21.99),29.99,https://www.staples.com/Logitech-C270-HD-720p-Computer-Webcam-with-Microphone-960-000694/product_354562
+5V USB wall charger (spare; 1 A or more),1,Servo power for later tests (not priced),,
+Computer that runs the model (laptop now / Raspberry Pi 4 later),1,Runs detection and tracking (NOT included in the total),,
