@@ -526,7 +526,22 @@ export const content = {
       'Not a product, and not deployed anywhere. The physical hardware node has not been built or validated.',
       INDEPENDENCE,
     ],
-    contactText: 'Questions about the project, the hardware or the code are welcome.',
+    // What the build uses. A listing here is a fact about my own build (bought
+    // or owned). It is NOT a sponsorship or an endorsement.
+    builtWithHeading: 'What it is built with',
+    builtWithIntro: 'Parts I ordered or own for this build. A listing here is a fact about my build. It is not a sponsorship or an endorsement.',
+    builtWith: [
+      { name: 'ShillehTek', what: 'Pan-tilt bracket kit, two MG90S servos and jumper wires, ordered by me.', url: 'https://shillehtek.com' },
+      { name: 'Raspberry Pi', what: 'Pico 2 W servo controller, running the Varn firmware. Owned by me.' },
+      { name: 'RTL-SDR Blog', what: 'V3 receiver for public ADS-B flight data. Owned by me, not yet in use.' },
+    ],
+    // SUPPORTERS: leave this list EMPTY until a company has actually contributed
+    // AND said in writing that it is okay to list it. Text only, no logos.
+    // Each entry: { name, contributed, agreedOn: 'YYYY-MM-DD', url? }
+    supportersHeading: 'Supporters',
+    supportersIntro: 'A company appears here only after it has contributed to Varn Labs and agreed in writing to be listed.',
+    supporters: [],
+    contactText: 'Questions about the project, the hardware or the code are welcome, and so are companies that would like to support a student research project.',
     contactCta: { label: 'Contact', href: './contact.html' },
   },
 

@@ -983,6 +983,16 @@ ${siteNav(c, { home: false, current: 'about.html' })}
         <h2 class="h-sub">${esc(a.scopeHeading)}</h2>
         <ul class="scope-list">${a.scope.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
       </div>
+      <div class="about-scope about-built">
+        <h2 class="h-sub">${esc(a.builtWithHeading)}</h2>
+        <p class="about-note">${esc(a.builtWithIntro)}</p>
+        <ul class="scope-list">${a.builtWith.map((b) => `<li><strong>${b.url ? `<a class="u-link" href="${esc(b.url)}" rel="noopener noreferrer">${esc(b.name)}</a>` : esc(b.name)}</strong>: ${esc(b.what)}</li>`).join('')}</ul>
+      </div>
+      ${a.supporters.length ? `<div class="about-scope about-supporters" id="supporters">
+        <h2 class="h-sub">${esc(a.supportersHeading)}</h2>
+        <p class="about-note">${esc(a.supportersIntro)}</p>
+        <ul class="scope-list">${a.supporters.map((x) => `<li><strong>${x.url ? `<a class="u-link" href="${esc(x.url)}" rel="noopener noreferrer">${esc(x.name)}</a>` : esc(x.name)}</strong>: ${esc(x.contributed)}</li>`).join('')}</ul>
+      </div>` : ''}
       <div class="about-contact">
         <p>${esc(a.contactText)}</p>
         <a class="btn btn--glass btn--lg" href="${esc(a.contactCta.href)}"><span>${esc(a.contactCta.label)}</span>${ARROW_UR}</a>
