@@ -41,6 +41,11 @@
   flex-direction: column;
   gap: 18px;
 }
+.about-note {
+  max-width: var(--measure);
+  color: var(--titanium);
+  line-height: 1.7;
+}
 .scope-list {
   display: grid;
   gap: 14px;
