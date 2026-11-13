@@ -540,7 +540,14 @@ export const content = {
     // Each entry: { name, contributed, agreedOn: 'YYYY-MM-DD', url? }
     supportersHeading: 'Supporters',
     supportersIntro: 'A company appears here only after it has contributed to Varn Labs and agreed in writing to be listed.',
-    supporters: [],
+    supporters: [
+      {
+        name: 'Protocase',
+        contributed: '$500 in-kind manufacturing support for a custom enclosure, approved November 2026.',
+        agreedOn: '2026-11-13',
+        url: 'https://www.protocase.com',
+      },
+    ],
     contactText: 'Questions about the project, the hardware or the code are welcome, and so are companies that would like to support a student research project.',
     contactCta: { label: 'Contact', href: './contact.html' },
   },
