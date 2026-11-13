@@ -1004,6 +1004,47 @@ ${siteNav(c, { home: false, current: 'about.html' })}
 ${siteFooter(c, { from: 'about' })}`;
 }
 
+// ---- Supporters page (supporters.html) ------------------------------------
+export function renderSupportersHead(c) {
+  const sp = c.supportersPage;
+  const url = new URL('supporters.html', c.meta.url).href;
+  return `${counter(c)}
+    <title>${esc(sp.title)} | Varn Labs</title>
+    <meta name="description" content="${esc(sp.description)}" />
+    <link rel="canonical" href="${esc(url)}" />`;
+}
+
+export function renderSupportersBody(c) {
+  const sp = c.supportersPage;
+  const items = c.about.supporters
+    .map((x) => {
+      const name = x.url ? `<a class="u-link" href="${esc(x.url)}" rel="noopener noreferrer">${esc(x.name)}</a>` : esc(x.name);
+      return `<li><strong>${name}</strong>: ${esc(x.contributed)} <span class="mono">Agreed ${esc(x.agreedOn)}</span></li>`;
+    })
+    .join('');
+  return `
+<a class="skip-link" href="#main">Skip to content</a>
+${stage('stage-fixed')}
+${siteNav(c, { home: false, current: 'supporters.html' })}
+
+<main id="main" class="about-page" tabindex="-1">
+  <section class="about section" aria-labelledby="supporters-title">
+    <div class="wrap wrap--mid">
+      <header class="section-head">
+        ${label(sp.kicker)}
+        <h1 class="page-title" id="supporters-title">${esc(sp.heading)}</h1>
+        <p class="about-note">${esc(sp.intro)}</p>
+      </header>
+      <div class="about-scope">
+        ${items ? `<ul class="scope-list">${items}</ul>` : `<p class="about-note">${esc(sp.empty)}</p>`}
+      </div>
+      <p><a class="u-link" href="${esc(sp.back.href)}">${esc(sp.back.label)}</a></p>
+    </div>
+  </section>
+</main>
+${siteFooter(c, { from: 'supporters' })}`;
+}
+
 // ---- Privacy page (privacy.html) -------------------------------------------
 export function renderPrivacyHead(c) {
   const url = new URL('privacy.html', c.meta.url).href;

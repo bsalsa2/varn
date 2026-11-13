@@ -552,6 +552,17 @@ export const content = {
     contactCta: { label: 'Contact', href: './contact.html' },
   },
 
+  // SUPPORTERS PAGE (supporters.html): the list lives in about.supporters above.
+  supportersPage: {
+    kicker: 'Supporters',
+    title: 'Supporters',
+    description: 'Companies that have contributed to Varn Labs, listed with their written agreement.',
+    heading: 'Supporters',
+    intro: 'A company appears here only after it has contributed to Varn Labs and agreed in writing to be listed.',
+    empty: 'No supporters are listed yet.',
+    back: { label: 'Back to About', href: './about.html' },
+  },
+
   // COMMAND CENTER (demo.html): the command center prototype, a 3D Earth
   // viewer built on public data (the app itself is in /platform). It shows no
   // real Varn detections; keep that said on the page and under the video.
@@ -641,6 +652,7 @@ export const content = {
       { label: 'Platform', href: './#platform' },
       { label: 'Research', href: './research.html' },
       { label: 'About', href: './about.html' },
+      { label: 'Supporters', href: './supporters.html' },
       { label: 'Contact', href: './contact.html' },
       { label: 'Source code', href: 'https://github.com/bsalsa2/varn' },
     ],
