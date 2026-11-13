@@ -7,7 +7,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { content } from '../src/content.js';
 
-const SITEMAP_PAGES = ['index.html', 'research.html', 'about.html', 'demo.html', 'contact.html', 'privacy.html'];
+const SITEMAP_PAGES = ['index.html', 'research.html', 'about.html', 'supporters.html', 'demo.html', 'contact.html', 'privacy.html'];
 
 // The home page is the site root; every other page is its own file.
 const pageUrl = (file, base = content.meta.url) => (file === 'index.html' ? new URL(base).href : new URL(file, base).href);

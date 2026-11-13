@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import { content } from './src/content.js';
 import { fileURLToPath } from 'node:url';
-import { renderHead, renderBody, renderPrivacyHead, renderPrivacyBody, renderContactHead, renderContactBody, renderDemoHead, renderDemoBody, renderResearchHead, renderResearchBody, renderAboutHead, renderAboutBody, renderNotFoundHead, renderNotFoundBody } from './src/render.js';
+import { renderHead, renderBody, renderPrivacyHead, renderPrivacyBody, renderContactHead, renderContactBody, renderDemoHead, renderDemoBody, renderResearchHead, renderResearchBody, renderAboutHead, renderAboutBody, renderSupportersHead, renderSupportersBody, renderNotFoundHead, renderNotFoundBody } from './src/render.js';
 
 // Renders src/content.js into index.html at build time, so the page is
 // plain static HTML (fast, readable without JavaScript, good for search).
@@ -21,6 +21,8 @@ const varnContent = () => ({
       .replace('<!--varn:research-body-->', renderResearchBody(content))
       .replace('<!--varn:about-head-->', renderAboutHead(content))
       .replace('<!--varn:about-body-->', renderAboutBody(content))
+      .replace('<!--varn:supporters-head-->', renderSupportersHead(content))
+      .replace('<!--varn:supporters-body-->', renderSupportersBody(content))
       .replace('<!--varn:notfound-head-->', renderNotFoundHead(content))
       .replace('<!--varn:notfound-body-->', renderNotFoundBody(content));
   },
@@ -115,6 +117,7 @@ export default defineConfig({
         demo: fileURLToPath(new URL('./demo.html', import.meta.url)),
         research: fileURLToPath(new URL('./research.html', import.meta.url)),
         about: fileURLToPath(new URL('./about.html', import.meta.url)),
+        supporters: fileURLToPath(new URL('./supporters.html', import.meta.url)),
         field: fileURLToPath(new URL('./field.html', import.meta.url)),
         notfound: fileURLToPath(new URL('./404.html', import.meta.url)),
       },
